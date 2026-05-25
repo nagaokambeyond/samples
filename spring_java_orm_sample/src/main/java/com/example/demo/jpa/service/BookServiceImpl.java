@@ -8,9 +8,11 @@ import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -41,18 +43,24 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
         return converter.toResponse(
-            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor()))
+            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), LocalDateTime.now(), LocalDateTime.now(), 1L))
         );
     }
 
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
-        return bookRepository.findById(request.getId())
+        return bookRepository.findByIdWithWriteLock(request.getId())
             .map(b -> {
                 b.setTitle(request.getTitle());
                 b.setAuthor(request.getAuthor());
-                return converter.toResponse(bookRepository.save(b));
+                try{
+                    return converter.toResponse(bookRepository.save(b));
+
+                }catch(ObjectOptimisticLockingFailureException e){
+                    throw new RuntimeException("他ユーザーによって更新されています", e);
+
+                }
             })
             .orElse(null);
     }

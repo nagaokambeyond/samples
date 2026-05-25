@@ -10,12 +10,10 @@ import java.util.List;
 @Component
 public class BookConverter {
     public BookResponse toResponse(Book book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponse(List<Book> books) {
-        return books.stream().map(book->{
-            return new BookResponse(book.getId(), book.getTitle(), book.getAuthor());
-        }).toList();
+        return books.stream().map(book-> new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getUpdateAt(), book.getVersion())).toList();
     }
 }

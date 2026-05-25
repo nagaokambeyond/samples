@@ -6,7 +6,7 @@ import com.example.demo.jpa.service.BookService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
+@Validated
 public class BooksController {
     private final BookService bookService;
 
@@ -36,7 +37,7 @@ public class BooksController {
 
     @GetMapping("/search")
     public List<Book> getBook(
-        @RequestParam @NotNull @NotEmpty @Validated String title
+        @RequestParam @NotBlank  String title
     ) {
         return bookService.searchByTitle(title);
     }

@@ -26,7 +26,8 @@ curl -X POST "http://localhost:8080/api/books/update" \
 -d '{
 "id":1 ,
 "title": "かかか入門",
-"author": "ききき太郎"
+"author": "ききき太郎",
+"version": 0
 }'
 ```
 

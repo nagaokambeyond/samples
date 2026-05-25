@@ -1,10 +1,13 @@
 package com.example.demo.jpa.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "book", comment = "本")
@@ -22,4 +25,20 @@ public class Book {
 
     @Column(length = 200, comment = "著者")
     private String author;
+
+    @Column(comment = "作成日時")
+    @CreatedDate
+    @NotNull
+    private LocalDateTime createAt;
+
+    @Column(comment = "更新日時")
+    @LastModifiedDate
+    @NotNull
+    private LocalDateTime updateAt;
+
+    @Column(nullable = false, comment = "バージョン")
+    @NotNull
+    @PositiveOrZero
+    @Version
+    private Long version = 1L;
 }
