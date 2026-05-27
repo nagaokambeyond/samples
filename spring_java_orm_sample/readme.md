@@ -32,5 +32,17 @@ curl -X POST "http://localhost:8080/api/books/update" \
 ```
 
 ```shell
+curl -X POST "http://localhost:8080/api/books/update" \
+-H "Content-Type: application/json" \
+-d '{
+"id":9999 ,
+"title": "かかか入門",
+"author": "ききき太郎",
+"version": 0
+}'
+```
+
+
+```shell
 curl -X DELETE "http://localhost:8080/api/books/1" 
 ```

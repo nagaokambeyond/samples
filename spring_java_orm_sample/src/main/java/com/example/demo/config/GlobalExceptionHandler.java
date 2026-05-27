@@ -1,7 +1,9 @@
 package com.example.demo.config;
 
+import com.example.demo.exception.RepositoryDataNotfoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,5 +48,13 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(RepositoryDataNotfoundException.class)
+    public ProblemDetail handleRepositoryDataNotfoundException(RepositoryDataNotfoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
 
+        problem.setTitle("Update data not found");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
 }

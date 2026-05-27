@@ -1,6 +1,7 @@
 package com.example.demo.jpa.service;
 
 import com.example.demo.converter.BookConverter;
+import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.jpa.entity.Book;
 import com.example.demo.jpa.repository.BookRepository;
 import com.example.demo.api.request.BookCreateRequest;
@@ -62,11 +63,15 @@ public class BookServiceImpl implements BookService {
 
                 }
             })
-            .orElse(null);
+            .orElseThrow(()->new RepositoryDataNotfoundException());
     }
 
+    @Transactional
     @Override
     public void delete(@NonNull Long id) {
-        bookRepository.deleteById(id);
+        bookRepository.findByIdWithWriteLock(id)
+            .ifPresent(book->{
+                bookRepository.deleteById(book.getId());
+            });
     }
 }
