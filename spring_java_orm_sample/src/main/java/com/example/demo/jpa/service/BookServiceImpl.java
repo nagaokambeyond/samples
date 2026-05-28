@@ -63,15 +63,13 @@ public class BookServiceImpl implements BookService {
 
                 }
             })
-            .orElseThrow(()->new RepositoryDataNotfoundException());
+            .orElseThrow(RepositoryDataNotfoundException::new);
     }
 
     @Transactional
     @Override
     public void delete(@NonNull Long id) {
         bookRepository.findByIdWithWriteLock(id)
-            .ifPresent(book->{
-                bookRepository.deleteById(book.getId());
-            });
+            .ifPresent(book-> bookRepository.deleteById(book.getId()));
     }
 }
