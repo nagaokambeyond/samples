@@ -20,7 +20,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-            .requestMatchers("/swagger-ui/**", "/v3/api-docs*/**", "/api/books/**");
+            .requestMatchers("/swagger-ui/**", "/v3/api-docs*/**", "/api/books/**", "/h2-console/**");
     }
 
     @Bean
