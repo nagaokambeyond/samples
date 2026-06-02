@@ -7,27 +7,23 @@
         <plugin type="org.mybatis.generator.plugins.MapperAnnotationPlugin"/>
         <!-- 接続先DB情報 -->
         <jdbcConnection driverClass="org.h2.Driver"
-                        connectionURL="jdbc:h2:file:./demo"
+                        connectionURL="jdbc:h2:mem:mybatis_generator;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'src/main/resources/mybatis-generator-schema.sql'"
                         userId="sa"
                         password="" />
 
         <!-- Model(Entity)作成先 -->
         <javaModelGenerator targetPackage="com.example.demo.mybatis.generator.entity"
-                            targetProject="/spring_java_orm_sample/src/main/java" />
+                            targetProject="src/main/java" />
         <!-- Mapper.xml作成先 -->
         <sqlMapGenerator targetPackage="com.example.demo.mybatis.generator.mapper"
-                         targetProject="/spring_java_orm_sample/src/main/resources" />
+                         targetProject="src/main/resources" />
         <!-- Mapper.java作成先 -->
         <javaClientGenerator targetPackage="com.example.demo.mybatis.generator.mapper"
-                             targetProject="/spring_java_orm_sample/src/main/java"
+                             targetProject="src/main/java"
                              type="XMLMAPPER" />
 
         <!-- 生成対象テーブル -->
         <table tableName="book" domainObjectName="BookEntity" mapperName="BookMapper">
-        </table>
-        <table tableName="Book" domainObjectName="BookEntity" mapperName="BookMapper">
-        </table>
-        <table tableName="BOOK" domainObjectName="BookEntity" mapperName="BookMapper">
         </table>
     </context>
 </generatorConfiguration>
