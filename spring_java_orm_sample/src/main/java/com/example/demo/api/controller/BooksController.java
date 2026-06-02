@@ -6,6 +6,7 @@ import com.example.demo.jpa.service.BookService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -44,14 +45,14 @@ public class BooksController {
 
     @PostMapping("/create")
     public BookResponse createBook(
-        @RequestBody @NotNull BookCreateRequest request
+        @RequestBody @Valid @NotNull BookCreateRequest request
     ) {
         return bookService.create(request);
     }
 
     @PostMapping("/update")
     public BookResponse updateBook(
-        @RequestBody @NotNull BookUpdateRequest request
+        @RequestBody @Valid @NotNull BookUpdateRequest request
     ) {
         return bookService.update(request);
     }
