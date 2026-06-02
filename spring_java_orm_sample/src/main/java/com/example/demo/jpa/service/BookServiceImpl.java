@@ -31,7 +31,9 @@ public class BookServiceImpl implements BookService {
     @Transactional(readOnly = true)
     @Override
     public BookResponse findById(@NonNull Long id) {
-        return bookRepository.findById(id).map(converter::toResponse).orElse(null);
+        return bookRepository.findById(id)
+            .map(converter::toResponse)
+            .orElseThrow(RepositoryDataNotfoundException::new);
     }
 
     @Transactional(readOnly = true)
