@@ -9,7 +9,6 @@ import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,15 +54,10 @@ public class BookServiceImpl implements BookService {
     public BookResponse update(@NonNull BookUpdateRequest request) {
         return bookRepository.findByIdWithWriteLock(request.getId())
             .map(b -> {
+                BookVersionValidator.validate(b, request.getVersion());
                 b.setTitle(request.getTitle());
                 b.setAuthor(request.getAuthor());
-                try{
-                    return converter.toResponse(bookRepository.save(b));
-
-                }catch(ObjectOptimisticLockingFailureException e){
-                    throw new RuntimeException("他ユーザーによって更新されています", e);
-
-                }
+                return converter.toResponse(bookRepository.save(b));
             })
             .orElseThrow(RepositoryDataNotfoundException::new);
     }

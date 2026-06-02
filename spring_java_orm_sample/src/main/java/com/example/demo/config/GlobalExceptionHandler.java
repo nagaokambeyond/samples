@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,6 +15,16 @@ public class GlobalExceptionHandler {
 
         problem.setTitle("該当データなし");
         problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleObjectOptimisticLockingFailureException(ObjectOptimisticLockingFailureException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
+
+        problem.setTitle("更新競合");
+        problem.setDetail("他ユーザーによって更新されています");
 
         return problem;
     }
