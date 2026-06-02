@@ -65,7 +65,9 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public void delete(@NonNull Long id) {
-        bookRepository.findByIdWithWriteLock(id)
-            .ifPresent(book-> bookRepository.deleteById(book.getId()));
+        Book book = bookRepository.findByIdWithWriteLock(id)
+            .orElseThrow(RepositoryDataNotfoundException::new);
+
+        bookRepository.deleteById(book.getId());
     }
 }
