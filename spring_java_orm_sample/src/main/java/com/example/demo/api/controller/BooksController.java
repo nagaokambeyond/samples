@@ -18,46 +18,45 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/books")
 @RequiredArgsConstructor
 @Validated
-public class BooksController {
+public class BooksController implements BookApi {
     private final BookService bookService;
 
-    @GetMapping()
+    @Override
     public ResponseEntity<List<BookResponse>> getBookAll() {
         return new ResponseEntity<>(bookService.findAll(), HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @Override
     public ResponseEntity<BookResponse> getBook(
         @PathVariable Long id
     ) {
         return new ResponseEntity<>(bookService.findById(id), HttpStatus.OK);
     }
 
-    @GetMapping("/search")
+    @Override
     public List<Book> getBook(
         @RequestParam @NotBlank  String title
     ) {
         return bookService.searchByTitle(title);
     }
 
-    @PostMapping("/create")
+    @Override
     public BookResponse createBook(
         @RequestBody @Valid @NotNull BookCreateRequest request
     ) {
         return bookService.create(request);
     }
 
-    @PostMapping("/update")
+    @Override
     public BookResponse updateBook(
         @RequestBody @Valid @NotNull BookUpdateRequest request
     ) {
         return bookService.update(request);
     }
 
-    @DeleteMapping("/{id}")
+    @Override
     public void deleteBook(
         @PathVariable Long id
     ) {
