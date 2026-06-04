@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -45,7 +44,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
         return converter.toResponse(
-            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), LocalDateTime.now(), LocalDateTime.now(), 1L))
+            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), null, null, 1L))
         );
     }
 
