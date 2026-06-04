@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequestMapping("/api/books")
-@Tag(name = "Book", description = "本API")
+@Tag(name = "Books", description = "本API")
 public interface BookApi {
     @GetMapping()
     @Operation(summary = "本全取得")
@@ -57,8 +57,7 @@ public interface BookApi {
     @Operation(summary = "本登録")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "取得成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
     BookResponse createBook(
         @RequestBody @Valid @NotNull BookCreateRequest request
