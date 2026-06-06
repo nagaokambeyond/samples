@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
@@ -29,20 +28,20 @@ public class ApiLoggingAdvice extends RequestBodyAdviceAdapter implements Respon
 
     @Override
     public boolean supports(
-        @NonNull MethodParameter methodParameter,
-        @NonNull Type targetType,
-        @NonNull Class<? extends HttpMessageConverter<?>> converterType
+        MethodParameter methodParameter,
+        Type targetType,
+        Class<? extends HttpMessageConverter<?>> converterType
     ) {
         return isApiRequest();
     }
 
     @Override
-    public @NonNull Object afterBodyRead(
-        @NonNull Object body,
-        @NonNull HttpInputMessage inputMessage,
-        @NonNull MethodParameter parameter,
-        @NonNull Type targetType,
-        @NonNull Class<? extends HttpMessageConverter<?>> converterType
+    public Object afterBodyRead(
+        Object body,
+        HttpInputMessage inputMessage,
+        MethodParameter parameter,
+        Type targetType,
+        Class<? extends HttpMessageConverter<?>> converterType
     ) {
         log.info("[API REQUEST BODY] {}", toJson(body));
         return body;
@@ -50,8 +49,8 @@ public class ApiLoggingAdvice extends RequestBodyAdviceAdapter implements Respon
 
     @Override
     public boolean supports(
-        @NonNull MethodParameter returnType,
-        @NonNull Class<? extends HttpMessageConverter<?>> converterType
+        MethodParameter returnType,
+        Class<? extends HttpMessageConverter<?>> converterType
     ) {
         return true;
     }
@@ -59,11 +58,11 @@ public class ApiLoggingAdvice extends RequestBodyAdviceAdapter implements Respon
     @Override
     public @Nullable Object beforeBodyWrite(
         @Nullable Object body,
-        @NonNull MethodParameter returnType,
-        @NonNull MediaType selectedContentType,
-        @NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType,
-        @NonNull ServerHttpRequest request,
-        @NonNull ServerHttpResponse response
+        MethodParameter returnType,
+        MediaType selectedContentType,
+        Class<? extends HttpMessageConverter<?>> selectedConverterType,
+        ServerHttpRequest request,
+        ServerHttpResponse response
     ) {
         if (isApiRequest(request)) {
             log.info("[API RESPONSE BODY] {}", toJson(body));
@@ -87,7 +86,7 @@ public class ApiLoggingAdvice extends RequestBodyAdviceAdapter implements Respon
         return request.getURI().getPath().startsWith("/api/");
     }
 
-    private String toJson(final Object body) {
+    private String toJson(final @Nullable Object body) {
         if (body == null) {
             return "null";
         }
