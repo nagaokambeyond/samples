@@ -22,7 +22,7 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 ext {
-    domaVersion = '3.11.1'
+    domaVersion = '3.14.0'
     domaSpringBootVersion = '3.0.0'
     myBatisGeneratorVersion = '1.4.2'
     myBatisSpringBootVersion = '4.0.1'
