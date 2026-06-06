@@ -5,6 +5,9 @@
     <context id="local"  targetRuntime="MyBatis3">
         <!-- 生成するMapperに@Mapperアノテーションを付与するプラグイン -->
         <plugin type="org.mybatis.generator.plugins.MapperAnnotationPlugin"/>
+        <commentGenerator>
+            <property name="addRemarkComments" value="true"/>
+        </commentGenerator>
         <!-- 接続先DB情報 -->
         <jdbcConnection driverClass="org.h2.Driver"
                         connectionURL="jdbc:h2:mem:mybatis_generator;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'src/main/resources/generator-schema.sql'"

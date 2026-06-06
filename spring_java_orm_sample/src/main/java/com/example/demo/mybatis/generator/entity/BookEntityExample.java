@@ -6,58 +6,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookEntityExample {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.826751+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976649+09:00", comments="Source Table: book")
     protected String orderByClause;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827053+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976876+09:00", comments="Source Table: book")
     protected boolean distinct;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827125+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976932+09:00", comments="Source Table: book")
     protected List<Criteria> oredCriteria;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.826266+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976382+09:00", comments="Source Table: book")
     public BookEntityExample() {
         oredCriteria = new ArrayList<>();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.826899+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976748+09:00", comments="Source Table: book")
     public void setOrderByClause(String orderByClause) {
         this.orderByClause = orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.826922+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976758+09:00", comments="Source Table: book")
     public String getOrderByClause() {
         return orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827069+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976887+09:00", comments="Source Table: book")
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827088+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976902+09:00", comments="Source Table: book")
     public boolean isDistinct() {
         return distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827146+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.97694+09:00", comments="Source Table: book")
     public List<Criteria> getOredCriteria() {
         return oredCriteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827204+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976982+09:00", comments="Source Table: book")
     public void or(Criteria criteria) {
         oredCriteria.add(criteria);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827221+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976992+09:00", comments="Source Table: book")
     public Criteria or() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827238+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976999+09:00", comments="Source Table: book")
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
@@ -66,20 +66,20 @@ public class BookEntityExample {
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827255+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.977006+09:00", comments="Source Table: book")
     protected Criteria createCriteriaInternal() {
         Criteria criteria = new Criteria();
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827268+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.977013+09:00", comments="Source Table: book")
     public void clear() {
         oredCriteria.clear();
         orderByClause = null;
         distinct = false;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.827329+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.97706+09:00", comments="Source Table: book")
     protected abstract static class GeneratedCriteria {
         protected List<Criterion> criteria;
 
@@ -502,14 +502,14 @@ public class BookEntityExample {
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.828266+09:00", comments="do_not_delete_during_merge")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.977996+09:00", comments="do_not_delete_during_merge")
     public static class Criteria extends GeneratedCriteria {
         protected Criteria() {
             super();
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-06T23:48:11.82829+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.978023+09:00", comments="Source Table: book")
     public static class Criterion {
         private String condition;
 

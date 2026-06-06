@@ -8,3 +8,10 @@ CREATE TABLE book (
     update_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL
 );
+
+comment on table book is '本';
+comment on column book.author is '著者';
+comment on column book.create_at is '作成日時';
+comment on column book.title is 'タイトル';
+comment on column book.update_at is '更新日時';
+comment on column book.version is 'バージョン';
