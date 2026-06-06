@@ -37,8 +37,10 @@ public class BookServiceJPA implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Book> searchByTitle(@NonNull String keyword) {
-        return bookRepository.findByTitleContainingIgnoreCase(keyword);
+    public List<BookResponse> searchByTitle(@NonNull String keyword) {
+        return converter.toResponse(
+            bookRepository.findByTitleContainingIgnoreCase(keyword)
+        );
     }
 
     @Transactional

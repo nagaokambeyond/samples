@@ -1,7 +1,6 @@
 package com.example.demo.api.controller;
 
 
-import com.example.demo.jpa.entity.Book;
 import com.example.demo.service.BookService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
@@ -36,7 +35,7 @@ public class BooksController implements BookApi {
     }
 
     @Override
-    public List<Book> getBook(
+    public List<BookResponse> getBook(
         @RequestParam @NotBlank  String title
     ) {
         return bookService.searchByTitle(title);

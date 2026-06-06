@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.jpa.entity.Book;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
@@ -13,7 +12,7 @@ public interface BookService {
 
     BookResponse findById(@NonNull Long id);
 
-    List<Book> searchByTitle(@NonNull String keyword) ;
+    List<BookResponse> searchByTitle(@NonNull String keyword) ;
 
     BookResponse create(@NonNull BookCreateRequest request) ;
 

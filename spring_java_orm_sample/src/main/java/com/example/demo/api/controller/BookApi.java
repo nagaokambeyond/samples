@@ -3,7 +3,6 @@ package com.example.demo.api.controller;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
-import com.example.demo.jpa.entity.Book;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -49,7 +48,7 @@ public interface BookApi {
         @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "データなし", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
     })
-    List<Book> getBook(
+    List<BookResponse> getBook(
         @RequestParam @NotBlank String title
     );
 
