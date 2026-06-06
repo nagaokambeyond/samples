@@ -24,7 +24,7 @@ version = '0.0.1-SNAPSHOT'
 ext {
     domaVersion = '3.14.0'
     domaSpringBootVersion = '3.0.0'
-    myBatisGeneratorVersion = '1.4.2'
+    myBatisGeneratorVersion = '2.0.0'
     myBatisSpringBootVersion = '4.0.1'
     springDocVersion = '3.0.3'
 

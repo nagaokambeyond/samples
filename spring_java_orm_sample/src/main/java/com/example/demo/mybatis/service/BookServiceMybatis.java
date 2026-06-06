@@ -15,9 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -50,12 +48,12 @@ public class BookServiceMybatis implements BookService {
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
-        LocalDateTime now = LocalDateTime.now();
-        BookEntity book = new BookEntity();
+        final var now = LocalDateTime.now();
+        final var book = new BookEntity();
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
-        book.setCreateAt(toDate(now));
-        book.setUpdateAt(toDate(now));
+        book.setCreateAt(now);
+        book.setUpdateAt(now);
         book.setVersion(1L);
 
         bookCustomMapper.insertWithGeneratedKey(book);
@@ -65,7 +63,7 @@ public class BookServiceMybatis implements BookService {
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
-        BookEntity book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(request.getId());
+        final var book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(request.getId());
         if (book == null) {
             throw new RepositoryDataNotfoundException();
         }
@@ -73,7 +71,7 @@ public class BookServiceMybatis implements BookService {
         BookVersionValidator.validate(book, request.getVersion());
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
-        book.setUpdateAt(toDate(LocalDateTime.now()));
+        book.setUpdateAt(LocalDateTime.now());
         book.setVersion(book.getVersion() + 1);
 
         bookMapper.updateByPrimaryKey(book);
@@ -83,7 +81,7 @@ public class BookServiceMybatis implements BookService {
     @Transactional
     @Override
     public void delete(@NonNull Long id) {
-        BookEntity book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(id);
+        final var book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(id);
         if (book == null) {
             throw new RepositoryDataNotfoundException();
         }
@@ -92,14 +90,10 @@ public class BookServiceMybatis implements BookService {
     }
 
     private BookEntity findEntityById(Long id) {
-        BookEntity book = bookMapper.selectByPrimaryKey(id);
+        final var book = bookMapper.selectByPrimaryKey(id);
         if (book == null) {
             throw new RepositoryDataNotfoundException();
         }
         return book;
-    }
-
-    private Date toDate(LocalDateTime localDateTime) {
-        return Timestamp.valueOf(localDateTime);
     }
 }

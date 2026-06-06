@@ -5,9 +5,6 @@ import com.example.demo.jpa.entity.Book;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 
@@ -22,7 +19,7 @@ public class BookConverter {
     }
 
     public BookResponse toResponse(BookEntity book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), toLocalDateTime(book.getUpdateAt()), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponseFromBookEntities(List<BookEntity> books) {
@@ -35,12 +32,5 @@ public class BookConverter {
 
     public List<BookResponse> toResponseFromDomaBooks(List<com.example.demo.doma.generator.entity.Book> books) {
         return books.stream().map(this::toResponse).toList();
-    }
-
-    private LocalDateTime toLocalDateTime(Date date) {
-        if (date == null) {
-            return null;
-        }
-        return new Timestamp(date.getTime()).toLocalDateTime();
     }
 }

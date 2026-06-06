@@ -12,15 +12,15 @@
                         password="" />
 
         <!-- Model(Entity)作成先 -->
-        <javaModelGenerator targetPackage="com.example.demo.mybatis.generator.entity"
-                            targetProject="src/main/java" />
+        <modelGenerator targetPackage="com.example.demo.mybatis.generator.entity"
+                        targetProject="src/main/java" />
         <!-- Mapper.xml作成先 -->
         <sqlMapGenerator targetPackage="com.example.demo.mybatis.generator.mapper"
                          targetProject="src/main/resources" />
         <!-- Mapper.java作成先 -->
-        <javaClientGenerator targetPackage="com.example.demo.mybatis.generator.mapper"
-                             targetProject="src/main/java"
-                             type="XMLMAPPER" />
+        <clientGenerator targetPackage="com.example.demo.mybatis.generator.mapper"
+                         targetProject="src/main/java"
+                         type="XMLMAPPER" />
 
         <!-- 生成対象テーブル -->
         <table tableName="book" domainObjectName="BookEntity" mapperName="BookMapper">
