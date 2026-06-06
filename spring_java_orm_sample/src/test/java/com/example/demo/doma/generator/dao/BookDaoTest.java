@@ -41,7 +41,7 @@ public class BookDaoTest {
     protected void setUp() throws Exception {
         repository = new NoCacheSqlFileRepository();
         dialect = new org.seasar.doma.jdbc.dialect.H2Dialect();
-        url = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'src/main/resources/doma-codegen-schema.sql'";
+        url = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'src/main/resources/generator-schema.sql'";
         user = "sa";
         password = "";
     }

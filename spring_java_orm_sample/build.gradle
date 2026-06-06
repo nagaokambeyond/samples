@@ -27,8 +27,8 @@ ext {
     myBatisSpringBootVersion = '4.0.1'
     springDocVersion = '3.0.3'
 
-    domaCodeGenSchema = 'src/main/resources/doma-codegen-schema.sql'
-    domaCodeGenUrl = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM '${domaCodeGenSchema}'"
+    codeGenSchema = 'src/main/resources/generator-schema.sql'
+    domaCodeGenUrl = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM '${codeGenSchema}'"
     domaDaoPackage = 'com.example.demo.doma.generator.dao'
     domaEntityPackage = 'com.example.demo.doma.generator.entity'
 }
