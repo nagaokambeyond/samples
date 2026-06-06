@@ -13,33 +13,41 @@ public class ApiInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
-        long start = System.currentTimeMillis();
+        final var start = System.currentTimeMillis();
         request.setAttribute("startTime", start);
 
-        log.info("▶️[START] {} {}", request.getMethod(), request.getRequestURI());
+        log.info("▶[API START] {} {}", request.getMethod(), request.getRequestURI() + getQueryString(request));
         return true;
     }
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, @NonNull Object handler, Exception ex) {
-        long start = (long) request.getAttribute("startTime");
-        long duration = System.currentTimeMillis() - start;
+        final var start = (long) request.getAttribute("startTime");
+        final var duration = System.currentTimeMillis() - start;
 
-        int status = response.getStatus();
+        final var status = response.getStatus();
 
         if (ex != null) {
-            log.error("❌[END] {} {} -> {} ({} ms) ERROR: {}",
+            log.error("❌[API END] {} {} -> {} ({} ms) ERROR: {}",
                 request.getMethod(),
                 request.getRequestURI(),
                 status,
                 duration,
                 ex.getMessage());
         } else {
-            log.info("✅[END] {} {} -> {} ({} ms)",
+            log.info("✅[API END] {} {} -> {} ({} ms)",
                 request.getMethod(),
                 request.getRequestURI(),
                 status,
                 duration);
         }
+    }
+
+    private String getQueryString(final HttpServletRequest request) {
+        final var queryString = request.getQueryString();
+        if (queryString == null) {
+            return "";
+        }
+        return "?" + queryString;
     }
 }
