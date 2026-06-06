@@ -1,4 +1,4 @@
-package com.example.demo.api.controller;
+package com.example.demo.api;
 
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
