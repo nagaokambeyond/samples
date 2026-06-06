@@ -7,6 +7,7 @@ import lombok.Value;
 @Value
 public class BookUpdateRequest{
     @NotNull
+    @Schema(description = "本ID", type = "integer", format = "int64")
     Long id;
 
     @NotNull @Size(min = 1, max = 100)
@@ -19,6 +20,6 @@ public class BookUpdateRequest{
 
     @PositiveOrZero
     @NotNull
-    @Schema(description = "バージョン")
+    @Schema(description = "バージョン", type = "integer", format = "int64")
     Long version;
 }

@@ -25,16 +25,16 @@ public interface BookApi {
     @GetMapping()
     @Operation(summary = "本全取得")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "取得成功")
+        @ApiResponse(responseCode = "200", description = "成功")
     })
     ResponseEntity<List<BookResponse>> getBookAll();
 
     @GetMapping("/{id}")
     @Operation(summary = "本取得")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "取得成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class)))
     })
     ResponseEntity<BookResponse> getBook(
         @Parameter(description = "本ID")
@@ -44,19 +44,19 @@ public interface BookApi {
     @GetMapping("/search")
     @Operation(summary = "本検索")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "取得成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
     })
     List<BookResponse> getBook(
+        @Parameter(description = "タイトル")
         @RequestParam @NotBlank String title
     );
 
     @PostMapping("/create")
     @Operation(summary = "本登録")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "取得成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
     })
     BookResponse createBook(
         @RequestBody @Valid @NotNull BookCreateRequest request
@@ -65,10 +65,10 @@ public interface BookApi {
     @PostMapping("/update")
     @Operation(summary = "本更新")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "取得成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
     })
     BookResponse updateBook(
         @RequestBody @Valid @NotNull BookUpdateRequest request
@@ -77,10 +77,9 @@ public interface BookApi {
     @DeleteMapping("/{id}")
     @Operation(summary = "本削除")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "取得成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
     })
     void deleteBook(
         @Parameter(description = "本ID")

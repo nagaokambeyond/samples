@@ -4,11 +4,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Value;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Value
 public class BookResponse{
+    @Schema(description = "本ID", type = "integer", format = "int64")
     @NotNull
     Long id;
 
@@ -19,9 +19,11 @@ public class BookResponse{
     @Schema(description = "著者", type = "string")
     String author;
 
-    @Schema(description = "更新日時")
+    @Schema(description = "更新日時", type = "string", format = "date-time")
+    @NotNull
     LocalDateTime updateAt;
 
-    @Schema(description = "バージョン")
+    @Schema(description = "バージョン", type = "integer", format = "int64")
+    @NotNull
     Long version;
 }
