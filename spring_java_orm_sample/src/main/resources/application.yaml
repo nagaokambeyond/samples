@@ -21,3 +21,5 @@ spring:
   mvc:
       problemdetails:
           enabled: true
+mybatis:
+  mapper-locations: classpath*:com/example/demo/mybatis/**/*.xml

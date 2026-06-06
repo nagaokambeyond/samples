@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mybatis.mapper.BookCustomMapper">
+  <resultMap id="BookEntityResultMap" type="com.example.demo.mybatis.generator.entity.BookEntity">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="author" jdbcType="VARCHAR" property="author" />
+    <result column="create_at" jdbcType="TIMESTAMP" property="createAt" />
+    <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
+    <result column="version" jdbcType="BIGINT" property="version" />
+  </resultMap>
+
+  <sql id="Book_Columns">
+    id, title, author, create_at, update_at, version
+  </sql>
+
+  <select id="selectByTitleContainingIgnoreCase" parameterType="java.lang.String" resultMap="BookEntityResultMap">
+    select
+    <include refid="Book_Columns" />
+    from book
+    where lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    order by id
+  </select>
+
+  <select id="selectByPrimaryKeyWithWriteLock" parameterType="java.lang.Long" resultMap="BookEntityResultMap">
+    select
+    <include refid="Book_Columns" />
+    from book
+    where id = #{id,jdbcType=BIGINT}
+    for update
+  </select>
+
+  <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">
+    insert into book (title, author, create_at, update_at, version)
+    values (
+      #{title,jdbcType=VARCHAR},
+      #{author,jdbcType=VARCHAR},
+      #{createAt,jdbcType=TIMESTAMP},
+      #{updateAt,jdbcType=TIMESTAMP},
+      #{version,jdbcType=BIGINT}
+    )
+  </insert>
+</mapper>
