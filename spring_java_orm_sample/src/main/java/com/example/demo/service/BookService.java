@@ -1,4 +1,4 @@
-package com.example.demo.jpa.service;
+package com.example.demo.service;
 
 import com.example.demo.jpa.entity.Book;
 import com.example.demo.api.request.BookCreateRequest;

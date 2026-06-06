@@ -2,7 +2,7 @@ package com.example.demo.api.controller;
 
 
 import com.example.demo.jpa.entity.Book;
-import com.example.demo.jpa.service.BookService;
+import com.example.demo.service.BookService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;

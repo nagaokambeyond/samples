@@ -7,6 +7,7 @@ import com.example.demo.jpa.repository.BookRepository;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
+import com.example.demo.service.BookService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class BookServiceImpl implements BookService {
+public class BookServiceJPA implements BookService {
     private final BookRepository bookRepository;
     private final BookConverter converter;
 
