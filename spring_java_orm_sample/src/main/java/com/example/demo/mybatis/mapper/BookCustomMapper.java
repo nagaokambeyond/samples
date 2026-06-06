@@ -12,5 +12,5 @@ public interface BookCustomMapper {
 
     BookEntity selectByPrimaryKeyWithWriteLock(@Param("id") Long id);
 
-    int insertWithGeneratedKey(BookEntity row);
+    void insertWithGeneratedKey(BookEntity row);
 }
