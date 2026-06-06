@@ -23,23 +23,23 @@ public class Book extends AbstractBook {
     @Column(name = "id")
     Long id;
 
-    /** */
+    /** タイトル */
     @Column(name = "title")
     String title;
 
-    /** */
+    /** 著者 */
     @Column(name = "author")
     String author;
 
-    /** */
+    /** 作成日時 */
     @Column(name = "create_at")
     LocalDateTime createAt;
 
-    /** */
+    /** 更新日時 */
     @Column(name = "update_at")
     LocalDateTime updateAt;
 
-    /** */
+    /** バージョン */
     @Version
     @Column(name = "version")
     Long version;
