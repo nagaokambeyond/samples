@@ -1,6 +1,7 @@
 package com.example.demo.doma.generator.dao;
 
 import com.example.demo.doma.generator.entity.Book;
+import org.seasar.doma.boot.ConfigAutowireable;
 import org.seasar.doma.Dao;
 import org.seasar.doma.Delete;
 import org.seasar.doma.Insert;
@@ -10,6 +11,7 @@ import org.seasar.doma.Update;
 /**
  */
 @Dao
+@ConfigAutowireable
 public interface BookDao {
 
     /**

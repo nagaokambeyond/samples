@@ -1,9 +1,9 @@
 package com.example.demo.converter;
 
 import com.example.demo.api.response.BookResponse;
+import com.example.demo.jpa.entity.Book;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import org.springframework.stereotype.Component;
-import com.example.demo.jpa.entity.Book;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -26,6 +26,14 @@ public class BookConverter {
     }
 
     public List<BookResponse> toResponseFromBookEntities(List<BookEntity> books) {
+        return books.stream().map(this::toResponse).toList();
+    }
+
+    public BookResponse toResponse(com.example.demo.doma.generator.entity.Book book) {
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getUpdateAt(), book.getVersion());
+    }
+
+    public List<BookResponse> toResponseFromDomaBooks(List<com.example.demo.doma.generator.entity.Book> books) {
         return books.stream().map(this::toResponse).toList();
     }
 

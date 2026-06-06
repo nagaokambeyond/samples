@@ -1,38 +1,37 @@
-package com.example.demo.mybatis.service;
+package com.example.demo.doma.service;
 
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.converter.BookConverter;
+import com.example.demo.doma.dao.BookCustomDao;
+import com.example.demo.doma.generator.dao.BookDao;
+import com.example.demo.doma.generator.entity.Book;
 import com.example.demo.exception.RepositoryDataNotfoundException;
-import com.example.demo.mybatis.generator.entity.BookEntity;
-import com.example.demo.mybatis.generator.entity.BookEntityExample;
-import com.example.demo.mybatis.generator.mapper.BookMapper;
-import com.example.demo.mybatis.mapper.BookCustomMapper;
 import com.example.demo.service.BookService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.seasar.doma.jdbc.OptimisticLockException;
+import org.springframework.context.annotation.Primary;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @Service
+@Primary
 @RequiredArgsConstructor
-public class BookServiceMybatis implements BookService {
-    private final BookMapper bookMapper;
-    private final BookCustomMapper bookCustomMapper;
+public class BookServiceDoma implements BookService {
+    private final BookDao bookDao;
+    private final BookCustomDao bookCustomDao;
     private final BookConverter converter;
 
     @Transactional(readOnly = true)
     @Override
     public List<BookResponse> findAll() {
-        final var example = new BookEntityExample();
-        example.setOrderByClause("id");
-        return converter.toResponseFromBookEntities(bookMapper.selectByExample(example));
+        return converter.toResponseFromDomaBooks(bookCustomDao.selectAll());
     }
 
     @Transactional(readOnly = true)
@@ -44,28 +43,28 @@ public class BookServiceMybatis implements BookService {
     @Transactional(readOnly = true)
     @Override
     public List<BookResponse> searchByTitle(@NonNull String keyword) {
-        return converter.toResponseFromBookEntities(bookCustomMapper.selectByTitleContainingIgnoreCase(keyword));
+        return converter.toResponseFromDomaBooks(bookCustomDao.selectByTitleContainingIgnoreCase(keyword));
     }
 
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
-        LocalDateTime now = LocalDateTime.now();
-        BookEntity book = new BookEntity();
+        final var now = LocalDateTime.now();
+        final var book = new Book();
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
-        book.setCreateAt(toDate(now));
-        book.setUpdateAt(toDate(now));
+        book.setCreateAt(now);
+        book.setUpdateAt(now);
         book.setVersion(1L);
 
-        bookCustomMapper.insertWithGeneratedKey(book);
+        bookDao.insert(book);
         return converter.toResponse(book);
     }
 
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
-        BookEntity book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(request.getId());
+        final var book = bookCustomDao.selectByIdWithWriteLock(request.getId());
         if (book == null) {
             throw new RepositoryDataNotfoundException();
         }
@@ -73,33 +72,36 @@ public class BookServiceMybatis implements BookService {
         BookVersionValidator.validate(book, request.getVersion());
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
-        book.setUpdateAt(toDate(LocalDateTime.now()));
-        book.setVersion(book.getVersion() + 1);
+        book.setUpdateAt(LocalDateTime.now());
 
-        bookMapper.updateByPrimaryKey(book);
+        try {
+            bookDao.update(book);
+        } catch (OptimisticLockException ex) {
+            throw new ObjectOptimisticLockingFailureException(Book.class, book.getId(), ex);
+        }
         return converter.toResponse(book);
     }
 
     @Transactional
     @Override
     public void delete(@NonNull Long id) {
-        BookEntity book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(id);
+        final var book = bookCustomDao.selectByIdWithWriteLock(id);
         if (book == null) {
             throw new RepositoryDataNotfoundException();
         }
 
-        bookMapper.deleteByPrimaryKey(book.getId());
+        try {
+            bookDao.delete(book);
+        } catch (OptimisticLockException ex) {
+            throw new ObjectOptimisticLockingFailureException(Book.class, book.getId(), ex);
+        }
     }
 
-    private BookEntity findEntityById(Long id) {
-        BookEntity book = bookMapper.selectByPrimaryKey(id);
+    private Book findEntityById(Long id) {
+        final var book = bookDao.selectById(id);
         if (book == null) {
             throw new RepositoryDataNotfoundException();
         }
         return book;
-    }
-
-    private Date toDate(LocalDateTime localDateTime) {
-        return Timestamp.valueOf(localDateTime);
     }
 }

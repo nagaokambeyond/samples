@@ -22,7 +22,8 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 ext {
-    domaVersion = '3.10.0'
+    domaVersion = '3.11.1'
+    domaSpringBootVersion = '3.0.0'
     myBatisGeneratorVersion = '1.4.2'
     myBatisSpringBootVersion = '4.0.1'
     springDocVersion = '3.0.3'
@@ -62,6 +63,7 @@ dependencies {
     mybatisTasks "org.mybatis.generator:mybatis-generator-core:${myBatisGeneratorVersion}"
     mybatisTasks "com.h2database:h2:${h2Version}"
 
+    implementation "org.seasar.doma.boot:doma-spring-boot-starter:${domaSpringBootVersion}"
     implementation "org.seasar.doma:doma-core:${domaVersion}"
     annotationProcessor "org.seasar.doma:doma-processor:${domaVersion}"
 
