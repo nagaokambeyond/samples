@@ -87,7 +87,7 @@ domaCodeGen {
         url.set(domaCodeGenUrl)
         user.set('sa')
         password.set('')
-        tableNamePattern.set('book')
+        tableNamePattern.set('book|publisher')
 
         entity {
             packageName.set(domaEntityPackage)
