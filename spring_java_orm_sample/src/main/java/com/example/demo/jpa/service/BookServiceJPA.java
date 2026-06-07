@@ -48,7 +48,7 @@ public class BookServiceJPA implements BookService {
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
         return converter.toResponse(
-            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), null, null, 1L))
+            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), null, null, 1L))
         );
     }
 
@@ -61,6 +61,7 @@ public class BookServiceJPA implements BookService {
                 b.setTitle(request.getTitle());
                 b.setAuthor(request.getAuthor());
                 b.setReleaseDate(request.getReleaseDate());
+                b.setPublisherId(request.getPublisherId());
                 return converter.toResponse(bookRepository.save(b));
             })
             .orElseThrow(RepositoryDataNotfoundException::new);

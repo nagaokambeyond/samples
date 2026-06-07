@@ -7,58 +7,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookEntityExample {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.24599+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628079+09:00", comments="Source Table: book")
     protected String orderByClause;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246406+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628432+09:00", comments="Source Table: book")
     protected boolean distinct;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246477+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628566+09:00", comments="Source Table: book")
     protected List<Criteria> oredCriteria;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.245731+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.627741+09:00", comments="Source Table: book")
     public BookEntityExample() {
         oredCriteria = new ArrayList<>();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246228+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628197+09:00", comments="Source Table: book")
     public void setOrderByClause(String orderByClause) {
         this.orderByClause = orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246255+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628297+09:00", comments="Source Table: book")
     public String getOrderByClause() {
         return orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246437+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628511+09:00", comments="Source Table: book")
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246449+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.62853+09:00", comments="Source Table: book")
     public boolean isDistinct() {
         return distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246499+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.62858+09:00", comments="Source Table: book")
     public List<Criteria> getOredCriteria() {
         return oredCriteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246582+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628641+09:00", comments="Source Table: book")
     public void or(Criteria criteria) {
         oredCriteria.add(criteria);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246595+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628656+09:00", comments="Source Table: book")
     public Criteria or() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246606+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628669+09:00", comments="Source Table: book")
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
@@ -67,20 +67,20 @@ public class BookEntityExample {
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246617+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628681+09:00", comments="Source Table: book")
     protected Criteria createCriteriaInternal() {
         Criteria criteria = new Criteria();
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246627+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628693+09:00", comments="Source Table: book")
     public void clear() {
         oredCriteria.clear();
         orderByClause = null;
         distinct = false;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246696+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.628752+09:00", comments="Source Table: book")
     protected abstract static class GeneratedCriteria {
         protected List<Criterion> criteria;
 
@@ -382,6 +382,66 @@ public class BookEntityExample {
             return (Criteria) this;
         }
 
+        public Criteria andPublisherIdIsNull() {
+            addCriterion("publisher_id is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdIsNotNull() {
+            addCriterion("publisher_id is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdEqualTo(Long value) {
+            addCriterion("publisher_id =", value, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdNotEqualTo(Long value) {
+            addCriterion("publisher_id <>", value, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdGreaterThan(Long value) {
+            addCriterion("publisher_id >", value, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("publisher_id >=", value, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdLessThan(Long value) {
+            addCriterion("publisher_id <", value, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdLessThanOrEqualTo(Long value) {
+            addCriterion("publisher_id <=", value, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdIn(List<Long> values) {
+            addCriterion("publisher_id in", values, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdNotIn(List<Long> values) {
+            addCriterion("publisher_id not in", values, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdBetween(Long value1, Long value2) {
+            addCriterion("publisher_id between", value1, value2, "publisherId");
+            return (Criteria) this;
+        }
+
+        public Criteria andPublisherIdNotBetween(Long value1, Long value2) {
+            addCriterion("publisher_id not between", value1, value2, "publisherId");
+            return (Criteria) this;
+        }
+
         public Criteria andCreateAtIsNull() {
             addCriterion("create_at is null");
             return (Criteria) this;
@@ -563,14 +623,14 @@ public class BookEntityExample {
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.247672+09:00", comments="do_not_delete_during_merge")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.62968+09:00", comments="do_not_delete_during_merge")
     public static class Criteria extends GeneratedCriteria {
         protected Criteria() {
             super();
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.247732+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T14:10:52.629721+09:00", comments="Source Table: book")
     public static class Criterion {
         private String condition;
 

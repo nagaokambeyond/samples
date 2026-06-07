@@ -24,6 +24,10 @@ public class BookUpdateRequest{
     @Schema(description = "発売日付", type = "string", format ="date")
     LocalDate releaseDate;
 
+    @NotNull
+    @Schema(description = "出版社ID", type = "integer", format ="int64")
+    Long publisherId;
+
     @PositiveOrZero
     @NotNull
     @Schema(description = "バージョン", type = "integer", format = "int64")

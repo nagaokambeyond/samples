@@ -11,15 +11,15 @@ import java.util.List;
 @Component
 public class BookConverter {
     public BookResponse toResponse(Book book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getUpdateAt(), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponse(List<Book> books) {
-        return books.stream().map(book-> new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getUpdateAt(), book.getVersion())).toList();
+        return books.stream().map(this::toResponse).toList();
     }
 
     public BookResponse toResponse(BookEntity book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getUpdateAt(), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponseFromBookEntities(List<BookEntity> books) {
@@ -27,7 +27,7 @@ public class BookConverter {
     }
 
     public BookResponse toResponse(com.example.demo.doma.generator.entity.Book book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(),book.getUpdateAt(), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponseFromDomaBooks(List<com.example.demo.doma.generator.entity.Book> books) {

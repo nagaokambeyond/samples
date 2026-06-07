@@ -54,6 +54,7 @@ public class BookServiceMybatis implements BookService {
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setReleaseDate(request.getReleaseDate());
+        book.setPublisherId(request.getPublisherId());
         book.setCreateAt(now);
         book.setUpdateAt(now);
         book.setVersion(1L);
@@ -74,6 +75,7 @@ public class BookServiceMybatis implements BookService {
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setReleaseDate(request.getReleaseDate());
+        book.setPublisherId(request.getPublisherId());
         book.setUpdateAt(LocalDateTime.now());
         book.setVersion(book.getVersion() + 1);
 

@@ -27,7 +27,8 @@ curl -X POST "http://localhost:8080/api/books/create" \
 -d '{
 "title": "あああ入門",
 "author": "いいい太郎",
-"releaseDate": "2021-01-01"
+"releaseDate": "2021-01-01",
+"publisherId": 1
 }'
 ```
 
@@ -39,6 +40,7 @@ curl -X POST "http://localhost:8080/api/books/update" \
 "title": "かかか入門",
 "author": "ききき太郎",
 "releaseDate": "2021-02-01",
+"publisherId": 1,
 "version": 0
 }'
 ```
@@ -51,6 +53,7 @@ curl -X POST "http://localhost:8080/api/books/update" \
 "title": "かかか入門",
 "author": "ききき太郎",
 "releaseDate": "2021-02-01",
+"publisherId": 1,
 "version": 0
 }'
 ```
@@ -63,6 +66,7 @@ curl -X POST "http://localhost:8080/api/books/update" \
 "title": "かかか入門",
 "author": "ききき太郎",
 "releaseDate": "2021-02-01",
+"publisherId": 1,
 "version": 0
 }'
 ```

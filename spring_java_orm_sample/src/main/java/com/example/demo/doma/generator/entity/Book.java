@@ -36,6 +36,10 @@ public class Book extends AbstractBook {
     @Column(name = "release_date")
     LocalDate releaseDate;
 
+    /** 出版社ID */
+    @Column(name = "publisher_id")
+    Long publisherId;
+
     /** 作成日時 */
     @Column(name = "create_at")
     LocalDateTime createAt;
@@ -119,6 +123,24 @@ public class Book extends AbstractBook {
      */
     public void setReleaseDate(LocalDate releaseDate) {
         this.releaseDate = releaseDate;
+    }
+
+    /** 
+     * Returns the publisherId.
+     * 
+     * @return the publisherId
+     */
+    public Long getPublisherId() {
+        return publisherId;
+    }
+
+    /** 
+     * Sets the publisherId.
+     * 
+     * @param publisherId the publisherId
+     */
+    public void setPublisherId(Long publisherId) {
+        this.publisherId = publisherId;
     }
 
     /** 
