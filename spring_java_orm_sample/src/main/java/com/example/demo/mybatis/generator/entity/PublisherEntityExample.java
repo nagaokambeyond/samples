@@ -1,64 +1,63 @@
 package com.example.demo.mybatis.generator.entity;
 
 import jakarta.annotation.Generated;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BookEntityExample {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.889957+09:00", comments="Source Table: book")
+public class PublisherEntityExample {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902472+09:00", comments="Source Table: publisher")
     protected String orderByClause;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890193+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902491+09:00", comments="Source Table: publisher")
     protected boolean distinct;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890257+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902508+09:00", comments="Source Table: publisher")
     protected List<Criteria> oredCriteria;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.889674+09:00", comments="Source Table: book")
-    public BookEntityExample() {
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902457+09:00", comments="Source Table: publisher")
+    public PublisherEntityExample() {
         oredCriteria = new ArrayList<>();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890065+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.90248+09:00", comments="Source Table: publisher")
     public void setOrderByClause(String orderByClause) {
         this.orderByClause = orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890087+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902487+09:00", comments="Source Table: publisher")
     public String getOrderByClause() {
         return orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890208+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902495+09:00", comments="Source Table: publisher")
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.89023+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902499+09:00", comments="Source Table: publisher")
     public boolean isDistinct() {
         return distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890269+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902512+09:00", comments="Source Table: publisher")
     public List<Criteria> getOredCriteria() {
         return oredCriteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890312+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902516+09:00", comments="Source Table: publisher")
     public void or(Criteria criteria) {
         oredCriteria.add(criteria);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890324+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.90252+09:00", comments="Source Table: publisher")
     public Criteria or() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890336+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902525+09:00", comments="Source Table: publisher")
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
@@ -67,20 +66,20 @@ public class BookEntityExample {
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890418+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902529+09:00", comments="Source Table: publisher")
     protected Criteria createCriteriaInternal() {
         Criteria criteria = new Criteria();
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890432+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902538+09:00", comments="Source Table: publisher")
     public void clear() {
         oredCriteria.clear();
         orderByClause = null;
         distinct = false;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.890482+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902544+09:00", comments="Source Table: publisher")
     protected abstract static class GeneratedCriteria {
         protected List<Criterion> criteria;
 
@@ -182,263 +181,73 @@ public class BookEntityExample {
             return (Criteria) this;
         }
 
-        public Criteria andTitleIsNull() {
-            addCriterion("title is null");
+        public Criteria andPublisherNameIsNull() {
+            addCriterion("publisher_name is null");
             return (Criteria) this;
         }
 
-        public Criteria andTitleIsNotNull() {
-            addCriterion("title is not null");
+        public Criteria andPublisherNameIsNotNull() {
+            addCriterion("publisher_name is not null");
             return (Criteria) this;
         }
 
-        public Criteria andTitleEqualTo(String value) {
-            addCriterion("title =", value, "title");
+        public Criteria andPublisherNameEqualTo(String value) {
+            addCriterion("publisher_name =", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleNotEqualTo(String value) {
-            addCriterion("title <>", value, "title");
+        public Criteria andPublisherNameNotEqualTo(String value) {
+            addCriterion("publisher_name <>", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleGreaterThan(String value) {
-            addCriterion("title >", value, "title");
+        public Criteria andPublisherNameGreaterThan(String value) {
+            addCriterion("publisher_name >", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleGreaterThanOrEqualTo(String value) {
-            addCriterion("title >=", value, "title");
+        public Criteria andPublisherNameGreaterThanOrEqualTo(String value) {
+            addCriterion("publisher_name >=", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleLessThan(String value) {
-            addCriterion("title <", value, "title");
+        public Criteria andPublisherNameLessThan(String value) {
+            addCriterion("publisher_name <", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleLessThanOrEqualTo(String value) {
-            addCriterion("title <=", value, "title");
+        public Criteria andPublisherNameLessThanOrEqualTo(String value) {
+            addCriterion("publisher_name <=", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleLike(String value) {
-            addCriterion("title like", value, "title");
+        public Criteria andPublisherNameLike(String value) {
+            addCriterion("publisher_name like", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleNotLike(String value) {
-            addCriterion("title not like", value, "title");
+        public Criteria andPublisherNameNotLike(String value) {
+            addCriterion("publisher_name not like", value, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleIn(List<String> values) {
-            addCriterion("title in", values, "title");
+        public Criteria andPublisherNameIn(List<String> values) {
+            addCriterion("publisher_name in", values, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleNotIn(List<String> values) {
-            addCriterion("title not in", values, "title");
+        public Criteria andPublisherNameNotIn(List<String> values) {
+            addCriterion("publisher_name not in", values, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleBetween(String value1, String value2) {
-            addCriterion("title between", value1, value2, "title");
+        public Criteria andPublisherNameBetween(String value1, String value2) {
+            addCriterion("publisher_name between", value1, value2, "publisherName");
             return (Criteria) this;
         }
 
-        public Criteria andTitleNotBetween(String value1, String value2) {
-            addCriterion("title not between", value1, value2, "title");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorIsNull() {
-            addCriterion("author is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorIsNotNull() {
-            addCriterion("author is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorEqualTo(String value) {
-            addCriterion("author =", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorNotEqualTo(String value) {
-            addCriterion("author <>", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorGreaterThan(String value) {
-            addCriterion("author >", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorGreaterThanOrEqualTo(String value) {
-            addCriterion("author >=", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorLessThan(String value) {
-            addCriterion("author <", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorLessThanOrEqualTo(String value) {
-            addCriterion("author <=", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorLike(String value) {
-            addCriterion("author like", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorNotLike(String value) {
-            addCriterion("author not like", value, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorIn(List<String> values) {
-            addCriterion("author in", values, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorNotIn(List<String> values) {
-            addCriterion("author not in", values, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorBetween(String value1, String value2) {
-            addCriterion("author between", value1, value2, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andAuthorNotBetween(String value1, String value2) {
-            addCriterion("author not between", value1, value2, "author");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateIsNull() {
-            addCriterion("release_date is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateIsNotNull() {
-            addCriterion("release_date is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateEqualTo(LocalDate value) {
-            addCriterion("release_date =", value, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateNotEqualTo(LocalDate value) {
-            addCriterion("release_date <>", value, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateGreaterThan(LocalDate value) {
-            addCriterion("release_date >", value, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateGreaterThanOrEqualTo(LocalDate value) {
-            addCriterion("release_date >=", value, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateLessThan(LocalDate value) {
-            addCriterion("release_date <", value, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateLessThanOrEqualTo(LocalDate value) {
-            addCriterion("release_date <=", value, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateIn(List<LocalDate> values) {
-            addCriterion("release_date in", values, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateNotIn(List<LocalDate> values) {
-            addCriterion("release_date not in", values, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateBetween(LocalDate value1, LocalDate value2) {
-            addCriterion("release_date between", value1, value2, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andReleaseDateNotBetween(LocalDate value1, LocalDate value2) {
-            addCriterion("release_date not between", value1, value2, "releaseDate");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdIsNull() {
-            addCriterion("publisher_id is null");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdIsNotNull() {
-            addCriterion("publisher_id is not null");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdEqualTo(Long value) {
-            addCriterion("publisher_id =", value, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdNotEqualTo(Long value) {
-            addCriterion("publisher_id <>", value, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdGreaterThan(Long value) {
-            addCriterion("publisher_id >", value, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdGreaterThanOrEqualTo(Long value) {
-            addCriterion("publisher_id >=", value, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdLessThan(Long value) {
-            addCriterion("publisher_id <", value, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdLessThanOrEqualTo(Long value) {
-            addCriterion("publisher_id <=", value, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdIn(List<Long> values) {
-            addCriterion("publisher_id in", values, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdNotIn(List<Long> values) {
-            addCriterion("publisher_id not in", values, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdBetween(Long value1, Long value2) {
-            addCriterion("publisher_id between", value1, value2, "publisherId");
-            return (Criteria) this;
-        }
-
-        public Criteria andPublisherIdNotBetween(Long value1, Long value2) {
-            addCriterion("publisher_id not between", value1, value2, "publisherId");
+        public Criteria andPublisherNameNotBetween(String value1, String value2) {
+            addCriterion("publisher_name not between", value1, value2, "publisherName");
             return (Criteria) this;
         }
 
@@ -623,14 +432,14 @@ public class BookEntityExample {
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.891405+09:00", comments="do_not_delete_during_merge")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902787+09:00", comments="do_not_delete_during_merge")
     public static class Criteria extends GeneratedCriteria {
         protected Criteria() {
             super();
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.891539+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T15:53:40.902795+09:00", comments="Source Table: publisher")
     public static class Criterion {
         private String condition;
 

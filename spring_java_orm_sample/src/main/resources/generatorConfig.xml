@@ -28,5 +28,7 @@
         <!-- 生成対象テーブル -->
         <table tableName="book" domainObjectName="BookEntity" mapperName="BookMapper">
         </table>
+        <table tableName="publisher" domainObjectName="PublisherEntity" mapperName="PublisherMapper">
+        </table>
     </context>
 </generatorConfiguration>
