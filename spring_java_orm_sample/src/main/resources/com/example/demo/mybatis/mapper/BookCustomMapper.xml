@@ -20,6 +20,9 @@
     <include refid="Book_Columns" />
     from book
     where lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    <if test="releaseDateFrom != null and releaseDateTo != null">
+      and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
+    </if>
     order by id
   </select>
 

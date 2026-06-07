@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -37,9 +38,9 @@ public class BookServiceJPA implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookResponse> searchByTitle(@NonNull String keyword) {
+    public List<BookResponse> search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo) {
         return converter.toResponse(
-            bookRepository.findByTitleContainingIgnoreCase(keyword)
+            bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo)
         );
     }
 

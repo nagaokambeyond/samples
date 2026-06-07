@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.exception.CorrelationValidationFailureException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -28,4 +29,15 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
+
+    @ExceptionHandler(CorrelationValidationFailureException.class)
+    public ProblemDetail handleCorrelationValidationFailureException(CorrelationValidationFailureException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        problem.setTitle("相関バリデーション");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
 }

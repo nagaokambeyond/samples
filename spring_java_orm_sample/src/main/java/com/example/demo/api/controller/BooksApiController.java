@@ -2,6 +2,7 @@ package com.example.demo.api.controller;
 
 
 import com.example.demo.api.BookApi;
+import com.example.demo.api.validator.BookApiControllerValidator;
 import com.example.demo.service.BookService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
@@ -15,13 +16,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class BooksController implements BookApi {
+public class BooksApiController implements BookApi {
     private final BookService bookService;
+    private final BookApiControllerValidator validator;
 
     @Override
     public ResponseEntity<List<BookResponse>> getBookAll() {
@@ -36,10 +39,13 @@ public class BooksController implements BookApi {
     }
 
     @Override
-    public List<BookResponse> getBook(
-        @RequestParam @NotBlank  String title
+    public List<BookResponse> getBookSearch(
+        @RequestParam @NotBlank String title,
+        @RequestParam(required = false) LocalDate releaseDateFrom,
+        @RequestParam(required = false) LocalDate releaseDateTo
     ) {
-        return bookService.searchByTitle(title);
+        validator.searchValidation(releaseDateFrom, releaseDateTo);
+        return bookService.search(title, releaseDateFrom, releaseDateTo);
     }
 
     @Override

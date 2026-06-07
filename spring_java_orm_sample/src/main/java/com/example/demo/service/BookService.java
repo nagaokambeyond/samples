@@ -5,6 +5,7 @@ import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import lombok.NonNull;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BookService {
@@ -12,7 +13,7 @@ public interface BookService {
 
     BookResponse findById(@NonNull Long id);
 
-    List<BookResponse> searchByTitle(@NonNull String keyword) ;
+    List<BookResponse> search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo) ;
 
     BookResponse create(@NonNull BookCreateRequest request) ;
 

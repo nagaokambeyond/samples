@@ -49,8 +49,15 @@ class BookServiceDomaTest {
     }
 
     @Test
-    void searchByTitleIgnoresCase() {
-        var books = bookService.searchByTitle("spring");
+    void searchIgnoresCase() {
+        final var books = bookService.search("spring", null, null);
+
+        assertThat(books).extracting("title").containsExactly("Spring入門");
+    }
+
+    @Test
+    void searchFiltersByReleaseDateRange() {
+        final var books = bookService.search("spring", LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 1));
 
         assertThat(books).extracting("title").containsExactly("Spring入門");
     }

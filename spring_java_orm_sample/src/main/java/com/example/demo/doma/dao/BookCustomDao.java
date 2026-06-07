@@ -5,6 +5,7 @@ import org.seasar.doma.Dao;
 import org.seasar.doma.Select;
 import org.seasar.doma.boot.ConfigAutowireable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Dao
@@ -14,7 +15,7 @@ public interface BookCustomDao {
     List<Book> selectAll();
 
     @Select
-    List<Book> selectByTitleContainingIgnoreCase(String keyword);
+    List<Book> selectByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo);
 
     @Select
     Book selectByIdWithWriteLock(Long id);

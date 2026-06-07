@@ -17,6 +17,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,8 +43,8 @@ public class BookServiceDoma implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookResponse> searchByTitle(@NonNull String keyword) {
-        return converter.toResponseFromDomaBooks(bookCustomDao.selectByTitleContainingIgnoreCase(keyword));
+    public List<BookResponse> search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo) {
+        return converter.toResponseFromDomaBooks(bookCustomDao.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo));
     }
 
     @Transactional

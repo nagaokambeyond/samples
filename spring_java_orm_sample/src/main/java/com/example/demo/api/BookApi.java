@@ -17,6 +17,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RequestMapping("/api/books")
@@ -47,9 +48,13 @@ public interface BookApi {
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
     })
-    List<BookResponse> getBook(
+    List<BookResponse> getBookSearch(
         @Parameter(description = "タイトル")
-        @RequestParam @NotBlank String title
+        @RequestParam @NotBlank String title,
+        @Parameter(description = "発売日付From")
+        @RequestParam(required = false) LocalDate releaseDateFrom,
+        @Parameter(description = "発売日付To")
+        @RequestParam(required = false) LocalDate releaseDateTo
     );
 
     @PostMapping("/create")
