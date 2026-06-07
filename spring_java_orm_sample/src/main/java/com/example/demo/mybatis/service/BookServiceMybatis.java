@@ -9,6 +9,7 @@ import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.entity.BookEntityExample;
 import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.mapper.BookCustomMapper;
+import com.example.demo.mybatis.validator.BookDataValidatorMybatis;
 import com.example.demo.service.BookService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class BookServiceMybatis implements BookService {
     private final BookMapper bookMapper;
     private final BookCustomMapper bookCustomMapper;
     private final BookConverter converter;
+    private final BookDataValidatorMybatis dataValidator;
 
     @Transactional(readOnly = true)
     @Override
@@ -49,6 +51,8 @@ public class BookServiceMybatis implements BookService {
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
+        dataValidator.foreignKeyValidate(request.getPublisherId());
+
         final var now = LocalDateTime.now();
         final var book = new BookEntity();
         book.setTitle(request.getTitle());
@@ -66,6 +70,8 @@ public class BookServiceMybatis implements BookService {
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
+        dataValidator.foreignKeyValidate(request.getPublisherId());
+
         final var book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(request.getId());
         if (book == null) {
             throw new RepositoryDataNotfoundException();

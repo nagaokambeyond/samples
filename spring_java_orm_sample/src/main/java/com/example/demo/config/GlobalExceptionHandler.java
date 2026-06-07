@@ -1,6 +1,7 @@
 package com.example.demo.config;
 
 import com.example.demo.exception.CorrelationValidationFailureException;
+import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -35,6 +36,16 @@ public class GlobalExceptionHandler {
         final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 
         problem.setTitle("相関バリデーション");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(ForeignKeyReferenceNotFoundException.class)
+    public ProblemDetail handleForeignKeyReferenceNotFoundException(ForeignKeyReferenceNotFoundException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        problem.setTitle("データバリデーション");
         problem.setDetail(ex.getMessage());
 
         return problem;

@@ -7,6 +7,7 @@ import com.example.demo.jpa.repository.BookRepository;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
+import com.example.demo.jpa.validator.BookDataValidatorJPA;
 import com.example.demo.service.BookService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import java.util.List;
 public class BookServiceJPA implements BookService {
     private final BookRepository bookRepository;
     private final BookConverter converter;
+    private final BookDataValidatorJPA dataValidator;
 
     @Transactional(readOnly = true)
     @Override
@@ -47,6 +49,8 @@ public class BookServiceJPA implements BookService {
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
+        dataValidator.foreignKeyValidate(request.getPublisherId());
+
         return converter.toResponse(
             bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), null, null, 1L))
         );
@@ -55,6 +59,8 @@ public class BookServiceJPA implements BookService {
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
+        dataValidator.foreignKeyValidate(request.getPublisherId());
+
         return bookRepository.findByIdWithWriteLock(request.getId())
             .map(b -> {
                 BookVersionValidator.validate(b, request.getVersion());

@@ -2,6 +2,7 @@ package com.example.demo.jpa.service;
 
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
+import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,12 @@ class BookServiceJPATest {
     }
 
     @Test
+    void createThrowsWhenPublisherDoesNotExist() {
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("JPA入門", "Jiro", LocalDate.of(2021, 1, 1), 999L)))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+    }
+
+    @Test
     void updateChangesBookAndUpdateAt() {
         final var before = bookService.findById(1L);
         final var releaseDate = LocalDate.of(2021, 2, 1);
@@ -91,6 +98,14 @@ class BookServiceJPATest {
         assertThat(saved.getPublisherId()).isEqualTo(2L);
         assertThat(saved.getUpdateAt()).isAfter(before.getUpdateAt());
         assertThat(saved.getVersion()).isEqualTo(before.getVersion() + 1);
+    }
+
+    @Test
+    void updateThrowsWhenPublisherDoesNotExist() {
+        final var before = bookService.findById(1L);
+
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, before.getVersion())))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
     }
 
     @Test

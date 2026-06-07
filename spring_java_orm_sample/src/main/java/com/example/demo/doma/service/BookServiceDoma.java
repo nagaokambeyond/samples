@@ -7,6 +7,7 @@ import com.example.demo.converter.BookConverter;
 import com.example.demo.doma.dao.BookCustomDao;
 import com.example.demo.doma.generator.dao.BookDao;
 import com.example.demo.doma.generator.entity.Book;
+import com.example.demo.doma.validator.BookDataValidatorDoma;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.service.BookService;
 import lombok.NonNull;
@@ -28,6 +29,7 @@ public class BookServiceDoma implements BookService {
     private final BookDao bookDao;
     private final BookCustomDao bookCustomDao;
     private final BookConverter converter;
+    private final BookDataValidatorDoma dataValidator;
 
     @Transactional(readOnly = true)
     @Override
@@ -50,6 +52,8 @@ public class BookServiceDoma implements BookService {
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
+        dataValidator.foreignKeyValidate(request.getPublisherId());
+
         final var now = LocalDateTime.now();
         final var book = new Book();
         book.setTitle(request.getTitle());
@@ -67,6 +71,8 @@ public class BookServiceDoma implements BookService {
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
+        dataValidator.foreignKeyValidate(request.getPublisherId());
+
         final var book = bookCustomDao.selectByIdWithWriteLock(request.getId());
         if (book == null) {
             throw new RepositoryDataNotfoundException();

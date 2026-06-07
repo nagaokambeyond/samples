@@ -2,6 +2,7 @@ package com.example.demo.mybatis.service;
 
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
+import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,12 @@ class BookServiceMybatisTest {
     }
 
     @Test
+    void createThrowsWhenPublisherDoesNotExist() {
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L)))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+    }
+
+    @Test
     void updateChangesBookAndUpdateAt() {
         final var before = bookService.findById(1L);
         final var releaseDate = LocalDate.of(2021, 2, 1);
@@ -83,6 +90,14 @@ class BookServiceMybatisTest {
         assertThat(updated.getPublisherId()).isEqualTo(2L);
         assertThat(updated.getUpdateAt()).isAfter(before.getUpdateAt());
         assertThat(updated.getVersion()).isEqualTo(before.getVersion() + 1);
+    }
+
+    @Test
+    void updateThrowsWhenPublisherDoesNotExist() {
+        final var before = bookService.findById(1L);
+
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, before.getVersion())))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
     }
 
     @Test
