@@ -53,6 +53,7 @@ public class BookServiceDoma implements BookService {
         final var book = new Book();
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
+        book.setReleaseDate(request.getReleaseDate());
         book.setCreateAt(now);
         book.setUpdateAt(now);
         book.setVersion(1L);
@@ -72,6 +73,7 @@ public class BookServiceDoma implements BookService {
         BookVersionValidator.validate(book, request.getVersion());
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
+        book.setReleaseDate(request.getReleaseDate());
         book.setUpdateAt(LocalDateTime.now());
 
         try {

@@ -10,6 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,32 +55,36 @@ class BookServiceJPATest {
 
     @Test
     void createReturnsGeneratedIdAndResponse() {
-        final var book = bookService.create(new BookCreateRequest("JPA入門", "Jiro"));
+        final var releaseDate = LocalDate.of(2021, 1, 1);
+        final var book = bookService.create(new BookCreateRequest("JPA入門", "Jiro", releaseDate));
 
         assertThat(book.getId()).isNotNull();
         assertThat(book.getTitle()).isEqualTo("JPA入門");
         assertThat(book.getAuthor()).isEqualTo("Jiro");
+        assertThat(book.getReleaseDate()).isEqualTo(releaseDate);
         assertThat(book.getVersion()).isEqualTo(1L);
     }
 
     @Test
     void updateChangesBookAndUpdateAt() {
         final var before = bookService.findById(1L);
+        final var releaseDate = LocalDate.of(2021, 2, 1);
 
-        final var updated = bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", before.getVersion()));
+        final var updated = bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", releaseDate, before.getVersion()));
         entityManager.flush();
         entityManager.clear();
         final var saved = bookService.findById(1L);
 
         assertThat(updated.getTitle()).isEqualTo("JPA更新");
         assertThat(updated.getAuthor()).isEqualTo("Saburo");
+        assertThat(saved.getReleaseDate()).isEqualTo(releaseDate);
         assertThat(saved.getUpdateAt()).isAfter(before.getUpdateAt());
         assertThat(saved.getVersion()).isEqualTo(before.getVersion() + 1);
     }
 
     @Test
     void updateThrowsWhenVersionIsStale() {
-        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", -1L)))
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", LocalDate.of(2021, 2, 1), -1L)))
             .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     }
 

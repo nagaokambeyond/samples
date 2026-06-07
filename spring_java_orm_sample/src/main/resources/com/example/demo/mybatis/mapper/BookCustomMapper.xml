@@ -5,13 +5,14 @@
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="title" jdbcType="VARCHAR" property="title" />
     <result column="author" jdbcType="VARCHAR" property="author" />
+    <result column="release_date" jdbcType="DATE" property="releaseDate" />
     <result column="create_at" jdbcType="TIMESTAMP" property="createAt" />
     <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
     <result column="version" jdbcType="BIGINT" property="version" />
   </resultMap>
 
   <sql id="Book_Columns">
-    id, title, author, create_at, update_at, version
+    id, title, author, release_date, create_at, update_at, version
   </sql>
 
   <select id="selectByTitleContainingIgnoreCase" parameterType="java.lang.String" resultMap="BookEntityResultMap">
@@ -31,10 +32,11 @@
   </select>
 
   <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">
-    insert into book (title, author, create_at, update_at, version)
+    insert into book (title, author, release_date, create_at, update_at, version)
     values (
       #{title,jdbcType=VARCHAR},
       #{author,jdbcType=VARCHAR},
+      #{releaseDate,jdbcType=DATE},
       #{createAt,jdbcType=TIMESTAMP},
       #{updateAt,jdbcType=TIMESTAMP},
       #{version,jdbcType=BIGINT}

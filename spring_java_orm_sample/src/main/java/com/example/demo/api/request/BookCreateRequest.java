@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Value;
 
+import java.time.LocalDate;
+
 @Value
 public class BookCreateRequest {
     @NotNull
@@ -15,4 +17,8 @@ public class BookCreateRequest {
     @Size(max = 200)
     @Schema(description = "著者", type = "string")
     String author;
+
+    @NotNull
+    @Schema(description = "発売日付", type = "string", format ="date")
+    LocalDate releaseDate;
 }

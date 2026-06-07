@@ -1,5 +1,6 @@
 package com.example.demo.doma.generator.entity;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.seasar.doma.Column;
 import org.seasar.doma.Entity;
@@ -30,6 +31,10 @@ public class Book extends AbstractBook {
     /** 著者 */
     @Column(name = "author")
     String author;
+
+    /** 発売日付 */
+    @Column(name = "release_date")
+    LocalDate releaseDate;
 
     /** 作成日時 */
     @Column(name = "create_at")
@@ -96,6 +101,24 @@ public class Book extends AbstractBook {
      */
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    /** 
+     * Returns the releaseDate.
+     * 
+     * @return the releaseDate
+     */
+    public LocalDate getReleaseDate() {
+        return releaseDate;
+    }
+
+    /** 
+     * Sets the releaseDate.
+     * 
+     * @param releaseDate the releaseDate
+     */
+    public void setReleaseDate(LocalDate releaseDate) {
+        this.releaseDate = releaseDate;
     }
 
     /** 

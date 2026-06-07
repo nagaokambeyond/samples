@@ -52,6 +52,7 @@ public class BookServiceMybatis implements BookService {
         final var book = new BookEntity();
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
+        book.setReleaseDate(request.getReleaseDate());
         book.setCreateAt(now);
         book.setUpdateAt(now);
         book.setVersion(1L);
@@ -71,6 +72,7 @@ public class BookServiceMybatis implements BookService {
         BookVersionValidator.validate(book, request.getVersion());
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
+        book.setReleaseDate(request.getReleaseDate());
         book.setUpdateAt(LocalDateTime.now());
         book.setVersion(book.getVersion() + 1);
 

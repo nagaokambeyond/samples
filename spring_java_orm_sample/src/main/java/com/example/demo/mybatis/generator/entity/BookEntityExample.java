@@ -1,63 +1,64 @@
 package com.example.demo.mybatis.generator.entity;
 
 import jakarta.annotation.Generated;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BookEntityExample {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976649+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.24599+09:00", comments="Source Table: book")
     protected String orderByClause;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976876+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246406+09:00", comments="Source Table: book")
     protected boolean distinct;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976932+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246477+09:00", comments="Source Table: book")
     protected List<Criteria> oredCriteria;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976382+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.245731+09:00", comments="Source Table: book")
     public BookEntityExample() {
         oredCriteria = new ArrayList<>();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976748+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246228+09:00", comments="Source Table: book")
     public void setOrderByClause(String orderByClause) {
         this.orderByClause = orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976758+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246255+09:00", comments="Source Table: book")
     public String getOrderByClause() {
         return orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976887+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246437+09:00", comments="Source Table: book")
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976902+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246449+09:00", comments="Source Table: book")
     public boolean isDistinct() {
         return distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.97694+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246499+09:00", comments="Source Table: book")
     public List<Criteria> getOredCriteria() {
         return oredCriteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976982+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246582+09:00", comments="Source Table: book")
     public void or(Criteria criteria) {
         oredCriteria.add(criteria);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976992+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246595+09:00", comments="Source Table: book")
     public Criteria or() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.976999+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246606+09:00", comments="Source Table: book")
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
@@ -66,20 +67,20 @@ public class BookEntityExample {
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.977006+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246617+09:00", comments="Source Table: book")
     protected Criteria createCriteriaInternal() {
         Criteria criteria = new Criteria();
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.977013+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246627+09:00", comments="Source Table: book")
     public void clear() {
         oredCriteria.clear();
         orderByClause = null;
         distinct = false;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.97706+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.246696+09:00", comments="Source Table: book")
     protected abstract static class GeneratedCriteria {
         protected List<Criterion> criteria;
 
@@ -321,6 +322,66 @@ public class BookEntityExample {
             return (Criteria) this;
         }
 
+        public Criteria andReleaseDateIsNull() {
+            addCriterion("release_date is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateIsNotNull() {
+            addCriterion("release_date is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateEqualTo(LocalDate value) {
+            addCriterion("release_date =", value, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateNotEqualTo(LocalDate value) {
+            addCriterion("release_date <>", value, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateGreaterThan(LocalDate value) {
+            addCriterion("release_date >", value, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateGreaterThanOrEqualTo(LocalDate value) {
+            addCriterion("release_date >=", value, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateLessThan(LocalDate value) {
+            addCriterion("release_date <", value, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateLessThanOrEqualTo(LocalDate value) {
+            addCriterion("release_date <=", value, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateIn(List<LocalDate> values) {
+            addCriterion("release_date in", values, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateNotIn(List<LocalDate> values) {
+            addCriterion("release_date not in", values, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateBetween(LocalDate value1, LocalDate value2) {
+            addCriterion("release_date between", value1, value2, "releaseDate");
+            return (Criteria) this;
+        }
+
+        public Criteria andReleaseDateNotBetween(LocalDate value1, LocalDate value2) {
+            addCriterion("release_date not between", value1, value2, "releaseDate");
+            return (Criteria) this;
+        }
+
         public Criteria andCreateAtIsNull() {
             addCriterion("create_at is null");
             return (Criteria) this;
@@ -502,14 +563,14 @@ public class BookEntityExample {
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.977996+09:00", comments="do_not_delete_during_merge")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.247672+09:00", comments="do_not_delete_during_merge")
     public static class Criteria extends GeneratedCriteria {
         protected Criteria() {
             super();
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T00:19:50.978023+09:00", comments="Source Table: book")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-07T09:31:55.247732+09:00", comments="Source Table: book")
     public static class Criterion {
         private String condition;
 

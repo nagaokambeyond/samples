@@ -8,10 +8,13 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "book", comment = "本")
+@Table(name = "book", comment = "本", indexes ={
+    @Index(name = "idx_book_01", columnList = "release_date")
+})
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
@@ -27,6 +30,10 @@ public class Book {
 
     @Column(length = 200, comment = "著者")
     private String author;
+
+    @Column(comment = "発売日付")
+    @NotNull
+    private LocalDate releaseDate;
 
     @Column(comment = "作成日時")
     @CreatedDate

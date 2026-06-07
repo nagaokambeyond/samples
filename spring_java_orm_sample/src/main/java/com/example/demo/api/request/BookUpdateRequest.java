@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Value;
 
+import java.time.LocalDate;
+
 @Value
 public class BookUpdateRequest{
     @NotNull
@@ -17,6 +19,10 @@ public class BookUpdateRequest{
     @Schema(description = "著者", type = "string")
     @Size(max = 200)
     String author;
+
+    @NotNull
+    @Schema(description = "発売日付", type = "string", format ="date")
+    LocalDate releaseDate;
 
     @PositiveOrZero
     @NotNull
