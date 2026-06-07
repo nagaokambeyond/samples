@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Primary
@@ -74,7 +75,7 @@ public class BookServiceDoma implements BookService {
         dataValidator.foreignKeyValidate(request.getPublisherId());
 
         final var book = bookCustomDao.selectByIdWithWriteLock(request.getId());
-        if (book == null) {
+        if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }
 
@@ -97,7 +98,7 @@ public class BookServiceDoma implements BookService {
     @Override
     public void delete(@NonNull Long id) {
         final var book = bookCustomDao.selectByIdWithWriteLock(id);
-        if (book == null) {
+        if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }
 
@@ -110,7 +111,7 @@ public class BookServiceDoma implements BookService {
 
     private Book findEntityById(Long id) {
         final var book = bookDao.selectById(id);
-        if (book == null) {
+        if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }
         return book;

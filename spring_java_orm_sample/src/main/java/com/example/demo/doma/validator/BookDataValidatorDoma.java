@@ -5,6 +5,8 @@ import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 public class BookDataValidatorDoma {
@@ -12,7 +14,7 @@ public class BookDataValidatorDoma {
 
     public void foreignKeyValidate(Long publisherId){
         final var publisher = publisherDao.selectById(publisherId);
-        if (publisher == null) {
+        if (Objects.isNull(publisher)) {
             throw new ForeignKeyReferenceNotFoundException();
         }
     }

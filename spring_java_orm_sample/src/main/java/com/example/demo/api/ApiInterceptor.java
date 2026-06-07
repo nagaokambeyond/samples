@@ -7,6 +7,8 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.Objects;
+
 @Configuration
 @Slf4j
 public class ApiInterceptor implements HandlerInterceptor {
@@ -45,7 +47,7 @@ public class ApiInterceptor implements HandlerInterceptor {
 
     private String getQueryString(final HttpServletRequest request) {
         final var queryString = request.getQueryString();
-        if (queryString == null) {
+        if (Objects.isNull(queryString)) {
             return "";
         }
         return "?" + queryString;

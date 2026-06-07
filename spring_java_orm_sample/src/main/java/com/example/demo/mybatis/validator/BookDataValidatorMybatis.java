@@ -5,6 +5,8 @@ import com.example.demo.mybatis.generator.mapper.PublisherMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 @RequiredArgsConstructor
 public class BookDataValidatorMybatis {
@@ -12,7 +14,7 @@ public class BookDataValidatorMybatis {
 
     public void foreignKeyValidate(Long publisherId) {
         final var publisher = publisherMapper.selectByPrimaryKey(publisherId);
-        if (publisher == null) {
+        if (Objects.isNull(publisher)) {
             throw new ForeignKeyReferenceNotFoundException();
         }
     }

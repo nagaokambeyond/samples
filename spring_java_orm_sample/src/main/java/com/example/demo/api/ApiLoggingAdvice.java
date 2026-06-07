@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAd
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
@@ -87,7 +88,7 @@ public class ApiLoggingAdvice extends RequestBodyAdviceAdapter implements Respon
     }
 
     private String toJson(final @Nullable Object body) {
-        if (body == null) {
+        if (Objects.isNull(body)) {
             return "null";
         }
         try {

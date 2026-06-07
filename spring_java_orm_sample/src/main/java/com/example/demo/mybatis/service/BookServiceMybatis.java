@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -73,7 +74,7 @@ public class BookServiceMybatis implements BookService {
         dataValidator.foreignKeyValidate(request.getPublisherId());
 
         final var book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(request.getId());
-        if (book == null) {
+        if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }
 
@@ -93,7 +94,7 @@ public class BookServiceMybatis implements BookService {
     @Override
     public void delete(@NonNull Long id) {
         final var book = bookCustomMapper.selectByPrimaryKeyWithWriteLock(id);
-        if (book == null) {
+        if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }
 
@@ -102,7 +103,7 @@ public class BookServiceMybatis implements BookService {
 
     private BookEntity findEntityById(Long id) {
         final var book = bookMapper.selectByPrimaryKey(id);
-        if (book == null) {
+        if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }
         return book;
