@@ -1,6 +1,15 @@
 # spec
 http://localhost:8080/swagger-ui/index.html#/
+
 http://localhost:8080/scalar
+
+# gradleのタスク
+
+```shell
+./gradlew domaCodeGenAll
+./gradlew runMyBatisGenerator
+./gradlew test
+```
 
 # リクエストサンプル
 
@@ -17,7 +26,8 @@ curl -X POST "http://localhost:8080/api/books/create" \
 -H "Content-Type: application/json" \
 -d '{
 "title": "あああ入門",
-"author": "いいい太郎"
+"author": "いいい太郎",
+"releaseDate": "2021-01-01"
 }'
 ```
 
@@ -28,6 +38,7 @@ curl -X POST "http://localhost:8080/api/books/update" \
 "id":1 ,
 "title": "かかか入門",
 "author": "ききき太郎",
+"releaseDate": "2021-02-01",
 "version": 0
 }'
 ```
@@ -39,6 +50,7 @@ curl -X POST "http://localhost:8080/api/books/update" \
 "id":"a" ,
 "title": "かかか入門",
 "author": "ききき太郎",
+"releaseDate": "2021-02-01",
 "version": 0
 }'
 ```
@@ -50,6 +62,7 @@ curl -X POST "http://localhost:8080/api/books/update" \
 "id":9999 ,
 "title": "かかか入門",
 "author": "ききき太郎",
+"releaseDate": "2021-02-01",
 "version": 0
 }'
 ```
