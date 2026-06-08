@@ -79,7 +79,7 @@ public class BookServiceDoma implements BookService {
             throw new RepositoryDataNotfoundException();
         }
 
-        BookVersionValidator.validate(book, request.getVersion());
+        dataValidator.versionValidate(book, request.getVersion());
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setReleaseDate(request.getReleaseDate());

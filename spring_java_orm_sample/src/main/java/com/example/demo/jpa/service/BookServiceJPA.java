@@ -63,7 +63,7 @@ public class BookServiceJPA implements BookService {
 
         return bookRepository.findByIdWithWriteLock(request.getId())
             .map(b -> {
-                BookVersionValidator.validate(b, request.getVersion());
+                dataValidator.versionValidate(b, request.getVersion());
                 b.setTitle(request.getTitle());
                 b.setAuthor(request.getAuthor());
                 b.setReleaseDate(request.getReleaseDate());
