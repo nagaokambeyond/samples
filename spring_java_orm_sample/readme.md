@@ -22,6 +22,10 @@ curl -X GET "http://localhost:8080/api/books/1"
 ```
 
 ```shell
+curl -X GET "http://localhost:8080/api/books/search?title=Spring&page=0&size=10"
+```
+
+```shell
 curl -X POST "http://localhost:8080/api/books/create" \
 -H "Content-Type: application/json" \
 -d '{

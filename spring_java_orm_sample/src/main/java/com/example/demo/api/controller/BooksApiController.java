@@ -2,12 +2,14 @@ package com.example.demo.api.controller;
 
 
 import com.example.demo.api.BookApi;
+import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.validator.BookApiControllerValidator;
 import com.example.demo.service.BookService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -39,13 +41,15 @@ public class BooksApiController implements BookApi {
     }
 
     @Override
-    public List<BookResponse> getBookSearch(
+    public BookPageResponse getBookSearch(
         @RequestParam @NotBlank String title,
         @RequestParam(required = false) LocalDate releaseDateFrom,
-        @RequestParam(required = false) LocalDate releaseDateTo
+        @RequestParam(required = false) LocalDate releaseDateTo,
+        @RequestParam @NotNull @Min(0) Integer page,
+        @RequestParam @NotNull @Min(1) Integer size
     ) {
         validator.searchValidation(releaseDateFrom, releaseDateTo);
-        return bookService.search(title, releaseDateFrom, releaseDateTo);
+        return bookService.search(title, releaseDateFrom, releaseDateTo, page, size);
     }
 
     @Override

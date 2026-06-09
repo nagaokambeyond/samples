@@ -31,7 +31,7 @@ class BookServiceDomaTest {
         var books = bookService.findAll();
 
         assertThat(books).hasSizeGreaterThanOrEqualTo(2);
-        assertThat(books).extracting("id").containsExactly(1L, 2L);
+        assertThat(books).extracting("id").startsWith(1L, 2L);
     }
 
     @Test
@@ -51,16 +51,57 @@ class BookServiceDomaTest {
 
     @Test
     void searchIgnoresCase() {
-        final var books = bookService.search("spring", null, null);
+        final var books = bookService.search("spring", null, null, 0, 10);
 
-        assertThat(books).extracting("title").containsExactly("Spring入門");
+        assertThat(books.getContent()).extracting("title").contains("Spring入門");
+        assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(1);
+        assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
     }
 
     @Test
     void searchFiltersByReleaseDateRange() {
-        final var books = bookService.search("spring", LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 1));
+        final var books = bookService.search("spring", LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 1), 0, 10);
 
-        assertThat(books).extracting("title").containsExactly("Spring入門");
+        assertThat(books.getContent()).extracting("title").contains("Spring入門");
+    }
+
+    @Test
+    void searchReturnsFirstPageAndMetadata() {
+        final var books = bookService.search("はじめて", null, null, 0, 2);
+
+        assertThat(books.getContent()).extracting("id").containsExactly(2L, 3L);
+        assertThat(books.getPage()).isEqualTo(0);
+        assertThat(books.getSize()).isEqualTo(2);
+        assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(20);
+        assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
+    }
+
+    @Test
+    void searchReturnsSecondPage() {
+        final var books = bookService.search("はじめて", null, null, 1, 2);
+
+        assertThat(books.getContent()).extracting("id").containsExactly(4L, 5L);
+    }
+
+    @Test
+    void searchReturnsEmptyContentWhenPageOutOfRange() {
+        final var firstPage = bookService.search("はじめて", null, null, 0, 2);
+        final var books = bookService.search("はじめて", null, null, firstPage.getTotalPages(), 2);
+
+        assertThat(books.getContent()).isEmpty();
+        assertThat(books.getPage()).isEqualTo(firstPage.getTotalPages());
+        assertThat(books.getSize()).isEqualTo(2);
+        assertThat(books.getTotalElements()).isEqualTo(firstPage.getTotalElements());
+        assertThat(books.getTotalPages()).isEqualTo(firstPage.getTotalPages());
+    }
+
+    @Test
+    void searchAppliesReleaseDateRangeWithPaging() {
+        final var books = bookService.search("はじめて", LocalDate.of(2020, 2, 1), LocalDate.of(2020, 2, 1), 0, 3);
+
+        assertThat(books.getContent()).extracting("id").containsExactly(2L, 3L, 4L);
+        assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(20);
+        assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
     }
 
     @Test
@@ -103,5 +144,12 @@ class BookServiceDomaTest {
 
         assertThatThrownBy(() -> bookService.findById(1L))
             .isInstanceOf(RepositoryDataNotfoundException.class);
+    }
+
+    private int calculateTotalPages(long totalElements, int size) {
+        if (totalElements == 0) {
+            return 0;
+        }
+        return (int) ((totalElements + size - 1) / size);
     }
 }

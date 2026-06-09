@@ -2,13 +2,14 @@ package com.example.demo.jpa.repository;
 
 import com.example.demo.jpa.entity.Book;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
@@ -20,10 +21,11 @@ public interface BookRepository extends JpaRepository<Book, Long> {
           AND (:releaseDateTo IS NULL OR b.releaseDate <= :releaseDateTo)
         ORDER BY b.id
         """)
-    List<Book> findByTitleContainingIgnoreCase(
+    Page<Book> findByTitleContainingIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
-        @Param("releaseDateTo") LocalDate releaseDateTo
+        @Param("releaseDateTo") LocalDate releaseDateTo,
+        Pageable pageable
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -1,5 +1,6 @@
 package com.example.demo.jpa.service;
 
+import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.converter.BookConverter;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.jpa.entity.Book;
@@ -11,6 +12,7 @@ import com.example.demo.jpa.validator.BookDataValidatorJPA;
 import com.example.demo.service.BookService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,9 +42,14 @@ public class BookServiceJPA implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookResponse> search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo) {
-        return converter.toResponse(
-            bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo)
+    public BookPageResponse search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
+        final var books = bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, PageRequest.of(page, size));
+        return new BookPageResponse(
+            converter.toResponse(books.getContent()),
+            page,
+            size,
+            books.getTotalElements(),
+            books.getTotalPages()
         );
     }
 

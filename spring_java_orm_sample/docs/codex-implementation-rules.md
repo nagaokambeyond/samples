@@ -7,3 +7,5 @@
 - 既存の未コミット変更を勝手に戻さない。
 - メソッド内の変数宣言には、final varを積極的に使う。
 - LocalDatetime.now()を頻繁に行わない。
+- recordにしたいところでは、lombokの`@value`をつけたclassにする。
+- APIのリクエスト、レスポンス項目にあるListには`@NotNull`を付ける。

@@ -4,3 +4,22 @@ INSERT INTO publisher (publisher_name, create_at, update_at, version) VALUES ('�
 
 INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('Spring入門', 'Taro', '2020-01-01', 1, '2026-01-01', '2026-01-01', 0);
 INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH2', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH3', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH4', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH5', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH6', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH7', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH8', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH9', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH10', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH11', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH12', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH13', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH14', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH15', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH16', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH17', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH18', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH19', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH20', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);
+INSERT INTO book (title, author, release_date, publisher_id, create_at, update_at, version) VALUES ('はじめてのH21', 'Hanako', '2020-02-01', 2, '2026-01-01', '2026-01-01 23:59:59', 0);

@@ -1,5 +1,6 @@
 package com.example.demo.mybatis.service;
 
+import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
@@ -45,8 +46,17 @@ public class BookServiceMybatis implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookResponse> search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo) {
-        return converter.toResponseFromBookEntities(bookCustomMapper.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo));
+    public BookPageResponse search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
+        final var offset = (long) page * size;
+        final var books = bookCustomMapper.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
+        final var totalElements = bookCustomMapper.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
+        return new BookPageResponse(
+            converter.toResponseFromBookEntities(books),
+            page,
+            size,
+            totalElements,
+            calculateTotalPages(totalElements, size)
+        );
     }
 
     @Transactional
@@ -107,5 +117,12 @@ public class BookServiceMybatis implements BookService {
             throw new RepositoryDataNotfoundException();
         }
         return book;
+    }
+
+    private int calculateTotalPages(long totalElements, int size) {
+        if (totalElements == 0) {
+            return 0;
+        }
+        return (int) ((totalElements + size - 1) / size);
     }
 }

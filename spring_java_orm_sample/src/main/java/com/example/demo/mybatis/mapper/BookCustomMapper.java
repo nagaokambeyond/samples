@@ -12,6 +12,14 @@ public interface BookCustomMapper {
     List<BookEntity> selectByTitleContainingIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
+        @Param("releaseDateTo") LocalDate releaseDateTo,
+        @Param("limit") int limit,
+        @Param("offset") long offset
+    );
+
+    long countByTitleContainingIgnoreCase(
+        @Param("keyword") String keyword,
+        @Param("releaseDateFrom") LocalDate releaseDateFrom,
         @Param("releaseDateTo") LocalDate releaseDateTo
     );
 

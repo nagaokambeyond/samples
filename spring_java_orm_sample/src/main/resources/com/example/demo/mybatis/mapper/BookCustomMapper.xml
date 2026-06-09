@@ -25,6 +25,17 @@
       and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
     </if>
     order by id
+    limit #{limit,jdbcType=INTEGER}
+    offset #{offset,jdbcType=BIGINT}
+  </select>
+
+  <select id="countByTitleContainingIgnoreCase" resultType="long">
+    select count(*)
+    from book
+    where lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    <if test="releaseDateFrom != null and releaseDateTo != null">
+      and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
+    </if>
   </select>
 
   <select id="selectByPrimaryKeyWithWriteLock" parameterType="java.lang.Long" resultMap="BookEntityResultMap">

@@ -15,7 +15,10 @@ public interface BookCustomDao {
     List<Book> selectAll();
 
     @Select
-    List<Book> selectByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo);
+    List<Book> selectByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int limit, long offset);
+
+    @Select
+    long countByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo);
 
     @Select
     Book selectByIdWithWriteLock(Long id);

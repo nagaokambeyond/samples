@@ -2,6 +2,7 @@ package com.example.demo.api;
 
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
+import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ProblemDetail;
@@ -48,13 +50,17 @@ public interface BookApi {
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
     })
-    List<BookResponse> getBookSearch(
+    BookPageResponse getBookSearch(
         @Parameter(description = "タイトル")
         @RequestParam @NotBlank String title,
         @Parameter(description = "発売日付From")
         @RequestParam(required = false) LocalDate releaseDateFrom,
         @Parameter(description = "発売日付To")
-        @RequestParam(required = false) LocalDate releaseDateTo
+        @RequestParam(required = false) LocalDate releaseDateTo,
+        @Parameter(description = "ページ番号（0始まり）")
+        @RequestParam @NotNull @Min(0) Integer page,
+        @Parameter(description = "1ページあたりの件数")
+        @RequestParam @NotNull @Min(1) Integer size
     );
 
     @PostMapping("/create")
