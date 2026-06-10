@@ -10,7 +10,6 @@ import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,7 +41,7 @@ public class BooksApiController implements BookApi {
 
     @Override
     public BookPageResponse getBookSearch(
-        @RequestParam @NotBlank String title,
+        @RequestParam(required = false) String title,
         @RequestParam(required = false) LocalDate releaseDateFrom,
         @RequestParam(required = false) LocalDate releaseDateTo,
         @RequestParam @NotNull @Min(0) Integer page,

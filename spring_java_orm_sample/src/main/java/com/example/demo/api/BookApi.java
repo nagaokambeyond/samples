@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +51,7 @@ public interface BookApi {
     })
     BookPageResponse getBookSearch(
         @Parameter(description = "タイトル")
-        @RequestParam @NotBlank String title,
+        @RequestParam(required = false) String title,
         @Parameter(description = "発売日付From")
         @RequestParam(required = false) LocalDate releaseDateFrom,
         @Parameter(description = "発売日付To")

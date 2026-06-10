@@ -14,7 +14,7 @@ public interface BookService {
 
     BookResponse findById(@NonNull Long id);
 
-    BookPageResponse search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) ;
+    BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) ;
 
     BookResponse create(@NonNull BookCreateRequest request) ;
 

@@ -43,7 +43,7 @@ public class BookServiceMybatis implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public BookPageResponse search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
+    public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
         final var offset = (long) page * size;
         final var books = bookCustomMapper.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomMapper.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);

@@ -42,7 +42,7 @@ public class BookServiceJPA implements BookService {
 
     @Transactional(readOnly = true)
     @Override
-    public BookPageResponse search(@NonNull String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
+    public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
         final var books = bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, PageRequest.of(page, size));
         return new BookPageResponse(
             converter.toResponse(books.getContent()),

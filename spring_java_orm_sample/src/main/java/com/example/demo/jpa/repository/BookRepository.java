@@ -58,7 +58,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                b.version AS version
         FROM Book b
         JOIN Publisher p ON b.publisherId = p.id
-        WHERE lower(b.title) LIKE lower(concat('%', :keyword, '%'))
+        WHERE (:keyword IS NULL OR trim(:keyword) = '' OR lower(b.title) LIKE lower(concat('%', :keyword, '%')))
           AND (:releaseDateFrom IS NULL OR b.releaseDate >= :releaseDateFrom)
           AND (:releaseDateTo IS NULL OR b.releaseDate <= :releaseDateTo)
         ORDER BY b.id
@@ -66,7 +66,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         countQuery = """
         SELECT count(b)
         FROM Book b
-        WHERE lower(b.title) LIKE lower(concat('%', :keyword, '%'))
+        WHERE (:keyword IS NULL OR trim(:keyword) = '' OR lower(b.title) LIKE lower(concat('%', :keyword, '%')))
           AND (:releaseDateFrom IS NULL OR b.releaseDate >= :releaseDateFrom)
           AND (:releaseDateTo IS NULL OR b.releaseDate <= :releaseDateTo)
         """)

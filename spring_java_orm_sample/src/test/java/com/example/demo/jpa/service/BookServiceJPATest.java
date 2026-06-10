@@ -72,6 +72,24 @@ class BookServiceJPATest {
     }
 
     @Test
+    void searchDoesNotFilterByTitleWhenKeywordIsNull() {
+        final var books = bookService.search(null, null, null, 0, 2);
+
+        assertThat(books.getContent()).extracting("id").containsExactly(1L, 2L);
+        assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(21);
+        assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
+    }
+
+    @Test
+    void searchDoesNotFilterByTitleWhenKeywordIsBlank() {
+        final var books = bookService.search("   ", null, null, 0, 2);
+
+        assertThat(books.getContent()).extracting("id").containsExactly(1L, 2L);
+        assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(21);
+        assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
+    }
+
+    @Test
     void searchReturnsFirstPageAndMetadata() {
         final var books = bookService.search("はじめて", null, null, 0, 2);
 

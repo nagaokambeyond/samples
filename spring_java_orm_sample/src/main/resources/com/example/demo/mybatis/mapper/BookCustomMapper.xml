@@ -52,7 +52,10 @@
     <include refid="Book_With_Publisher_Name_Columns" />
     from book b
     inner join publisher p on b.publisher_id = p.id
-    where lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    where 1 = 1
+    <if test="keyword != null and keyword.trim() != ''">
+      and lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    </if>
     <if test="releaseDateFrom != null and releaseDateTo != null">
       and b.release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
     </if>
@@ -64,7 +67,10 @@
   <select id="countByTitleContainingIgnoreCase" resultType="long">
     select count(*)
     from book
-    where lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    where 1 = 1
+    <if test="keyword != null and keyword.trim() != ''">
+      and lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    </if>
     <if test="releaseDateFrom != null and releaseDateTo != null">
       and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
     </if>

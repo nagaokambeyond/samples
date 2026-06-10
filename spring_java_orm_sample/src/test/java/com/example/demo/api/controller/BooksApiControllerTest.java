@@ -26,6 +26,13 @@ class BooksApiControllerTest {
     }
 
     @Test
+    void getBookSearchReturnsOkWhenTitleIsMissing() throws Exception {
+        final var response = get("/api/books/search?page=0&size=10");
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
     void getBookSearchReturnsBadRequestWhenPageIsNegative() throws Exception {
         final var response = get("/api/books/search?title=spring&page=-1&size=10");
 
