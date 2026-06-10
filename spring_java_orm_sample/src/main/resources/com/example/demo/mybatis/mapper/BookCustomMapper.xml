@@ -75,7 +75,7 @@
     <include refid="Book_Columns" />
     from book
     where id = #{id,jdbcType=BIGINT}
-    for update
+    for update nowait
   </select>
 
   <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">

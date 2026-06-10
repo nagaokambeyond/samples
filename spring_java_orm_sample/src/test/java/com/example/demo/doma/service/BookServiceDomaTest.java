@@ -1,5 +1,6 @@
 package com.example.demo.doma.service;
 
+import com.example.demo.BookRowLock;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.exception.RepositoryDataNotfoundException;
@@ -7,9 +8,11 @@ import com.example.demo.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class BookServiceDomaTest {
     @Autowired
     private BookService bookService;
+
+    @Autowired
+    private DataSource dataSource;
 
     @Test
     void usesDomaAsPrimaryBookService() {
@@ -143,11 +149,29 @@ class BookServiceDomaTest {
     }
 
     @Test
+    void updateThrowsWhenWriteLockCannotBeAcquired() throws Exception {
+        final var before = bookService.findById(1L);
+
+        try (final var ignored = BookRowLock.acquire(dataSource, 1L)) {
+            assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "Doma更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, before.getVersion())))
+                .isInstanceOf(PessimisticLockingFailureException.class);
+        }
+    }
+
+    @Test
     void deleteRemovesBook() {
         bookService.delete(1L);
 
         assertThatThrownBy(() -> bookService.findById(1L))
             .isInstanceOf(RepositoryDataNotfoundException.class);
+    }
+
+    @Test
+    void deleteThrowsWhenWriteLockCannotBeAcquired() throws Exception {
+        try (final var ignored = BookRowLock.acquire(dataSource, 1L)) {
+            assertThatThrownBy(() -> bookService.delete(1L))
+                .isInstanceOf(PessimisticLockingFailureException.class);
+        }
     }
 
     private int calculateTotalPages(long totalElements, int size) {

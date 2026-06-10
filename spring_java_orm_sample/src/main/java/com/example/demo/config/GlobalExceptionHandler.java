@@ -4,6 +4,7 @@ import com.example.demo.exception.CorrelationValidationFailureException;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -24,6 +25,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ProblemDetail handleObjectOptimisticLockingFailureException(ObjectOptimisticLockingFailureException ex) {
+        return createConflictProblem();
+    }
+
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ProblemDetail handlePessimisticLockingFailureException(PessimisticLockingFailureException ex) {
+        return createConflictProblem();
+    }
+
+    private ProblemDetail createConflictProblem() {
         final var problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
 
         problem.setTitle("更新競合");

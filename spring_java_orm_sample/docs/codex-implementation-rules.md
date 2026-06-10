@@ -9,3 +9,4 @@
 - LocalDatetime.now()を頻繁に行わない。
 - recordにしたいところでは、lombokの`@value`をつけたclassにする。
 - APIのリクエスト、レスポンス項目にあるListには`@NotNull`を付ける。
+- 未使用なメソッドであれば削除する。

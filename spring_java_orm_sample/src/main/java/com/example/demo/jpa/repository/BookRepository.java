@@ -2,11 +2,13 @@ package com.example.demo.jpa.repository;
 
 import com.example.demo.jpa.entity.Book;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
@@ -76,6 +78,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     );
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "0"))
     @Query("SELECT b FROM Book b WHERE b.id = :id")
     Optional<Book> findByIdWithWriteLock(@Param("id") Long id);
 

@@ -91,6 +91,7 @@ public interface BookApi {
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
         @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
     })
     void deleteBook(
         @Parameter(description = "本ID")
