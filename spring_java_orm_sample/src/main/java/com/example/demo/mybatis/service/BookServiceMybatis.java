@@ -7,7 +7,6 @@ import com.example.demo.api.response.BookResponse;
 import com.example.demo.converter.BookConverter;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.mybatis.generator.entity.BookEntity;
-import com.example.demo.mybatis.generator.entity.BookEntityExample;
 import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.mapper.BookCustomMapper;
 import com.example.demo.mybatis.validator.BookDataValidatorMybatis;
@@ -33,15 +32,13 @@ public class BookServiceMybatis implements BookService {
     @Transactional(readOnly = true)
     @Override
     public List<BookResponse> findAll() {
-        final var example = new BookEntityExample();
-        example.setOrderByClause("id");
-        return converter.toResponseFromBookEntities(bookMapper.selectByExample(example));
+        return converter.toResponseFromMybatisBooks(bookCustomMapper.selectAllWithPublisherName());
     }
 
     @Transactional(readOnly = true)
     @Override
     public BookResponse findById(@NonNull Long id) {
-        return converter.toResponse(findEntityById(id));
+        return converter.toResponse(findByIdWithPublisherName(id));
     }
 
     @Transactional(readOnly = true)
@@ -51,7 +48,7 @@ public class BookServiceMybatis implements BookService {
         final var books = bookCustomMapper.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomMapper.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
-            converter.toResponseFromBookEntities(books),
+            converter.toResponseFromMybatisBooks(books),
             page,
             size,
             totalElements,
@@ -75,7 +72,7 @@ public class BookServiceMybatis implements BookService {
         book.setVersion(1L);
 
         bookCustomMapper.insertWithGeneratedKey(book);
-        return converter.toResponse(book);
+        return findById(book.getId());
     }
 
     @Transactional
@@ -97,7 +94,7 @@ public class BookServiceMybatis implements BookService {
         book.setVersion(book.getVersion() + 1);
 
         bookMapper.updateByPrimaryKey(book);
-        return converter.toResponse(book);
+        return findById(book.getId());
     }
 
     @Transactional
@@ -111,8 +108,8 @@ public class BookServiceMybatis implements BookService {
         bookMapper.deleteByPrimaryKey(book.getId());
     }
 
-    private BookEntity findEntityById(Long id) {
-        final var book = bookMapper.selectByPrimaryKey(id);
+    private com.example.demo.mybatis.entity.BookWithPublisherName findByIdWithPublisherName(Long id) {
+        final var book = bookCustomMapper.selectByPrimaryKeyWithPublisherName(id);
         if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }

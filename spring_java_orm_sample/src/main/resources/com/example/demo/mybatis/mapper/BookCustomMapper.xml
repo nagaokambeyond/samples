@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mybatis.mapper.BookCustomMapper">
+  <resultMap id="BookWithPublisherNameResultMap" type="com.example.demo.mybatis.entity.BookWithPublisherName">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="author" jdbcType="VARCHAR" property="author" />
+    <result column="release_date" jdbcType="DATE" property="releaseDate" />
+    <result column="publisher_id" jdbcType="BIGINT" property="publisherId" />
+    <result column="publisher_name" jdbcType="VARCHAR" property="publisherName" />
+    <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
+    <result column="version" jdbcType="BIGINT" property="version" />
+  </resultMap>
+
   <resultMap id="BookEntityResultMap" type="com.example.demo.mybatis.generator.entity.BookEntity">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="title" jdbcType="VARCHAR" property="title" />
@@ -16,15 +27,36 @@
     id, title, author, release_date, publisher_id, create_at, update_at, version
   </sql>
 
-  <select id="selectByTitleContainingIgnoreCase" parameterType="java.lang.String" resultMap="BookEntityResultMap">
+  <sql id="Book_With_Publisher_Name_Columns">
+    b.id, b.title, b.author, b.release_date, b.publisher_id, p.publisher_name, b.update_at, b.version
+  </sql>
+
+  <select id="selectAllWithPublisherName" resultMap="BookWithPublisherNameResultMap">
     select
-    <include refid="Book_Columns" />
-    from book
-    where lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+    <include refid="Book_With_Publisher_Name_Columns" />
+    from book b
+    inner join publisher p on b.publisher_id = p.id
+    order by b.id
+  </select>
+
+  <select id="selectByPrimaryKeyWithPublisherName" parameterType="java.lang.Long" resultMap="BookWithPublisherNameResultMap">
+    select
+    <include refid="Book_With_Publisher_Name_Columns" />
+    from book b
+    inner join publisher p on b.publisher_id = p.id
+    where b.id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByTitleContainingIgnoreCase" parameterType="java.lang.String" resultMap="BookWithPublisherNameResultMap">
+    select
+    <include refid="Book_With_Publisher_Name_Columns" />
+    from book b
+    inner join publisher p on b.publisher_id = p.id
+    where lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
     <if test="releaseDateFrom != null and releaseDateTo != null">
-      and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
+      and b.release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
     </if>
-    order by id
+    order by b.id
     limit #{limit,jdbcType=INTEGER}
     offset #{offset,jdbcType=BIGINT}
   </select>

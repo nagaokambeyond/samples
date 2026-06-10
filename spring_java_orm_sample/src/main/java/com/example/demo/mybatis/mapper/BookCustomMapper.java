@@ -1,5 +1,6 @@
 package com.example.demo.mybatis.mapper;
 
+import com.example.demo.mybatis.entity.BookWithPublisherName;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -9,7 +10,11 @@ import java.util.List;
 
 @Mapper
 public interface BookCustomMapper {
-    List<BookEntity> selectByTitleContainingIgnoreCase(
+    List<BookWithPublisherName> selectAllWithPublisherName();
+
+    BookWithPublisherName selectByPrimaryKeyWithPublisherName(@Param("id") Long id);
+
+    List<BookWithPublisherName> selectByTitleContainingIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
         @Param("releaseDateTo") LocalDate releaseDateTo,

@@ -1,14 +1,22 @@
 select
-  /*%expand*/*
+  b.id,
+  b.title,
+  b.author,
+  b.release_date,
+  b.publisher_id,
+  p.publisher_name,
+  b.update_at,
+  b.version
 from
-  book
+  book b
+  inner join publisher p on b.publisher_id = p.id
 where
-  lower(title) like concat('%', lower(/* keyword */'Spring'), '%')
+  lower(b.title) like concat('%', lower(/* keyword */'Spring'), '%')
 /*%if releaseDateFrom != null && releaseDateTo != null*/
-  and release_date between /* releaseDateFrom */'2020-01-01' and /* releaseDateTo */'2020-01-01'
+  and b.release_date between /* releaseDateFrom */'2020-01-01' and /* releaseDateTo */'2020-01-01'
 /*%end*/
 order by
-  id
+  b.id
 limit
   /* limit */10
 offset

@@ -29,13 +29,13 @@ public class BookServiceJPA implements BookService {
     @Transactional(readOnly = true)
     @Override
     public List<BookResponse> findAll() {
-        return converter.toResponse(bookRepository.findAll());
+        return converter.toResponse(bookRepository.findAllWithPublisherName());
     }
 
     @Transactional(readOnly = true)
     @Override
     public BookResponse findById(@NonNull Long id) {
-        return bookRepository.findById(id)
+        return bookRepository.findByIdWithPublisherName(id)
             .map(converter::toResponse)
             .orElseThrow(RepositoryDataNotfoundException::new);
     }
@@ -58,9 +58,8 @@ public class BookServiceJPA implements BookService {
     public BookResponse create(@NonNull BookCreateRequest request) {
         dataValidator.foreignKeyValidate(request.getPublisherId());
 
-        return converter.toResponse(
-            bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), null, null, 1L))
-        );
+        final var book = bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), null, null, 1L));
+        return findById(book.getId());
     }
 
     @Transactional
@@ -75,7 +74,8 @@ public class BookServiceJPA implements BookService {
                 b.setAuthor(request.getAuthor());
                 b.setReleaseDate(request.getReleaseDate());
                 b.setPublisherId(request.getPublisherId());
-                return converter.toResponse(bookRepository.save(b));
+                final var book = bookRepository.save(b);
+                return findById(book.getId());
             })
             .orElseThrow(RepositoryDataNotfoundException::new);
     }

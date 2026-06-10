@@ -42,7 +42,7 @@ public class BookServiceDoma implements BookService {
     @Transactional(readOnly = true)
     @Override
     public BookResponse findById(@NonNull Long id) {
-        return converter.toResponse(findEntityById(id));
+        return converter.toResponse(findByIdWithPublisherName(id));
     }
 
     @Transactional(readOnly = true)
@@ -76,7 +76,7 @@ public class BookServiceDoma implements BookService {
         book.setVersion(1L);
 
         bookDao.insert(book);
-        return converter.toResponse(book);
+        return findById(book.getId());
     }
 
     @Transactional
@@ -101,7 +101,7 @@ public class BookServiceDoma implements BookService {
         } catch (OptimisticLockException ex) {
             throw new ObjectOptimisticLockingFailureException(Book.class, book.getId(), ex);
         }
-        return converter.toResponse(book);
+        return findById(book.getId());
     }
 
     @Transactional
@@ -119,8 +119,8 @@ public class BookServiceDoma implements BookService {
         }
     }
 
-    private Book findEntityById(Long id) {
-        final var book = bookDao.selectById(id);
+    private com.example.demo.doma.entity.BookWithPublisherName findByIdWithPublisherName(Long id) {
+        final var book = bookCustomDao.selectByIdWithPublisherName(id);
         if (Objects.isNull(book)) {
             throw new RepositoryDataNotfoundException();
         }

@@ -36,6 +36,7 @@ class BookServiceMybatisTest {
         assertThat(book.getId()).isEqualTo(1L);
         assertThat(book.getTitle()).isEqualTo("Spring入門");
         assertThat(book.getPublisherId()).isEqualTo(1L);
+        assertThat(book.getPublisherName()).isEqualTo("◯◯書房");
     }
 
     @Test
@@ -65,6 +66,7 @@ class BookServiceMybatisTest {
         final var books = bookService.search("はじめて", null, null, 0, 2);
 
         assertThat(books.getContent()).extracting("id").containsExactly(2L, 3L);
+        assertThat(books.getContent()).extracting("publisherName").containsOnly("△△出版");
         assertThat(books.getPage()).isEqualTo(0);
         assertThat(books.getSize()).isEqualTo(2);
         assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(20);
@@ -109,6 +111,7 @@ class BookServiceMybatisTest {
         assertThat(book.getAuthor()).isEqualTo("Jiro");
         assertThat(book.getReleaseDate()).isEqualTo(releaseDate);
         assertThat(book.getPublisherId()).isEqualTo(2L);
+        assertThat(book.getPublisherName()).isEqualTo("△△出版");
         assertThat(book.getVersion()).isEqualTo(1L);
     }
 
@@ -129,6 +132,7 @@ class BookServiceMybatisTest {
         assertThat(updated.getAuthor()).isEqualTo("Saburo");
         assertThat(updated.getReleaseDate()).isEqualTo(releaseDate);
         assertThat(updated.getPublisherId()).isEqualTo(2L);
+        assertThat(updated.getPublisherName()).isEqualTo("△△出版");
         assertThat(updated.getUpdateAt()).isAfter(before.getUpdateAt());
         assertThat(updated.getVersion()).isEqualTo(before.getVersion() + 1);
     }
