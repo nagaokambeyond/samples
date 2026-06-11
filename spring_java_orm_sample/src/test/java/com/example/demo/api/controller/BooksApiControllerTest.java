@@ -1,5 +1,6 @@
 package com.example.demo.api.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class BooksApiControllerTest {
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @LocalServerPort
     private int port;
@@ -27,23 +29,25 @@ class BooksApiControllerTest {
 
     @Test
     void getBookSearchReturnsOkWhenTitleIsMissing() throws Exception {
-        final var response = get("/api/books/search?page=0&size=10");
+        final var response = get("/api/books/search?page=0");
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
     void getBookSearchReturnsBadRequestWhenPageIsNegative() throws Exception {
-        final var response = get("/api/books/search?title=spring&page=-1&size=10");
+        final var response = get("/api/books/search?title=spring&page=-1");
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    void getBookSearchReturnsBadRequestWhenSizeIsZero() throws Exception {
-        final var response = get("/api/books/search?title=spring&page=0&size=0");
+    void getBookSearchReturnsConfiguredPageSize() throws Exception {
+        final var response = get("/api/books/search?title=spring&page=0");
+        final var json = OBJECT_MAPPER.readTree(response.body());
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(json.get("size").asInt()).isEqualTo(10);
     }
 
     private HttpResponse<String> get(String path) throws Exception {

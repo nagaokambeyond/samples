@@ -57,9 +57,7 @@ public interface BookApi {
         @Parameter(description = "発売日付To")
         @RequestParam(required = false) LocalDate releaseDateTo,
         @Parameter(description = "ページ番号（0始まり）")
-        @RequestParam @NotNull @Min(0) Integer page,
-        @Parameter(description = "1ページあたりの件数")
-        @RequestParam @NotNull @Min(1) Integer size
+        @RequestParam @NotNull @Min(0) Integer page
     );
 
     @PostMapping("/create")

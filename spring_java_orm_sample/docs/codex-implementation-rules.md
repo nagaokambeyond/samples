@@ -19,10 +19,10 @@
 - OpenAPI 注釈は `BookApi` に集約する。Controller 側へ重複して追加しない。
 - API の入出力には Entity ではなく request / response DTO を使う。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate` と `publisherId` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
-- 検索 API は `title`、任意の `releaseDateFrom` / `releaseDateTo`、`page`、`size` を扱う。
+- 検索 API は `title`、任意の `releaseDateFrom` / `releaseDateTo`、`page` を扱う。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
 - 日付範囲の相関チェックは `BookApiControllerValidator` に集約する。
-- `page` は 0 始まり、`size` は 1 以上とする。API の Bean Validation と各実装の offset 計算の整合性を維持する。
+- `page` は 0 始まりとする。ページサイズは `application.yaml` の `search.page-size` で定義し、1 以上とする。
 - 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を3つの Service 実装で揃える。
 - `BookResponse` には `publisherName` が含まれる。取得・検索系の SQL / JPQL は `publisher` と結合し、`BookConverter` に渡す値を揃える。
 

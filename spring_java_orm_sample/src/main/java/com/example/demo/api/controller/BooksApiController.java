@@ -2,6 +2,7 @@ package com.example.demo.api.controller;
 
 
 import com.example.demo.api.BookApi;
+import com.example.demo.config.SearchProperties;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.validator.BookApiControllerValidator;
 import com.example.demo.service.BookService;
@@ -26,6 +27,7 @@ import java.util.List;
 public class BooksApiController implements BookApi {
     private final BookService bookService;
     private final BookApiControllerValidator validator;
+    private final SearchProperties searchProperties;
 
     @Override
     public ResponseEntity<List<BookResponse>> getBookAll() {
@@ -44,11 +46,10 @@ public class BooksApiController implements BookApi {
         @RequestParam(required = false) String title,
         @RequestParam(required = false) LocalDate releaseDateFrom,
         @RequestParam(required = false) LocalDate releaseDateTo,
-        @RequestParam @NotNull @Min(0) Integer page,
-        @RequestParam @NotNull @Min(1) Integer size
+        @RequestParam @NotNull @Min(0) Integer page
     ) {
         validator.searchValidation(releaseDateFrom, releaseDateTo);
-        return bookService.search(title, releaseDateFrom, releaseDateTo, page, size);
+        return bookService.search(title, releaseDateFrom, releaseDateTo, page, searchProperties.getPageSize());
     }
 
     @Override

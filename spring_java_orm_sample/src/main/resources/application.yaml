@@ -23,6 +23,8 @@ spring:
           enabled: true
 mybatis:
   mapper-locations: classpath*:com/example/demo/mybatis/**/*.xml
+search:
+  page-size: 10
 logging:
   level:
     org.seasar.doma.jdbc.LogKind.SQL: DEBUG
