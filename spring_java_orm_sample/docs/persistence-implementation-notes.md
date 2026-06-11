@@ -6,6 +6,7 @@
 - `BookService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
 - `BookDataValidatorJPA` / `BookDataValidatorMybatis` / `BookDataValidatorDoma` は永続化方式ごとのデータバリデーションを扱います。
 - `BookConverter` は projection / 表示向け Entity から response DTO への変換を扱います。
+- service内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに`@RetryableOnLockFailure`をつけてリトライする。
 - JPA / MyBatis / Doma のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
 
 ## Doma
