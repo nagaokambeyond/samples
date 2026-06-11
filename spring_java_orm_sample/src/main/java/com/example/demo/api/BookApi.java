@@ -19,18 +19,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RequestMapping("/api/books")
 @Tag(name = "Books", description = "本API")
 public interface BookApi {
-    @GetMapping()
-    @Operation(summary = "本全取得")
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功")
-    })
-    ResponseEntity<List<BookResponse>> getBookAll();
-
     @GetMapping("/{id}")
     @Operation(summary = "本取得")
     @ApiResponses({

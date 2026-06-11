@@ -13,25 +13,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
-    @Query(value = """
-        SELECT b.id AS id,
-               b.title AS title,
-               b.author AS author,
-               b.releaseDate AS releaseDate,
-               b.publisherId AS publisherId,
-               p.publisherName AS publisherName,
-               b.updateAt AS updateAt,
-               b.version AS version
-        FROM Book b
-        JOIN Publisher p ON b.publisherId = p.id
-        ORDER BY b.id
-        """)
-    List<BookWithPublisherNameProjection> findAllWithPublisherName();
-
     @Query(value = """
         SELECT b.id AS id,
                b.title AS title,

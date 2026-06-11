@@ -13,9 +13,6 @@ import java.util.List;
 @ConfigAutowireable
 public interface BookCustomDao {
     @Select
-    List<BookWithPublisherName> selectAll();
-
-    @Select
     List<BookWithPublisherName> selectByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int limit, long offset);
 
     @Select

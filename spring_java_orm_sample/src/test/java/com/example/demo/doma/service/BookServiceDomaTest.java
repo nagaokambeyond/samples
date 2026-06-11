@@ -33,14 +33,6 @@ class BookServiceDomaTest {
     }
 
     @Test
-    void findAllReturnsBooksOrderedById() {
-        var books = bookService.findAll();
-
-        assertThat(books).hasSizeGreaterThanOrEqualTo(2);
-        assertThat(books).extracting("id").startsWith(1L, 2L);
-    }
-
-    @Test
     void findByIdReturnsBook() {
         var book = bookService.findById(1L);
 

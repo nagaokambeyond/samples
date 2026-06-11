@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,12 +25,6 @@ public class BookServiceJPA implements BookService {
     private final BookRepository bookRepository;
     private final BookConverter converter;
     private final BookDataValidatorJPA dataValidator;
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<BookResponse> findAll() {
-        return converter.toResponse(bookRepository.findAllWithPublisherName());
-    }
 
     @Transactional(readOnly = true)
     @Override

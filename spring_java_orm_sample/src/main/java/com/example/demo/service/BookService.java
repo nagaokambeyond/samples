@@ -7,11 +7,8 @@ import com.example.demo.api.response.BookResponse;
 import lombok.NonNull;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public interface BookService {
-    List<BookResponse> findAll();
-
     BookResponse findById(@NonNull Long id);
 
     BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) ;

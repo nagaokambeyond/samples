@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -29,12 +28,6 @@ public class BookServiceMybatis implements BookService {
     private final BookCustomMapper bookCustomMapper;
     private final BookConverter converter;
     private final BookDataValidatorMybatis dataValidator;
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<BookResponse> findAll() {
-        return converter.toResponseFromMybatisBooks(bookCustomMapper.selectAllWithPublisherName());
-    }
 
     @Transactional(readOnly = true)
     @Override

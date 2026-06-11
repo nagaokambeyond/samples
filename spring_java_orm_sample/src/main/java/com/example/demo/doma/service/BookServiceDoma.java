@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -33,12 +32,6 @@ public class BookServiceDoma implements BookService {
     private final BookCustomDao bookCustomDao;
     private final BookConverter converter;
     private final BookDataValidatorDoma dataValidator;
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<BookResponse> findAll() {
-        return converter.toResponseFromDomaBooks(bookCustomDao.selectAll());
-    }
 
     @Transactional(readOnly = true)
     @Override

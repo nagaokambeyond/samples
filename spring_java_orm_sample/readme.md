@@ -14,10 +14,6 @@ http://localhost:8080/scalar
 # リクエストサンプル
 
 ```shell
-curl -X GET "http://localhost:8080/api/books" 
-```
-
-```shell
 curl -X GET "http://localhost:8080/api/books/1" 
 ```
 

@@ -10,8 +10,6 @@ import java.util.List;
 
 @Mapper
 public interface BookCustomMapper {
-    List<BookWithPublisherName> selectAllWithPublisherName();
-
     BookWithPublisherName selectByPrimaryKeyWithPublisherName(@Param("id") Long id);
 
     List<BookWithPublisherName> selectByTitleContainingIgnoreCase(

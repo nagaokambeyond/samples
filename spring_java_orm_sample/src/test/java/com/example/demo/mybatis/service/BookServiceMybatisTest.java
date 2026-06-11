@@ -28,14 +28,6 @@ class BookServiceMybatisTest {
     private DataSource dataSource;
 
     @Test
-    void findAllReturnsBooksOrderedById() {
-        final var books = bookService.findAll();
-
-        assertThat(books).hasSizeGreaterThanOrEqualTo(2);
-        assertThat(books).extracting("id").startsWith(1L, 2L);
-    }
-
-    @Test
     void findByIdReturnsBook() {
         final var book = bookService.findById(1L);
 

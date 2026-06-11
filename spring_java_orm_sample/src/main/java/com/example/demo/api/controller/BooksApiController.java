@@ -13,13 +13,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,15 +28,10 @@ public class BooksApiController implements BookApi {
     private final SearchProperties searchProperties;
 
     @Override
-    public ResponseEntity<List<BookResponse>> getBookAll() {
-        return new ResponseEntity<>(bookService.findAll(), HttpStatus.OK);
-    }
-
-    @Override
     public ResponseEntity<BookResponse> getBook(
         @PathVariable Long id
     ) {
-        return new ResponseEntity<>(bookService.findById(id), HttpStatus.OK);
+        return ResponseEntity.ok(bookService.findById(id));
     }
 
     @Override

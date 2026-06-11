@@ -28,6 +28,13 @@ class BooksApiControllerTest {
     }
 
     @Test
+    void getBooksReturnsNotFound() throws Exception {
+        final var response = get("/api/books");
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
     void getBookSearchReturnsOkWhenTitleIsMissing() throws Exception {
         final var response = get("/api/books/search?page=0");
 

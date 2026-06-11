@@ -31,14 +31,6 @@
     b.id, b.title, b.author, b.release_date, b.publisher_id, p.publisher_name, b.update_at, b.version
   </sql>
 
-  <select id="selectAllWithPublisherName" resultMap="BookWithPublisherNameResultMap">
-    select
-    <include refid="Book_With_Publisher_Name_Columns" />
-    from book b
-    inner join publisher p on b.publisher_id = p.id
-    order by b.id
-  </select>
-
   <select id="selectByPrimaryKeyWithPublisherName" parameterType="java.lang.Long" resultMap="BookWithPublisherNameResultMap">
     select
     <include refid="Book_With_Publisher_Name_Columns" />
