@@ -4,6 +4,7 @@ import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
+import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.converter.BookConverter;
 import com.example.demo.doma.dao.BookCustomDao;
 import com.example.demo.doma.generator.dao.BookDao;
@@ -79,6 +80,7 @@ public class BookServiceDoma implements BookService {
         return findById(book.getId());
     }
 
+    @RetryableOnLockFailure
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
@@ -104,6 +106,7 @@ public class BookServiceDoma implements BookService {
         return findById(book.getId());
     }
 
+    @RetryableOnLockFailure
     @Transactional
     @Override
     public void delete(@NonNull Long id) {

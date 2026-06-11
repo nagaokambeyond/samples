@@ -1,6 +1,7 @@
 package com.example.demo.jpa.service;
 
 import com.example.demo.api.response.BookPageResponse;
+import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.converter.BookConverter;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.jpa.entity.Book;
@@ -62,6 +63,7 @@ public class BookServiceJPA implements BookService {
         return findById(book.getId());
     }
 
+    @RetryableOnLockFailure
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
@@ -80,6 +82,7 @@ public class BookServiceJPA implements BookService {
             .orElseThrow(RepositoryDataNotfoundException::new);
     }
 
+    @RetryableOnLockFailure
     @Transactional
     @Override
     public void delete(@NonNull Long id) {
