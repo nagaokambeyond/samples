@@ -57,6 +57,16 @@ class BooksApiControllerTest {
         assertThat(json.get("size").asInt()).isEqualTo(10);
     }
 
+    @Test
+    void getBookSearchReturnsGenreId() throws Exception {
+        final var response = get("/api/books/search?title=spring&page=0");
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(json.get("content").get(0).get("genreId").asLong()).isEqualTo(5L);
+        assertThat(json.get("content").get(0).get("genreName").asText()).isEqualTo("工学");
+    }
+
     private HttpResponse<String> get(String path) throws Exception {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + path))

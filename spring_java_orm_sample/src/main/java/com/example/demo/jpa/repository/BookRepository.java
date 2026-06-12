@@ -23,10 +23,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                b.releaseDate AS releaseDate,
                b.publisherId AS publisherId,
                p.publisherName AS publisherName,
+               b.genreId AS genreId,
+               g.genreName AS genreName,
                b.updateAt AS updateAt,
                b.version AS version
         FROM Book b
         JOIN Publisher p ON b.publisherId = p.id
+        JOIN BookGenre g ON b.genreId = g.id
         WHERE b.id = :id
         """)
     Optional<BookWithPublisherNameProjection> findByIdWithPublisherName(@Param("id") Long id);
@@ -38,10 +41,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                b.releaseDate AS releaseDate,
                b.publisherId AS publisherId,
                p.publisherName AS publisherName,
+               b.genreId AS genreId,
+               g.genreName AS genreName,
                b.updateAt AS updateAt,
                b.version AS version
         FROM Book b
         JOIN Publisher p ON b.publisherId = p.id
+        JOIN BookGenre g ON b.genreId = g.id
         WHERE (:keyword IS NULL OR trim(:keyword) = '' OR lower(b.title) LIKE lower(concat('%', :keyword, '%')))
           AND (:releaseDateFrom IS NULL OR b.releaseDate >= :releaseDateFrom)
           AND (:releaseDateTo IS NULL OR b.releaseDate <= :releaseDateTo)
@@ -78,6 +84,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         Long getPublisherId();
 
         String getPublisherName();
+
+        Long getGenreId();
+
+        String getGenreName();
 
         LocalDateTime getUpdateAt();
 

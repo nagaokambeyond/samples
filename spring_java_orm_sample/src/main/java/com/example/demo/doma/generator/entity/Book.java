@@ -40,6 +40,10 @@ public class Book extends AbstractBook {
     @Column(name = "publisher_id")
     Long publisherId;
 
+    /** ジャンルID */
+    @Column(name = "genre_id")
+    Long genreId;
+
     /** 作成日時 */
     @Column(name = "create_at")
     LocalDateTime createAt;
@@ -141,6 +145,24 @@ public class Book extends AbstractBook {
      */
     public void setPublisherId(Long publisherId) {
         this.publisherId = publisherId;
+    }
+
+    /** 
+     * Returns the genreId.
+     * 
+     * @return the genreId
+     */
+    public Long getGenreId() {
+        return genreId;
+    }
+
+    /** 
+     * Sets the genreId.
+     * 
+     * @param genreId the genreId
+     */
+    public void setGenreId(Long genreId) {
+        this.genreId = genreId;
     }
 
     /** 

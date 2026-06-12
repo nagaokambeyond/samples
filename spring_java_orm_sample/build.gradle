@@ -87,7 +87,7 @@ domaCodeGen {
         url.set(domaCodeGenUrl)
         user.set('sa')
         password.set('')
-        tableNamePattern.set('book|publisher')
+        tableNamePattern.set('book|publisher|book_genre')
 
         entity {
             packageName.set(domaEntityPackage)
@@ -100,6 +100,7 @@ domaCodeGen {
 
 tasks.register('runMyBatisGenerator') {
     doLast {
+        ant.project.setBaseDir(projectDir)
         // Antタスクを定義します
         ant.taskdef(
                 name: 'mybatisGenerator',

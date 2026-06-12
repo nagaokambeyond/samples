@@ -1,5 +1,6 @@
 package com.example.demo.doma.validator;
 
+import com.example.demo.doma.generator.dao.BookGenreDao;
 import com.example.demo.doma.generator.dao.PublisherDao;
 import com.example.demo.doma.generator.entity.Book;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
@@ -13,10 +14,12 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BookDataValidatorDoma {
     private final PublisherDao publisherDao;
+    private final BookGenreDao bookGenreDao;
 
-    public void foreignKeyValidate(Long publisherId) {
+    public void foreignKeyValidate(Long publisherId, Long genreId) {
         final var publisher = publisherDao.selectById(publisherId);
-        if (Objects.isNull(publisher)) {
+        final var bookGenre = bookGenreDao.selectById(genreId);
+        if (Objects.isNull(publisher) || Objects.isNull(bookGenre)) {
             throw new ForeignKeyReferenceNotFoundException();
         }
     }

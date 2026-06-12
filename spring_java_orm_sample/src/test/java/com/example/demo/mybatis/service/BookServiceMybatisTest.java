@@ -35,6 +35,8 @@ class BookServiceMybatisTest {
         assertThat(book.getTitle()).isEqualTo("Spring入門");
         assertThat(book.getPublisherId()).isEqualTo(1L);
         assertThat(book.getPublisherName()).isEqualTo("◯◯書房");
+        assertThat(book.getGenreId()).isEqualTo(5L);
+        assertThat(book.getGenreName()).isEqualTo("工学");
     }
 
     @Test
@@ -83,6 +85,8 @@ class BookServiceMybatisTest {
 
         assertThat(books.getContent()).extracting("id").containsExactly(2L, 3L);
         assertThat(books.getContent()).extracting("publisherName").containsOnly("△△出版");
+        assertThat(books.getContent()).extracting("genreId").containsOnly(5L);
+        assertThat(books.getContent()).extracting("genreName").containsOnly("工学");
         assertThat(books.getPage()).isEqualTo(0);
         assertThat(books.getSize()).isEqualTo(2);
         assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(20);
@@ -120,7 +124,7 @@ class BookServiceMybatisTest {
     @Test
     void createReturnsGeneratedIdAndResponse() {
         final var releaseDate = LocalDate.of(2021, 1, 1);
-        final var book = bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", releaseDate, 2L));
+        final var book = bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", releaseDate, 2L, 5L));
 
         assertThat(book.getId()).isNotNull();
         assertThat(book.getTitle()).isEqualTo("MyBatis入門");
@@ -128,12 +132,20 @@ class BookServiceMybatisTest {
         assertThat(book.getReleaseDate()).isEqualTo(releaseDate);
         assertThat(book.getPublisherId()).isEqualTo(2L);
         assertThat(book.getPublisherName()).isEqualTo("△△出版");
+        assertThat(book.getGenreId()).isEqualTo(5L);
+        assertThat(book.getGenreName()).isEqualTo("工学");
         assertThat(book.getVersion()).isEqualTo(1L);
     }
 
     @Test
     void createThrowsWhenPublisherDoesNotExist() {
-        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L)))
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L, 5L)))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+    }
+
+    @Test
+    void createThrowsWhenBookGenreDoesNotExist() {
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 999L)))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
     }
 
@@ -142,13 +154,15 @@ class BookServiceMybatisTest {
         final var before = bookService.findById(1L);
         final var releaseDate = LocalDate.of(2021, 2, 1);
 
-        final var updated = bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", releaseDate, 2L, before.getVersion()));
+        final var updated = bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", releaseDate, 2L, 5L, before.getVersion()));
 
         assertThat(updated.getTitle()).isEqualTo("MyBatis更新");
         assertThat(updated.getAuthor()).isEqualTo("Saburo");
         assertThat(updated.getReleaseDate()).isEqualTo(releaseDate);
         assertThat(updated.getPublisherId()).isEqualTo(2L);
         assertThat(updated.getPublisherName()).isEqualTo("△△出版");
+        assertThat(updated.getGenreId()).isEqualTo(5L);
+        assertThat(updated.getGenreName()).isEqualTo("工学");
         assertThat(updated.getUpdateAt()).isAfter(before.getUpdateAt());
         assertThat(updated.getVersion()).isEqualTo(before.getVersion() + 1);
     }
@@ -157,13 +171,21 @@ class BookServiceMybatisTest {
     void updateThrowsWhenPublisherDoesNotExist() {
         final var before = bookService.findById(1L);
 
-        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, before.getVersion())))
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, 5L, before.getVersion())))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+    }
+
+    @Test
+    void updateThrowsWhenBookGenreDoesNotExist() {
+        final var before = bookService.findById(1L);
+
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 999L, before.getVersion())))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
     }
 
     @Test
     void updateThrowsWhenVersionIsStale() {
-        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, -1L)))
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, -1L)))
             .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     }
 
@@ -172,7 +194,7 @@ class BookServiceMybatisTest {
         final var before = bookService.findById(1L);
 
         try (final var ignored = BookRowLock.acquire(dataSource, 1L)) {
-            assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, before.getVersion())))
+            assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, before.getVersion())))
                 .isInstanceOf(PessimisticLockingFailureException.class);
         }
     }

@@ -58,7 +58,7 @@ public class BookServiceDoma implements BookService {
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
-        dataValidator.foreignKeyValidate(request.getPublisherId());
+        dataValidator.foreignKeyValidate(request.getPublisherId(), request.getGenreId());
 
         final var now = LocalDateTime.now();
         final var book = new Book();
@@ -66,6 +66,7 @@ public class BookServiceDoma implements BookService {
         book.setAuthor(request.getAuthor());
         book.setReleaseDate(request.getReleaseDate());
         book.setPublisherId(request.getPublisherId());
+        book.setGenreId(request.getGenreId());
         book.setCreateAt(now);
         book.setUpdateAt(now);
         book.setVersion(1L);
@@ -78,7 +79,7 @@ public class BookServiceDoma implements BookService {
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
-        dataValidator.foreignKeyValidate(request.getPublisherId());
+        dataValidator.foreignKeyValidate(request.getPublisherId(), request.getGenreId());
 
         final var book = bookCustomDao.selectByIdWithWriteLock(request.getId());
         if (Objects.isNull(book)) {
@@ -90,6 +91,7 @@ public class BookServiceDoma implements BookService {
         book.setAuthor(request.getAuthor());
         book.setReleaseDate(request.getReleaseDate());
         book.setPublisherId(request.getPublisherId());
+        book.setGenreId(request.getGenreId());
         book.setUpdateAt(LocalDateTime.now());
 
         try {

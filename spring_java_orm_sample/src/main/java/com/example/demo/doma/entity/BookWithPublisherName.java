@@ -30,6 +30,12 @@ public class BookWithPublisherName {
     @Column(name = "publisher_name")
     String publisherName;
 
+    @Column(name = "genre_id")
+    Long genreId;
+
+    @Column(name = "genre_name")
+    String genreName;
+
     @Column(name = "update_at")
     LocalDateTime updateAt;
 

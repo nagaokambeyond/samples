@@ -50,9 +50,9 @@ public class BookServiceJPA implements BookService {
     @Transactional
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
-        dataValidator.foreignKeyValidate(request.getPublisherId());
+        dataValidator.foreignKeyValidate(request.getPublisherId(), request.getGenreId());
 
-        final var book = bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), null, null, 1L));
+        final var book = bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), request.getGenreId(), null, null, 1L));
         return findById(book.getId());
     }
 
@@ -60,7 +60,7 @@ public class BookServiceJPA implements BookService {
     @Transactional
     @Override
     public BookResponse update(@NonNull BookUpdateRequest request) {
-        dataValidator.foreignKeyValidate(request.getPublisherId());
+        dataValidator.foreignKeyValidate(request.getPublisherId(), request.getGenreId());
 
         return bookRepository.findByIdWithWriteLock(request.getId())
             .map(b -> {
@@ -69,6 +69,7 @@ public class BookServiceJPA implements BookService {
                 b.setAuthor(request.getAuthor());
                 b.setReleaseDate(request.getReleaseDate());
                 b.setPublisherId(request.getPublisherId());
+                b.setGenreId(request.getGenreId());
                 final var book = bookRepository.save(b);
                 return findById(book.getId());
             })

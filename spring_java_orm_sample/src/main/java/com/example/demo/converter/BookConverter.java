@@ -10,7 +10,7 @@ import java.util.List;
 @Component
 public class BookConverter {
     public BookResponse toResponse(BookWithPublisherNameProjection book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getPublisherName(), book.getUpdateAt(), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getPublisherName(), book.getGenreId(), book.getGenreName(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponse(List<BookWithPublisherNameProjection> books) {
@@ -18,7 +18,7 @@ public class BookConverter {
     }
 
     public BookResponse toResponse(com.example.demo.mybatis.entity.BookWithPublisherName book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getPublisherName(), book.getUpdateAt(), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getPublisherName(), book.getGenreId(), book.getGenreName(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponseFromMybatisBooks(List<com.example.demo.mybatis.entity.BookWithPublisherName> books) {
@@ -26,7 +26,7 @@ public class BookConverter {
     }
 
     public BookResponse toResponse(com.example.demo.doma.entity.BookWithPublisherName book) {
-        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getPublisherName(), book.getUpdateAt(), book.getVersion());
+        return new BookResponse(book.getId(), book.getTitle(), book.getAuthor(), book.getReleaseDate(), book.getPublisherId(), book.getPublisherName(), book.getGenreId(), book.getGenreName(), book.getUpdateAt(), book.getVersion());
     }
 
     public List<BookResponse> toResponseFromDomaBooks(List<com.example.demo.doma.entity.BookWithPublisherName> books) {

@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "book", comment = "本", indexes ={
     @Index(name = "idx_book_01", columnList = "release_date"),
-    @Index(name = "idx_book_02", columnList = "publisher_id")
+    @Index(name = "idx_book_02", columnList = "publisher_id"),
+    @Index(name = "idx_book_03", columnList = "genre_id")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -39,6 +40,10 @@ public class Book {
     @Column(nullable = false, comment = "出版社ID")
     @NotNull
     private Long publisherId;
+
+    @Column(nullable = false, comment = "ジャンルID")
+    @NotNull
+    private Long genreId;
 
     @Column(comment = "作成日時")
     @CreatedDate
@@ -65,6 +70,6 @@ public class Book {
         LocalDateTime updateAt,
         Long version
     ) {
-        this(id, title, author, releaseDate, 1L, createAt, updateAt, version);
+        this(id, title, author, releaseDate, 1L, 5L, createAt, updateAt, version);
     }
 }

@@ -28,6 +28,10 @@ public class BookUpdateRequest{
     @Schema(description = "出版社ID", type = "integer", format ="int64")
     Long publisherId;
 
+    @NotNull
+    @Schema(description = "ジャンルID", type = "integer", format ="int64")
+    Long genreId;
+
     @PositiveOrZero
     @NotNull
     @Schema(description = "バージョン", type = "integer", format = "int64")

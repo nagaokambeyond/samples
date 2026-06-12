@@ -30,5 +30,7 @@
         </table>
         <table tableName="publisher" domainObjectName="PublisherEntity" mapperName="PublisherMapper">
         </table>
+        <table tableName="book_genre" domainObjectName="BookGenreEntity" mapperName="BookGenreMapper">
+        </table>
     </context>
 </generatorConfiguration>

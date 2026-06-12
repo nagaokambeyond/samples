@@ -25,4 +25,8 @@ public class BookCreateRequest {
     @NotNull
     @Schema(description = "出版社ID", type = "integer", format ="int64")
     Long publisherId;
+
+    @NotNull
+    @Schema(description = "ジャンルID", type = "integer", format ="int64")
+    Long genreId;
 }

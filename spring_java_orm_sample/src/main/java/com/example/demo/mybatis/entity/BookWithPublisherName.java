@@ -15,6 +15,8 @@ public class BookWithPublisherName {
     private LocalDate releaseDate;
     private Long publisherId;
     private String publisherName;
+    private Long genreId;
+    private String genreName;
     private LocalDateTime updateAt;
     private Long version;
 }

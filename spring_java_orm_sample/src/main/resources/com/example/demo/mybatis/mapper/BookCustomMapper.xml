@@ -8,6 +8,8 @@
     <result column="release_date" jdbcType="DATE" property="releaseDate" />
     <result column="publisher_id" jdbcType="BIGINT" property="publisherId" />
     <result column="publisher_name" jdbcType="VARCHAR" property="publisherName" />
+    <result column="genre_id" jdbcType="BIGINT" property="genreId" />
+    <result column="genre_name" jdbcType="VARCHAR" property="genreName" />
     <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
     <result column="version" jdbcType="BIGINT" property="version" />
   </resultMap>
@@ -18,17 +20,18 @@
     <result column="author" jdbcType="VARCHAR" property="author" />
     <result column="release_date" jdbcType="DATE" property="releaseDate" />
     <result column="publisher_id" jdbcType="BIGINT" property="publisherId" />
+    <result column="genre_id" jdbcType="BIGINT" property="genreId" />
     <result column="create_at" jdbcType="TIMESTAMP" property="createAt" />
     <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
     <result column="version" jdbcType="BIGINT" property="version" />
   </resultMap>
 
   <sql id="Book_Columns">
-    id, title, author, release_date, publisher_id, create_at, update_at, version
+    id, title, author, release_date, publisher_id, genre_id, create_at, update_at, version
   </sql>
 
   <sql id="Book_With_Publisher_Name_Columns">
-    b.id, b.title, b.author, b.release_date, b.publisher_id, p.publisher_name, b.update_at, b.version
+    b.id, b.title, b.author, b.release_date, b.publisher_id, p.publisher_name, b.genre_id, g.genre_name, b.update_at, b.version
   </sql>
 
   <select id="selectByPrimaryKeyWithPublisherName" parameterType="java.lang.Long" resultMap="BookWithPublisherNameResultMap">
@@ -36,6 +39,7 @@
     <include refid="Book_With_Publisher_Name_Columns" />
     from book b
     inner join publisher p on b.publisher_id = p.id
+    inner join book_genre g on b.genre_id = g.id
     where b.id = #{id,jdbcType=BIGINT}
   </select>
 
@@ -44,6 +48,7 @@
     <include refid="Book_With_Publisher_Name_Columns" />
     from book b
     inner join publisher p on b.publisher_id = p.id
+    inner join book_genre g on b.genre_id = g.id
     where 1 = 1
     <if test="keyword != null and keyword.trim() != ''">
       and lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
@@ -77,12 +82,13 @@
   </select>
 
   <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">
-    insert into book (title, author, release_date, publisher_id, create_at, update_at, version)
+    insert into book (title, author, release_date, publisher_id, genre_id, create_at, update_at, version)
     values (
       #{title,jdbcType=VARCHAR},
       #{author,jdbcType=VARCHAR},
       #{releaseDate,jdbcType=DATE},
       #{publisherId,jdbcType=BIGINT},
+      #{genreId,jdbcType=BIGINT},
       #{createAt,jdbcType=TIMESTAMP},
       #{updateAt,jdbcType=TIMESTAMP},
       #{version,jdbcType=BIGINT}
