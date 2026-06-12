@@ -12,6 +12,7 @@ import com.example.demo.doma.generator.entity.Book;
 import com.example.demo.doma.validator.BookDataValidatorDoma;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.service.BookService;
+import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.seasar.doma.jdbc.OptimisticLockException;
@@ -42,7 +43,7 @@ public class BookServiceDoma implements BookService {
     @Transactional(readOnly = true)
     @Override
     public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
-        final var offset = (long) page * size;
+        final var offset = PageCalculator.calculateOffset(page, size);
         final var books = bookCustomDao.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomDao.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
@@ -50,7 +51,7 @@ public class BookServiceDoma implements BookService {
             page,
             size,
             totalElements,
-            calculateTotalPages(totalElements, size)
+            PageCalculator.calculateTotalPages(totalElements, size)
         );
     }
 
@@ -123,10 +124,4 @@ public class BookServiceDoma implements BookService {
         return book;
     }
 
-    private int calculateTotalPages(long totalElements, int size) {
-        if (totalElements == 0) {
-            return 0;
-        }
-        return (int) ((totalElements + size - 1) / size);
-    }
 }

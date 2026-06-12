@@ -12,6 +12,7 @@ import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.mapper.BookCustomMapper;
 import com.example.demo.mybatis.validator.BookDataValidatorMybatis;
 import com.example.demo.service.BookService;
+import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class BookServiceMybatis implements BookService {
     @Transactional(readOnly = true)
     @Override
     public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
-        final var offset = (long) page * size;
+        final var offset = PageCalculator.calculateOffset(page, size);
         final var books = bookCustomMapper.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomMapper.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
@@ -46,7 +47,7 @@ public class BookServiceMybatis implements BookService {
             page,
             size,
             totalElements,
-            calculateTotalPages(totalElements, size)
+            PageCalculator.calculateTotalPages(totalElements, size)
         );
     }
 
@@ -112,10 +113,4 @@ public class BookServiceMybatis implements BookService {
         return book;
     }
 
-    private int calculateTotalPages(long totalElements, int size) {
-        if (totalElements == 0) {
-            return 0;
-        }
-        return (int) ((totalElements + size - 1) / size);
-    }
 }
