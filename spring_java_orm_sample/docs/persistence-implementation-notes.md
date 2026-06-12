@@ -6,7 +6,9 @@
 - `BookService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
 - `BookDataValidatorJPA` / `BookDataValidatorMybatis` / `BookDataValidatorDoma` は永続化方式ごとのデータバリデーションを扱います。
 - `BookConverter` は projection / 表示向け Entity から response DTO への変換を扱います。
-- service内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに`@RetryableOnLockFailure`をつけてリトライする。
+- `book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。
+- Service 内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに `@RetryableOnLockFailure` を付けてリトライします。
+- ページング検索の offset と totalPages は `PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
 - JPA / MyBatis / Doma のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
 
 ## Doma
@@ -16,8 +18,12 @@
 - 手書き SQL は `BookCustomDao` と `src/main/resources/META-INF/com/example/demo/doma/dao` 配下に追加してください。
 - Doma の DAO メソッドを追加する場合は、対応する SQL ファイルのパスとメソッド名を揃えてください。
 - `BookWithPublisherName` は Doma 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は SQL と `BookConverter` も更新してください。
+- `BookWithPublisherName` は `publisherName` と `genreName` を含みます。取得・検索 SQL では `publisher` と `book_genre` の結合を維持してください。
 - 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleContainingIgnoreCase.sql` と `countByTitleContainingIgnoreCase.sql` の両方を更新してください。
-- `BookDao` / `PublisherDao` は Doma CodeGen の生成 DAO です。生成元スキーマとの整合性を維持してください。
+- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
+- 検索では `limit` / `offset` を使います。offset は `PageCalculator.calculateOffset(page, size)` で算出してください。
+- `selectByIdWithWriteLock.sql` は `for update nowait` を使います。ロック失敗時のリトライ方針と合わせて変更してください。
+- `BookDao` / `PublisherDao` / `BookGenreDao` は Doma CodeGen の生成 DAO です。生成元スキーマとの整合性を維持してください。
 - Doma CodeGen の対象スキーマを変える場合は、`generator-schema.sql` と `build.gradle` の `domaCodeGen` 設定の整合性を確認してください。
 - Doma 側の更新・削除では、Doma の楽観ロック例外を `ObjectOptimisticLockingFailureException` に変換する既存方針を維持してください。
 
@@ -27,23 +33,29 @@
 - `src/main/resources/com/example/demo/mybatis/generator` 配下の XML も生成物として扱ってください。
 - 手書き SQL は `BookCustomMapper` と `BookCustomMapper.xml` に追加してください。
 - `BookWithPublisherName` は MyBatis 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は resultMap と `BookConverter` も更新してください。
+- `BookWithPublisherName` は `publisherName` と `genreName` を含みます。取得・検索 SQL では `publisher` と `book_genre` の結合を維持してください。
 - 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleContainingIgnoreCase` と `countByTitleContainingIgnoreCase` の両方を更新してください。
-- `BookMapper` / `PublisherMapper` は MyBatis Generator の生成 Mapper です。生成元スキーマとの整合性を維持してください。
+- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
+- 検索では `limit` / `offset` を使います。offset は `PageCalculator.calculateOffset(page, size)` で算出してください。
+- `selectByPrimaryKeyWithWriteLock` は `for update nowait` を使います。ロック失敗時のリトライ方針と合わせて変更してください。
+- `BookMapper` / `PublisherMapper` / `BookGenreMapper` は MyBatis Generator の生成 Mapper です。生成元スキーマとの整合性を維持してください。
 - MyBatis Generator の対象スキーマを変える場合は、`generator-schema.sql` と `generatorConfig.xml` の整合性を確認してください。
 - `application.yaml` の `mybatis.mapper-locations` は、MyBatis の XML 読み込みに必要です。不用意に変更しないでください。
 
 ## JPA
 
-- JPA 実装は `BookServiceJPA`、`BookRepository`、`PublisherRepository`、`Book`、`Publisher` を中心に構成されています。
+- JPA 実装は `BookServiceJPA`、`BookRepository`、`PublisherRepository`、`BookGenreRepository`、`Book`、`Publisher`、`BookGenre` を中心に構成されています。
 - JPA 側の検索は Spring Data JPA Repository メソッドまたは明示的な `@Query` を優先してください。
 - JPA 側の取得・検索レスポンスは `BookWithPublisherNameProjection` を使います。列を変更する場合は projection、JPQL、`BookConverter` を揃えてください。
+- `BookWithPublisherNameProjection` は `publisherName` と `genreName` を含みます。取得・検索 JPQL では `Publisher` と `BookGenre` の結合を維持してください。
 - JPA 側のページング検索は `Pageable` と `countQuery` を使います。検索条件を変更する場合は取得クエリと countQuery の条件を揃えてください。
+- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
 - JPA 側の更新・削除では `findByIdWithWriteLock` による書き込みロックを維持してください。
-- JPA 側の `publisherId` 参照存在チェックは `PublisherRepository` を使う `BookDataValidatorJPA` に集約してください。
+- JPA 側の `publisherId` / `genreId` 参照存在チェックは `PublisherRepository` / `BookGenreRepository` を使う `BookDataValidatorJPA` に集約してください。
 
 ## スキーマ変更時の注意
 
-- `book` または `publisher` テーブルのカラムを変更する場合は、以下の整合性を確認してください。
+- `book`、`publisher`、`book_genre` テーブルのカラムを変更する場合は、以下の整合性を確認してください。
   - JPA Entity
   - JPA Repository
   - MyBatis Generator の生成 Entity / Mapper
@@ -59,7 +71,8 @@
   - `generatorConfig.xml`
 - `generator-schema.sql` は MyBatis Generator と Doma CodeGen の両方で使われます。片方だけを想定した変更にしないでください。
 - `release_date` は検索条件と DTO に関係します。変更時は API バリデーションと3つの Service 実装を確認してください。
-- `publisher_id` は `publisher` への外部キーです。変更時は初期データ、生成 Mapper/DAO、外部キー参照チェックを確認してください。
+- `publisher_id` は `publisher`、`genre_id` は `book_genre` への外部キーです。変更時は初期データ、生成 Mapper/DAO、外部キー参照チェックを確認してください。
+- `publisher_name` / `genre_name` はレスポンス表示項目です。変更時は projection / 表示向け Entity / SQL / `BookConverter` を確認してください。
 - 検索条件を変更する場合は、JPA / MyBatis / Doma の一覧取得と件数取得が同じ条件になるよう確認してください。
 
 ## 生成コマンド

@@ -19,7 +19,7 @@
 
 API は `/api/books` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在のドメインは `book` と `publisher` です。`book.publisher_id` は `publisher.id` を参照し、検索 API はページングされ、出版社名を含む `BookPageResponse` を返します。
+現在のドメインは `book`、`publisher`、`book_genre` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名を含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -59,7 +59,7 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
 - `src/main/java/com/example/demo/converter`: projection / 表示向け Entity から response DTO への変換
-- `src/main/java/com/example/demo/config`: Spring 設定、例外ハンドリング
+- `src/main/java/com/example/demo/config`: Spring 設定、例外ハンドリング、検索設定、ロック失敗リトライ設定
 - `src/main/java/com/example/demo/jpa`: JPA 実装
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装
 - `src/main/java/com/example/demo/doma`: Doma 実装
@@ -74,16 +74,19 @@ Gradle Wrapper を使用してください。
 - `BooksApiController` は `BookApi` を実装し、Service に処理を委譲します。
 - `BookApiControllerValidator` は API 入力の相関バリデーションを扱います。
 - `BookService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
+- `PageCalculator` はページ数と offset の計算を扱います。
+- `SearchProperties` は検索 API のページサイズ設定を扱います。
 - 現在のデフォルト実装は `BookServiceDoma` です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
-- 更新・削除処理では、既存のバージョンチェックと書き込みロックを不用意に変更しないでください。
+- 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ Generator / CodeGen を実行してください。
 
 ## 現在の API 仕様メモ
 
-- 検索 API は `title`、任意の `releaseDateFrom` / `releaseDateTo`、`page`、`size` を扱います。
+- 検索 API は任意の `title`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱います。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とします。
-- `page` は 0 始まり、`size` は 1 以上です。
+- `page` は 0 始まりです。
+- ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
 - `BookResponse` には `publisherId` と `publisherName` が含まれます。
 - 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
