@@ -11,7 +11,7 @@ import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.mapper.BookCustomMapper;
 import com.example.demo.mybatis.validator.BookDataValidatorMybatis;
-import com.example.demo.service.BookService;
+import com.example.demo.service.BooksOperationService;
 import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class BookServiceMybatis implements BookService {
+public class BooksOperationServiceMybatis implements BooksOperationService {
     private final BookMapper bookMapper;
     private final BookCustomMapper bookCustomMapper;
     private final BookConverter converter;

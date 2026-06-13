@@ -8,8 +8,8 @@ import java.time.LocalDate;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class BookApiControllerValidatorTest {
-    private final BookApiControllerValidator validator = new BookApiControllerValidator();
+class BooksOperationApiControllerValidatorTest {
+    private final BooksOperationApiControllerValidator validator = new BooksOperationApiControllerValidator();
 
     @Test
     void searchValidationAllowsBothReleaseDatesUnset() {

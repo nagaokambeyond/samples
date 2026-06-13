@@ -1,11 +1,11 @@
 package com.example.demo.api.controller;
 
 
-import com.example.demo.api.BookApi;
+import com.example.demo.api.BooksOperationApi;
 import com.example.demo.config.SearchProperties;
 import com.example.demo.api.response.BookPageResponse;
-import com.example.demo.api.validator.BookApiControllerValidator;
-import com.example.demo.service.BookService;
+import com.example.demo.api.validator.BooksOperationApiControllerValidator;
+import com.example.demo.service.BooksOperationService;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
@@ -22,16 +22,16 @@ import java.time.LocalDate;
 @RestController
 @RequiredArgsConstructor
 @Validated
-public class BooksApiController implements BookApi {
-    private final BookService bookService;
-    private final BookApiControllerValidator validator;
+public class BooksOperationApiController implements BooksOperationApi {
+    private final BooksOperationService booksOperationService;
+    private final BooksOperationApiControllerValidator validator;
     private final SearchProperties searchProperties;
 
     @Override
     public ResponseEntity<BookResponse> getBook(
         @PathVariable Long id
     ) {
-        return ResponseEntity.ok(bookService.findById(id));
+        return ResponseEntity.ok(booksOperationService.findById(id));
     }
 
     @Override
@@ -42,27 +42,27 @@ public class BooksApiController implements BookApi {
         @RequestParam @NotNull @Min(0) Integer page
     ) {
         validator.searchValidation(releaseDateFrom, releaseDateTo);
-        return bookService.search(title, releaseDateFrom, releaseDateTo, page, searchProperties.getPageSize());
+        return booksOperationService.search(title, releaseDateFrom, releaseDateTo, page, searchProperties.getPageSize());
     }
 
     @Override
     public BookResponse createBook(
         @RequestBody @Valid @NotNull BookCreateRequest request
     ) {
-        return bookService.create(request);
+        return booksOperationService.create(request);
     }
 
     @Override
     public BookResponse updateBook(
         @RequestBody @Valid @NotNull BookUpdateRequest request
     ) {
-        return bookService.update(request);
+        return booksOperationService.update(request);
     }
 
     @Override
     public void deleteBook(
         @PathVariable Long id
     ) {
-        bookService.delete(id);
+        booksOperationService.delete(id);
     }
 }

@@ -21,9 +21,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
-class BookServiceJPATest {
+class BooksOperationServiceJPATest {
     @Autowired
-    private BookServiceJPA bookService;
+    private BooksOperationServiceJPA bookService;
 
     @Autowired
     private EntityManager entityManager;

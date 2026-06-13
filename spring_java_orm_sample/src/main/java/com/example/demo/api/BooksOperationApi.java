@@ -22,7 +22,7 @@ import java.time.LocalDate;
 
 @RequestMapping("/api/books")
 @Tag(name = "Books", description = "本API")
-public interface BookApi {
+public interface BooksOperationApi {
     @GetMapping("/{id}")
     @Operation(summary = "本取得")
     @ApiResponses({

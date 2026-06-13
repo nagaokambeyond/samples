@@ -166,6 +166,7 @@ CREATE TABLE book_stock (
 
 CREATE INDEX idx_book_stock_01 ON book_stock(book_stock_store_id);
 CREATE INDEX idx_book_stock_02 ON book_stock(book_stock_book_id);
+CREATE INDEX idx_book_stock_03 ON book_stock(book_stock_store_id, book_stock_book_id);
 
 comment on table book_stock is '本在庫';
 comment on column book_stock.book_stock_store_id is '本在庫店舗ID';

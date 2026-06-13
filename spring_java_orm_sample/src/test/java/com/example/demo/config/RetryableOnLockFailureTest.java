@@ -1,9 +1,9 @@
 package com.example.demo.config;
 
 import com.example.demo.api.request.BookUpdateRequest;
-import com.example.demo.doma.service.BookServiceDoma;
-import com.example.demo.jpa.service.BookServiceJPA;
-import com.example.demo.mybatis.service.BookServiceMybatis;
+import com.example.demo.doma.service.BooksOperationServiceDoma;
+import com.example.demo.jpa.service.BooksOperationServiceJPA;
+import com.example.demo.mybatis.service.BooksOperationServiceMybatis;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.dao.CannotAcquireLockException;
@@ -30,7 +30,7 @@ class RetryableOnLockFailureTest {
 
     @Test
     void updateAndDeleteMethodsUseRetryableOnLockFailure() throws NoSuchMethodException {
-        for (final var serviceClass : List.of(BookServiceJPA.class, BookServiceMybatis.class, BookServiceDoma.class)) {
+        for (final var serviceClass : List.of(BooksOperationServiceJPA.class, BooksOperationServiceMybatis.class, BooksOperationServiceDoma.class)) {
             assertThat(serviceClass.getMethod("update", BookUpdateRequest.class).isAnnotationPresent(RetryableOnLockFailure.class))
                 .isTrue();
             assertThat(serviceClass.getMethod("delete", Long.class).isAnnotationPresent(RetryableOnLockFailure.class))

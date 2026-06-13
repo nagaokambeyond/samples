@@ -8,7 +8,7 @@ import lombok.NonNull;
 
 import java.time.LocalDate;
 
-public interface BookService {
+public interface BooksOperationService {
     BookResponse findById(@NonNull Long id);
 
     BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) ;

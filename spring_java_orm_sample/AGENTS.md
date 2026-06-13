@@ -19,7 +19,7 @@
 
 API は `/api/books` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在のドメインは `book`、`publisher`、`book_genre` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名を含む `BookPageResponse` を返します。
+現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_order`、`purchase_order_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名を含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -56,7 +56,8 @@ Gradle Wrapper を使用してください。
 ## ディレクトリ構成
 
 - `src/main/java/com/example/demo/api`: API インターフェース、Controller、DTO、API 入力バリデーション、API 横断処理
-- `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース
+- `src/main/java/com/example/demo/data/domain`: JPA / MyBatis / Doma で共有するドメイン型
+- `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース、ページ計算
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
 - `src/main/java/com/example/demo/converter`: projection / 表示向け Entity から response DTO への変換
 - `src/main/java/com/example/demo/config`: Spring 設定、例外ハンドリング、検索設定、ロック失敗リトライ設定
@@ -64,19 +65,22 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装
 - `src/main/java/com/example/demo/doma`: Doma 実装
 - `src/main/resources/application.yaml`: アプリケーション設定
+- `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
+- `src/main/resources/codegen`: Doma CodeGen 補助設定
 - `src/main/resources/data.sql`: 起動時の初期データ
 - `src/main/resources/generator-schema.sql`: MyBatis Generator / Doma CodeGen 用スキーマ
 - `src/test/java/com/example/demo`: アプリケーション、API、永続化実装、例外ハンドリングのテスト
 
 ## 重要な設計方針
 
-- `BookApi` は API 定義と OpenAPI 注釈を扱います。
-- `BooksApiController` は `BookApi` を実装し、Service に処理を委譲します。
-- `BookApiControllerValidator` は API 入力の相関バリデーションを扱います。
-- `BookService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
+- `BooksOperationApi` は API 定義と OpenAPI 注釈を扱います。
+- `BooksOperationApiController` は `BooksOperationApi` を実装し、Service に処理を委譲します。
+- `BooksOperationApiControllerValidator` は API 入力の相関バリデーションを扱います。
+- `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
 - `PageCalculator` はページ数と offset の計算を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
-- 現在のデフォルト実装は `BookServiceDoma` です。
+- `PurchaseOrderType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseOrderTypeConverter`、MyBatis は `PurchaseOrderTypeHandler`、Doma は `@Domain` で扱います。
+- 現在のデフォルト実装は `BooksOperationServiceDoma` です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ Generator / CodeGen を実行してください。
@@ -87,7 +91,7 @@ Gradle Wrapper を使用してください。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とします。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
-- `BookResponse` には `publisherId` と `publisherName` が含まれます。
+- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName` が含まれます。
 - 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針

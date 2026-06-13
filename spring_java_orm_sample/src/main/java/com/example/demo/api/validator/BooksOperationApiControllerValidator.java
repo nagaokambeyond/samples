@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 
 @Component
-public class BookApiControllerValidator {
+public class BooksOperationApiControllerValidator {
     public void searchValidation(
         LocalDate releaseDateFrom,
         LocalDate releaseDateTo

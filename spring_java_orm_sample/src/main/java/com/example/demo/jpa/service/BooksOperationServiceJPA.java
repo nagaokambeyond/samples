@@ -10,7 +10,7 @@ import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.jpa.validator.BookDataValidatorJPA;
-import com.example.demo.service.BookService;
+import com.example.demo.service.BooksOperationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,7 +21,7 @@ import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
-public class BookServiceJPA implements BookService {
+public class BooksOperationServiceJPA implements BooksOperationService {
     private final BookRepository bookRepository;
     private final BookConverter converter;
     private final BookDataValidatorJPA dataValidator;

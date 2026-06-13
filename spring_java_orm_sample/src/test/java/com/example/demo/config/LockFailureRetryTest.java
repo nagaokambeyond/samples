@@ -2,10 +2,10 @@ package com.example.demo.config;
 
 import com.example.demo.BookRowLock;
 import com.example.demo.api.request.BookUpdateRequest;
-import com.example.demo.doma.service.BookServiceDoma;
-import com.example.demo.jpa.service.BookServiceJPA;
-import com.example.demo.mybatis.service.BookServiceMybatis;
-import com.example.demo.service.BookService;
+import com.example.demo.doma.service.BooksOperationServiceDoma;
+import com.example.demo.jpa.service.BooksOperationServiceJPA;
+import com.example.demo.mybatis.service.BooksOperationServiceMybatis;
+import com.example.demo.service.BooksOperationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +27,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 class LockFailureRetryTest {
     @Autowired
-    private BookServiceJPA jpaBookService;
+    private BooksOperationServiceJPA jpaBookService;
 
     @Autowired
-    private BookServiceMybatis mybatisBookService;
+    private BooksOperationServiceMybatis mybatisBookService;
 
     @Autowired
-    private BookServiceDoma domaBookService;
+    private BooksOperationServiceDoma domaBookService;
 
     @Autowired
     private DataSource dataSource;
@@ -61,11 +61,11 @@ class LockFailureRetryTest {
         assertUpdateRetriesOnLockFailure(domaBookService);
     }
 
-    private void assertUpdateRetriesOnLockFailure(BookService bookService) throws Exception {
-        final var before = bookService.findById(1L);
+    private void assertUpdateRetriesOnLockFailure(BooksOperationService booksOperationService) throws Exception {
+        final var before = booksOperationService.findById(1L);
 
         try (final var ignored = BookRowLock.acquire(dataSource, 1L)) {
-            assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "ロック失敗", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, before.getVersion())))
+            assertThatThrownBy(() -> booksOperationService.update(new BookUpdateRequest(1L, "ロック失敗", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, before.getVersion())))
                 .isInstanceOf(PessimisticLockingFailureException.class);
         }
 

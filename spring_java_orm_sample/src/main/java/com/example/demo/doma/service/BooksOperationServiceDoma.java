@@ -11,7 +11,7 @@ import com.example.demo.doma.generator.dao.BookDao;
 import com.example.demo.doma.generator.entity.Book;
 import com.example.demo.doma.validator.BookDataValidatorDoma;
 import com.example.demo.exception.RepositoryDataNotfoundException;
-import com.example.demo.service.BookService;
+import com.example.demo.service.BooksOperationService;
 import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import java.util.Objects;
 @Service
 @Primary
 @RequiredArgsConstructor
-public class BookServiceDoma implements BookService {
+public class BooksOperationServiceDoma implements BooksOperationService {
     private final BookDao bookDao;
     private final BookCustomDao bookCustomDao;
     private final BookConverter converter;
