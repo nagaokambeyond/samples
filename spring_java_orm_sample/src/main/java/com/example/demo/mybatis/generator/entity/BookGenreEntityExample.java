@@ -6,58 +6,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BookGenreEntityExample {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742018+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     protected String orderByClause;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742045+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     protected boolean distinct;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742071+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     protected List<Criteria> oredCriteria;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742005+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public BookGenreEntityExample() {
         oredCriteria = new ArrayList<>();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742029+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public void setOrderByClause(String orderByClause) {
         this.orderByClause = orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742037+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public String getOrderByClause() {
         return orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742053+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742061+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public boolean isDistinct() {
         return distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742079+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public List<Criteria> getOredCriteria() {
         return oredCriteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.74209+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public void or(Criteria criteria) {
         oredCriteria.add(criteria);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742097+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public Criteria or() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742105+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
@@ -66,20 +66,20 @@ public class BookGenreEntityExample {
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742112+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     protected Criteria createCriteriaInternal() {
         Criteria criteria = new Criteria();
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742119+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public void clear() {
         oredCriteria.clear();
         orderByClause = null;
         distinct = false;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742127+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     protected abstract static class GeneratedCriteria {
         protected List<Criterion> criteria;
 
@@ -432,14 +432,14 @@ public class BookGenreEntityExample {
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742334+09:00", comments="do_not_delete_during_merge")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="do_not_delete_during_merge")
     public static class Criteria extends GeneratedCriteria {
         protected Criteria() {
             super();
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", date="2026-06-12T21:00:55.742348+09:00", comments="Source Table: book_genre")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: book_genre")
     public static class Criterion {
         private String condition;
 

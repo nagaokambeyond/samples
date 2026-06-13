@@ -7,6 +7,7 @@
         <plugin type="org.mybatis.generator.plugins.MapperAnnotationPlugin"/>
         <commentGenerator>
             <property name="addRemarkComments" value="true"/>
+            <property name="suppressDate" value="true"/>
         </commentGenerator>
         <!-- 接続先DB情報 -->
         <jdbcConnection driverClass="org.h2.Driver"
@@ -27,10 +28,30 @@
 
         <!-- 生成対象テーブル -->
         <table tableName="book" domainObjectName="BookEntity" mapperName="BookMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
         <table tableName="publisher" domainObjectName="PublisherEntity" mapperName="PublisherMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
         <table tableName="book_genre" domainObjectName="BookGenreEntity" mapperName="BookGenreMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="supplier" domainObjectName="SupplierEntity" mapperName="SupplierMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="store" domainObjectName="StoreEntity" mapperName="StoreMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
+        <table tableName="purchase_order" domainObjectName="PurchaseOrderEntity" mapperName="PurchaseOrderMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <columnOverride
+                    column="purchase_order_type"
+                    property="purchaseOrderType"
+                    javaType="com.example.demo.data.domain.PurchaseOrderType"
+                    typeHandler="com.example.demo.mybatis.typehandler.PurchaseOrderTypeHandler"/>
+        </table>
+        <table tableName="purchase_order_detail" domainObjectName="PurchaseOrderDetailEntity" mapperName="PurchaseOrderDetailMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
     </context>
 </generatorConfiguration>

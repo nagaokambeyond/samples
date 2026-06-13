@@ -1,6 +1,7 @@
 package com.example.demo.doma.generator.dao;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.Statement;
 
@@ -25,6 +26,9 @@ public class BookGenreDaoTest {
     protected Dialect dialect;
 
     /** */
+    protected Driver driver;
+
+    /** */
     protected String url;
 
     /** */
@@ -34,7 +38,7 @@ public class BookGenreDaoTest {
     protected String password;
 
     @BeforeEach
-    protected void setUp() {
+    protected void setUp() throws Exception {
         repository = new NoCacheSqlFileRepository();
         dialect = new org.seasar.doma.jdbc.dialect.H2Dialect();
         url = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'src/main/resources/generator-schema.sql'";
@@ -43,52 +47,55 @@ public class BookGenreDaoTest {
     }
 
     /**
-     * Executes a SQL file against the code generation schema.
-     *
-     * @param sqlFile SQL file to execute
-     * @throws Exception when database access fails
+     * 
+     * @param sqlFile
+     * @throws Exception
      */
     protected void execute(SqlFile sqlFile) throws Exception {
-        try (Connection connection = getConnection()) {
+        Connection connection = getConnection();
+        try {
             connection.setAutoCommit(false);
-            try (Statement statement = connection.createStatement()) {
+            Statement statement = connection.createStatement();
+            try {
                 statement.execute(sqlFile.getSql());
+            } finally {
+                statement.close();
             }
-            connection.rollback();
+        } finally {
+            try {
+                connection.rollback();
+            } finally {
+                connection.close();
+            }
         }
     }
 
     /**
-     * Returns a connection to the code generation schema.
-     *
-     * @return database connection
-     * @throws Exception when database access fails
+     * 
+     * @return
+     * @throws Exception
      */
     protected Connection getConnection() throws Exception {
         return DriverManager.getConnection(url, user, password);
     }
 
     /**
-     * Verifies the selectById SQL file.
-     *
-     * @param testInfo JUnit test metadata
-     * @throws Exception when SQL execution fails
+     * 
+     * @throws Exception
      */
     @Test
     public void testSelectById(TestInfo testInfo) throws Exception {
-        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().orElseThrow(), "META-INF/com/example/demo/doma/generator/dao/BookGenreDao/selectById.sql", dialect);
+        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().get(), "META-INF/com/example/demo/doma/generator/dao/BookGenreDao/selectById.sql", dialect);
         execute(sqlFile);
     }
 
     /**
-     * Verifies the selectByIdAndVersion SQL file.
-     *
-     * @param testInfo JUnit test metadata
-     * @throws Exception when SQL execution fails
+     * 
+     * @throws Exception
      */
     @Test
     public void testSelectByIdAndVersion(TestInfo testInfo) throws Exception {
-        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().orElseThrow(), "META-INF/com/example/demo/doma/generator/dao/BookGenreDao/selectByIdAndVersion.sql", dialect);
+        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().get(), "META-INF/com/example/demo/doma/generator/dao/BookGenreDao/selectByIdAndVersion.sql", dialect);
         execute(sqlFile);
     }
 

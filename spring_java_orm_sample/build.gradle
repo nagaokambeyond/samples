@@ -87,10 +87,13 @@ domaCodeGen {
         url.set(domaCodeGenUrl)
         user.set('sa')
         password.set('')
-        tableNamePattern.set('book|publisher|book_genre')
+        tableNamePattern.set('book|publisher|book_genre|supplier|store|purchase_order|purchase_order_detail|book_stock')
 
         entity {
             packageName.set(domaEntityPackage)
+            entityPropertyClassNamesFile.set(
+                file("src/main/resources/codegen/entityPropertyClassNames.properties")
+            )
         }
         dao {
             packageName.set(domaDaoPackage)
