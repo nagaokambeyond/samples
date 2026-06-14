@@ -17,6 +17,7 @@ import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
 @Transactional
@@ -37,6 +38,13 @@ class BooksOperationServiceMybatisTest {
         assertThat(book.getPublisherName()).isEqualTo("◯◯書房");
         assertThat(book.getGenreId()).isEqualTo(5L);
         assertThat(book.getGenreName()).isEqualTo("工学");
+        assertThat(book.getBookStockList())
+            .extracting("id", "bookStockStoreId", "storeName", "bookStockQuantity")
+            .containsExactly(
+                tuple(1L, 1L, "あ駅前店", 10),
+                tuple(2L, 2L, "い駅前店", 20),
+                tuple(3L, 3L, "う駅前店", 30)
+            );
     }
 
     @Test
@@ -66,6 +74,20 @@ class BooksOperationServiceMybatisTest {
         final var books = bookService.search(null, null, null, 0, 2);
 
         assertThat(books.getContent()).extracting("id").containsExactly(1L, 2L);
+        assertThat(books.getContent().getFirst().getBookStockList())
+            .extracting("id", "bookStockStoreId", "storeName", "bookStockQuantity")
+            .containsExactly(
+                tuple(1L, 1L, "あ駅前店", 10),
+                tuple(2L, 2L, "い駅前店", 20),
+                tuple(3L, 3L, "う駅前店", 30)
+            );
+        assertThat(books.getContent().get(1).getBookStockList())
+            .extracting("id", "bookStockStoreId", "storeName", "bookStockQuantity")
+            .containsExactly(
+                tuple(4L, 1L, "あ駅前店", 11),
+                tuple(5L, 2L, "い駅前店", 21),
+                tuple(6L, 3L, "う駅前店", 31)
+            );
         assertThat(books.getTotalElements()).isGreaterThanOrEqualTo(21);
         assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
     }
@@ -98,6 +120,13 @@ class BooksOperationServiceMybatisTest {
         final var books = bookService.search("はじめて", null, null, 1, 2);
 
         assertThat(books.getContent()).extracting("id").containsExactly(4L, 5L);
+    }
+
+    @Test
+    void findByIdReturnsEmptyBookStockListWhenBookHasNoStock() {
+        final var book = bookService.findById(6L);
+
+        assertThat(book.getBookStockList()).isEmpty();
     }
 
     @Test

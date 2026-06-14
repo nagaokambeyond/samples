@@ -2,16 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.demo.mybatis.mapper.BookCustomMapper">
   <resultMap id="BookWithPublisherNameResultMap" type="com.example.demo.mybatis.entity.BookWithPublisherName">
-    <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="title" jdbcType="VARCHAR" property="title" />
-    <result column="author" jdbcType="VARCHAR" property="author" />
-    <result column="release_date" jdbcType="DATE" property="releaseDate" />
-    <result column="publisher_id" jdbcType="BIGINT" property="publisherId" />
-    <result column="publisher_name" jdbcType="VARCHAR" property="publisherName" />
-    <result column="genre_id" jdbcType="BIGINT" property="genreId" />
-    <result column="genre_name" jdbcType="VARCHAR" property="genreName" />
-    <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
-    <result column="version" jdbcType="BIGINT" property="version" />
+    <id column="b_id" jdbcType="BIGINT" property="id" />
+    <result column="b_title" jdbcType="VARCHAR" property="title" />
+    <result column="b_author" jdbcType="VARCHAR" property="author" />
+    <result column="b_release_date" jdbcType="DATE" property="releaseDate" />
+    <result column="b_publisher_id" jdbcType="BIGINT" property="publisherId" />
+    <result column="b_publisher_name" jdbcType="VARCHAR" property="publisherName" />
+    <result column="b_genre_id" jdbcType="BIGINT" property="genreId" />
+    <result column="b_genre_name" jdbcType="VARCHAR" property="genreName" />
+    <result column="b_update_at" jdbcType="TIMESTAMP" property="updateAt" />
+    <result column="b_version" jdbcType="BIGINT" property="version" />
+    <collection property="bookStockList" ofType="com.example.demo.mybatis.entity.BookStockWithStoreName" notNullColumn="bs_id">
+      <id column="bs_id" jdbcType="BIGINT" property="id" />
+      <result column="bs_book_stock_store_id" jdbcType="BIGINT" property="bookStockStoreId" />
+      <result column="bs_store_name" jdbcType="VARCHAR" property="storeName" />
+      <result column="bs_book_stock_quantity" jdbcType="INTEGER" property="bookStockQuantity" />
+    </collection>
   </resultMap>
 
   <resultMap id="BookEntityResultMap" type="com.example.demo.mybatis.generator.entity.BookEntity">
@@ -31,34 +37,80 @@
   </sql>
 
   <sql id="Book_With_Publisher_Name_Columns">
-    b.id, b.title, b.author, b.release_date, b.publisher_id, p.publisher_name, b.genre_id, g.genre_name, b.update_at, b.version
+    b.id as b_id,
+    b.title as b_title,
+    b.author as b_author,
+    b.release_date as b_release_date,
+    b.publisher_id as b_publisher_id,
+    b.publisher_name as b_publisher_name,
+    b.genre_id as b_genre_id,
+    b.genre_name as b_genre_name,
+    b.update_at as b_update_at,
+    b.version as b_version,
+    bs.id as bs_id,
+    bs.book_stock_store_id as bs_book_stock_store_id,
+    s.store_name as bs_store_name,
+    bs.book_stock_quantity as bs_book_stock_quantity
   </sql>
 
   <select id="selectByPrimaryKeyWithPublisherName" parameterType="java.lang.Long" resultMap="BookWithPublisherNameResultMap">
     select
     <include refid="Book_With_Publisher_Name_Columns" />
-    from book b
-    inner join publisher p on b.publisher_id = p.id
-    inner join book_genre g on b.genre_id = g.id
-    where b.id = #{id,jdbcType=BIGINT}
+    from (
+      select
+        b.id,
+        b.title,
+        b.author,
+        b.release_date,
+        b.publisher_id,
+        p.publisher_name,
+        b.genre_id,
+        g.genre_name,
+        b.update_at,
+        b.version
+      from book b
+      inner join publisher p on b.publisher_id = p.id
+      inner join book_genre g on b.genre_id = g.id
+      where b.id = #{id,jdbcType=BIGINT}
+    ) b
+    left join book_stock bs on bs.book_stock_book_id = b.id
+    left join store s on s.id = bs.book_stock_store_id
+    order by b.id, bs.id
   </select>
 
   <select id="selectByTitleContainingIgnoreCase" parameterType="java.lang.String" resultMap="BookWithPublisherNameResultMap">
+    with paged_book as (
+      select
+        b.id,
+        b.title,
+        b.author,
+        b.release_date,
+        b.publisher_id,
+        p.publisher_name,
+        b.genre_id,
+        g.genre_name,
+        b.update_at,
+        b.version
+      from book b
+      inner join publisher p on b.publisher_id = p.id
+      inner join book_genre g on b.genre_id = g.id
+      where 1 = 1
+      <if test="keyword != null and keyword.trim() != ''">
+        and lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+      </if>
+      <if test="releaseDateFrom != null and releaseDateTo != null">
+        and b.release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
+      </if>
+      order by b.id
+      limit #{limit,jdbcType=INTEGER}
+      offset #{offset,jdbcType=BIGINT}
+    )
     select
     <include refid="Book_With_Publisher_Name_Columns" />
-    from book b
-    inner join publisher p on b.publisher_id = p.id
-    inner join book_genre g on b.genre_id = g.id
-    where 1 = 1
-    <if test="keyword != null and keyword.trim() != ''">
-      and lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
-    </if>
-    <if test="releaseDateFrom != null and releaseDateTo != null">
-      and b.release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
-    </if>
-    order by b.id
-    limit #{limit,jdbcType=INTEGER}
-    offset #{offset,jdbcType=BIGINT}
+    from paged_book b
+    left join book_stock bs on bs.book_stock_book_id = b.id
+    left join store s on s.id = bs.book_stock_store_id
+    order by b.id, bs.id
   </select>
 
   <select id="countByTitleContainingIgnoreCase" resultType="long">

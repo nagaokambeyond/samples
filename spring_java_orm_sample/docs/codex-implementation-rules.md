@@ -14,6 +14,7 @@
 - 未使用なメソッドであれば削除する。
 - JPA / MyBatis / Doma で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
 - 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain` の対応を揃える。
+- SQLで副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
 ## API 実装
 

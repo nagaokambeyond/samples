@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,4 +21,5 @@ public class BookWithPublisherName {
     private String genreName;
     private LocalDateTime updateAt;
     private Long version;
+    private List<BookStockWithStoreName> bookStockList = new ArrayList<>();
 }

@@ -6,6 +6,7 @@ import lombok.Value;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Value
 public class BookResponse{
@@ -47,4 +48,8 @@ public class BookResponse{
     @Schema(description = "バージョン", type = "integer", format = "int64")
     @NotNull
     Long version;
+
+    @Schema(description = "本在庫リスト")
+    @NotNull
+    List<BookStockResponse> bookStockList;
 }

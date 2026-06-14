@@ -11,9 +11,9 @@ import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.jpa.validator.BookDataValidatorJPA;
 import com.example.demo.service.BooksOperationService;
+import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,21 +29,25 @@ public class BooksOperationServiceJPA implements BooksOperationService {
     @Transactional(readOnly = true)
     @Override
     public BookResponse findById(@NonNull Long id) {
-        return bookRepository.findByIdWithPublisherName(id)
-            .map(converter::toResponse)
-            .orElseThrow(RepositoryDataNotfoundException::new);
+        final var books = bookRepository.findByIdWithPublisherName(id);
+        if (books.isEmpty()) {
+            throw new RepositoryDataNotfoundException();
+        }
+        return converter.toResponseFromJpaRows(books);
     }
 
     @Transactional(readOnly = true)
     @Override
     public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
-        final var books = bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, PageRequest.of(page, size));
+        final var offset = PageCalculator.calculateOffset(page, size);
+        final var books = bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
+        final var totalElements = bookRepository.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
-            converter.toResponse(books.getContent()),
+            converter.toResponseListFromJpaRows(books),
             page,
             size,
-            books.getTotalElements(),
-            books.getTotalPages()
+            totalElements,
+            PageCalculator.calculateTotalPages(totalElements, size)
         );
     }
 
