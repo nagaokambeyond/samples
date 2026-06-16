@@ -23,8 +23,8 @@
 - `BookWithPublisherName` は `publisherName`、`genreName`、`bookStockList` を含みます。取得・検索 SQL では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
 - `bookStockList` は `BookStockWithStoreName` と `BookWithPublisherNameAggregateStrategy` で集約します。`book_stock` が存在しない書籍も返せるよう、在庫・店舗は LEFT JOIN を維持してください。
 - 一覧検索で在庫・店舗を結合する場合は、先に書籍を `limit` / `offset` でページングしてから `book_stock` / `store` を結合してください。在庫行の重複でページング件数が崩れないようにします。
-- 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleContainingIgnoreCase.sql` と `countByTitleContainingIgnoreCase.sql` の両方を更新してください。
-- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
+- 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleOrAuthorStartingWithIgnoreCase.sql` と `countByTitleOrAuthorStartingWithIgnoreCase.sql` の両方を更新してください。
+- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル/著者条件を付けない方針を維持してください。
 - 検索では `limit` / `offset` を使います。offset は `PageCalculator.calculateOffset(page, size)` で算出してください。
 - `selectByIdWithWriteLock.sql` は `for update nowait` を使います。ロック失敗時のリトライ方針と合わせて変更してください。
 - `BookDao` / `PublisherDao` / `BookGenreDao` / `SupplierDao` / `StoreDao` / `PurchaseOrderDao` / `PurchaseOrderDetailDao` / `BookStockDao` は Doma CodeGen の生成 DAO です。生成元スキーマとの整合性を維持してください。
@@ -42,8 +42,8 @@
 - `BookWithPublisherName` は `publisherName`、`genreName`、`bookStockList` を含みます。取得・検索 SQL では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
 - `bookStockList` は `BookStockWithStoreName` と `BookCustomMapper.xml` の `<collection>` で組み立てます。`notNullColumn="bs_id"` と `bs_*` 系の列 alias を維持してください。
 - 一覧検索で在庫・店舗を結合する場合は、先に書籍を `limit` / `offset` でページングしてから `book_stock` / `store` を結合してください。在庫行の重複でページング件数が崩れないようにします。
-- 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleContainingIgnoreCase` と `countByTitleContainingIgnoreCase` の両方を更新してください。
-- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
+- 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleOrAuthorStartingWithIgnoreCase` と `countByTitleOrAuthorStartingWithIgnoreCase` の両方を更新してください。
+- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル/著者条件を付けない方針を維持してください。
 - 検索では `limit` / `offset` を使います。offset は `PageCalculator.calculateOffset(page, size)` で算出してください。
 - `selectByPrimaryKeyWithWriteLock` は `for update nowait` を使います。ロック失敗時のリトライ方針と合わせて変更してください。
 - `BookMapper` / `PublisherMapper` / `BookGenreMapper` / `SupplierMapper` / `StoreMapper` / `PurchaseOrderMapper` / `PurchaseOrderDetailMapper` は MyBatis Generator の生成 Mapper です。生成元スキーマとの整合性を維持してください。
@@ -61,7 +61,7 @@
 - `BookWithStockRowProjection` は `publisherName`、`genreName`、在庫・店舗表示用の行項目を含みます。取得・検索 query では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
 - JPA の `BookWithStockRowProjection` は1書籍1行ではなく、在庫単位の行を返します。`BookConverter.toResponseFromJpaRows` / `toResponseListFromJpaRows` で書籍単位に集約し、`bookStockList` を組み立ててください。
 - JPA 側のページング検索は、取得 query と count query の条件を揃えてください。一覧検索で在庫・店舗を結合する場合は、先に書籍をページングしてから `book_stock` / `store` を結合し、count query は書籍条件のみを数える方針を維持してください。
-- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
+- 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル/著者条件を付けない方針を維持してください。
 - JPA 側の更新・削除では `findByIdWithWriteLock` による書き込みロックを維持してください。
 - JPA 側の `publisherId` / `genreId` 参照存在チェックは `PublisherRepository` / `BookGenreRepository` を使う `BookDataValidatorJPA` に集約してください。
 - `PurchaseOrderType` は `PurchaseOrderTypeConverter` で DB の整数値に変換します。値を変更する場合は DB の CHECK 制約と MyBatis / Doma 側の変換設定も確認してください。

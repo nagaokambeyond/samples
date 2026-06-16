@@ -52,6 +52,8 @@ CREATE TABLE book (
 CREATE INDEX idx_book_01 ON book(release_date);
 CREATE INDEX idx_book_02 ON book(publisher_id);
 CREATE INDEX idx_book_03 ON book(genre_id);
+CREATE INDEX idx_book_04 ON book(title);
+CREATE INDEX idx_book_05 ON book(author);
 
 comment on table book is '本';
 comment on column book.author is '著者';

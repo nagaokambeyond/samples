@@ -14,10 +14,10 @@ import java.util.List;
 @ConfigAutowireable
 public interface BookCustomDao {
     @Select(aggregateStrategy = BookWithPublisherNameAggregateStrategy.class)
-    List<BookWithPublisherName> selectByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int limit, long offset);
+    List<BookWithPublisherName> selectByTitleOrAuthorStartingWithIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int limit, long offset);
 
     @Select
-    long countByTitleContainingIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo);
+    long countByTitleOrAuthorStartingWithIgnoreCase(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo);
 
     @Select(aggregateStrategy = BookWithPublisherNameAggregateStrategy.class)
     BookWithPublisherName selectByIdWithPublisherName(Long id);

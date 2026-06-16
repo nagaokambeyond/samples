@@ -18,7 +18,10 @@ with paged_book as (
     1 = 1
 /*%if keyword != null && !keyword.trim().isEmpty() */
     and
-    lower(b.title) like concat('%', lower(/* keyword */'Spring'), '%')
+    (
+      lower(b.title) like concat(lower(/* keyword */'Spring'), '%')
+      or lower(b.author) like concat(lower(/* keyword */'Spring'), '%')
+    )
 /*%end*/
 /*%if releaseDateFrom != null && releaseDateTo != null*/
     and b.release_date between /* releaseDateFrom */'2020-01-01' and /* releaseDateTo */'2020-01-01'

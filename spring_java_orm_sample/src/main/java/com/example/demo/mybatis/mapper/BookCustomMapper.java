@@ -12,7 +12,7 @@ import java.util.List;
 public interface BookCustomMapper {
     BookWithPublisherName selectByPrimaryKeyWithPublisherName(@Param("id") Long id);
 
-    List<BookWithPublisherName> selectByTitleContainingIgnoreCase(
+    List<BookWithPublisherName> selectByTitleOrAuthorStartingWithIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
         @Param("releaseDateTo") LocalDate releaseDateTo,
@@ -20,7 +20,7 @@ public interface BookCustomMapper {
         @Param("offset") long offset
     );
 
-    long countByTitleContainingIgnoreCase(
+    long countByTitleOrAuthorStartingWithIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
         @Param("releaseDateTo") LocalDate releaseDateTo

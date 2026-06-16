@@ -40,8 +40,8 @@ public class BooksOperationServiceJPA implements BooksOperationService {
     @Override
     public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
         final var offset = PageCalculator.calculateOffset(page, size);
-        final var books = bookRepository.findByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
-        final var totalElements = bookRepository.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
+        final var books = bookRepository.findByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
+        final var totalElements = bookRepository.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
             converter.toResponseListFromJpaRows(books),
             page,

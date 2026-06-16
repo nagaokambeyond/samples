@@ -43,14 +43,14 @@ class BooksOperationApiControllerTest {
 
     @Test
     void getBookSearchReturnsBadRequestWhenPageIsNegative() throws Exception {
-        final var response = get("/api/books/search?title=spring&page=-1");
+        final var response = get("/api/books/search?keyword=spring&page=-1");
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     void getBookSearchReturnsConfiguredPageSize() throws Exception {
-        final var response = get("/api/books/search?title=spring&page=0");
+        final var response = get("/api/books/search?keyword=spring&page=0");
         final var json = OBJECT_MAPPER.readTree(response.body());
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -59,7 +59,7 @@ class BooksOperationApiControllerTest {
 
     @Test
     void getBookSearchReturnsGenreId() throws Exception {
-        final var response = get("/api/books/search?title=spring&page=0");
+        final var response = get("/api/books/search?keyword=spring&page=0");
         final var json = OBJECT_MAPPER.readTree(response.body());
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());

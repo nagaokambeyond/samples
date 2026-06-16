@@ -15,7 +15,9 @@ import java.time.LocalDateTime;
 @Table(name = "book", comment = "本", indexes ={
     @Index(name = "idx_book_01", columnList = "release_date"),
     @Index(name = "idx_book_02", columnList = "publisher_id"),
-    @Index(name = "idx_book_03", columnList = "genre_id")
+    @Index(name = "idx_book_03", columnList = "genre_id"),
+    @Index(name = "idx_book_04", columnList = "title"),
+    @Index(name = "idx_book_05", columnList = "author")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter

@@ -40,8 +40,8 @@ public class BooksOperationServiceMybatis implements BooksOperationService {
     @Override
     public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
         final var offset = PageCalculator.calculateOffset(page, size);
-        final var books = bookCustomMapper.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
-        final var totalElements = bookCustomMapper.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
+        final var books = bookCustomMapper.selectByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
+        final var totalElements = bookCustomMapper.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
             converter.toResponseFromMybatisBooks(books),
             page,

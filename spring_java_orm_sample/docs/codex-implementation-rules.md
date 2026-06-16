@@ -23,7 +23,7 @@
 - API の入出力には Entity ではなく request / response DTO を使う。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - `BookResponse` には `publisherName` と `genreName` が含まれる。取得・検索系の SQL / JPQL は `publisher`、`book_genre` と結合し、`BookConverter` に渡す値を揃える。
-- 検索 API は任意の `title`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱う。
+- 検索 API は任意の `keyword`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱う。`keyword` はタイトルまたは著者の前方一致条件として扱う。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
 - 日付範囲の相関チェックは `BooksOperationApiControllerValidator` に集約する。
 - `page` は 0 始まりとする。ページサイズはリクエストパラメータではなく、`application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込む。

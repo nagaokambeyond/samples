@@ -78,7 +78,7 @@
     order by b.id, bs.id
   </select>
 
-  <select id="selectByTitleContainingIgnoreCase" parameterType="java.lang.String" resultMap="BookWithPublisherNameResultMap">
+  <select id="selectByTitleOrAuthorStartingWithIgnoreCase" parameterType="java.lang.String" resultMap="BookWithPublisherNameResultMap">
     with paged_book as (
       select
         b.id,
@@ -96,7 +96,10 @@
       inner join book_genre g on b.genre_id = g.id
       where 1 = 1
       <if test="keyword != null and keyword.trim() != ''">
-        and lower(b.title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+        and (
+          lower(b.title) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
+          or lower(b.author) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
+        )
       </if>
       <if test="releaseDateFrom != null and releaseDateTo != null">
         and b.release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
@@ -113,12 +116,15 @@
     order by b.id, bs.id
   </select>
 
-  <select id="countByTitleContainingIgnoreCase" resultType="long">
+  <select id="countByTitleOrAuthorStartingWithIgnoreCase" resultType="long">
     select count(*)
     from book
     where 1 = 1
     <if test="keyword != null and keyword.trim() != ''">
-      and lower(title) like concat('%', lower(#{keyword,jdbcType=VARCHAR}), '%')
+      and (
+        lower(title) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
+        or lower(author) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
+      )
     </if>
     <if test="releaseDateFrom != null and releaseDateTo != null">
       and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}

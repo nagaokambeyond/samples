@@ -88,7 +88,7 @@ Gradle Wrapper を使用してください。
 
 ## 現在の API 仕様メモ
 
-- 検索 API は任意の `title`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱います。
+- 検索 API は任意の `keyword`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱います。`keyword` はタイトルまたは著者の前方一致条件として扱います。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とします。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。

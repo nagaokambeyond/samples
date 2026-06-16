@@ -44,8 +44,8 @@ public class BooksOperationServiceDoma implements BooksOperationService {
     @Override
     public BookPageResponse search(String keyword, LocalDate releaseDateFrom, LocalDate releaseDateTo, int page, int size) {
         final var offset = PageCalculator.calculateOffset(page, size);
-        final var books = bookCustomDao.selectByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
-        final var totalElements = bookCustomDao.countByTitleContainingIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
+        final var books = bookCustomDao.selectByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
+        final var totalElements = bookCustomDao.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
             converter.toResponseFromDomaBooks(books),
             page,

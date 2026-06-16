@@ -36,13 +36,13 @@ public class BooksOperationApiController implements BooksOperationApi {
 
     @Override
     public BookPageResponse getBookSearch(
-        @RequestParam(required = false) String title,
+        @RequestParam(required = false) String keyword,
         @RequestParam(required = false) LocalDate releaseDateFrom,
         @RequestParam(required = false) LocalDate releaseDateTo,
         @RequestParam @NotNull @Min(0) Integer page
     ) {
         validator.searchValidation(releaseDateFrom, releaseDateTo);
-        return booksOperationService.search(title, releaseDateFrom, releaseDateTo, page, searchProperties.getPageSize());
+        return booksOperationService.search(keyword, releaseDateFrom, releaseDateTo, page, searchProperties.getPageSize());
     }
 
     @Override

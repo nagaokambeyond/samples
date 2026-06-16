@@ -69,6 +69,33 @@ class BooksOperationServiceDomaTest {
     }
 
     @Test
+    void searchMatchesAuthorStartingWithIgnoreCase() {
+        final var books = booksOperationService.search("taro", null, null, 0, 10);
+
+        assertThat(books.getContent()).extracting("id").containsExactly(1L);
+        assertThat(books.getTotalElements()).isEqualTo(1);
+        assertThat(books.getTotalPages()).isEqualTo(calculateTotalPages(books.getTotalElements(), books.getSize()));
+    }
+
+    @Test
+    void searchDoesNotMatchTitleContainingKeyword() {
+        final var books = booksOperationService.search("入門", null, null, 0, 10);
+
+        assertThat(books.getContent()).isEmpty();
+        assertThat(books.getTotalElements()).isZero();
+        assertThat(books.getTotalPages()).isZero();
+    }
+
+    @Test
+    void searchDoesNotMatchAuthorContainingKeyword() {
+        final var books = booksOperationService.search("aro", null, null, 0, 10);
+
+        assertThat(books.getContent()).isEmpty();
+        assertThat(books.getTotalElements()).isZero();
+        assertThat(books.getTotalPages()).isZero();
+    }
+
+    @Test
     void searchFiltersByReleaseDateRange() {
         final var books = booksOperationService.search("spring", LocalDate.of(2020, 1, 1), LocalDate.of(2020, 1, 1), 0, 10);
 
@@ -76,7 +103,7 @@ class BooksOperationServiceDomaTest {
     }
 
     @Test
-    void searchDoesNotFilterByTitleWhenKeywordIsNull() {
+    void searchDoesNotFilterByKeywordWhenKeywordIsNull() {
         final var books = booksOperationService.search(null, null, null, 0, 2);
 
         assertThat(books.getContent()).extracting("id").containsExactly(1L, 2L);
@@ -99,7 +126,7 @@ class BooksOperationServiceDomaTest {
     }
 
     @Test
-    void searchDoesNotFilterByTitleWhenKeywordIsBlank() {
+    void searchDoesNotFilterByKeywordWhenKeywordIsBlank() {
         final var books = booksOperationService.search("   ", null, null, 0, 2);
 
         assertThat(books.getContent()).extracting("id").containsExactly(1L, 2L);

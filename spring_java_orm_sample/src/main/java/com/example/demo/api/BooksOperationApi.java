@@ -42,8 +42,8 @@ public interface BooksOperationApi {
         @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class))),
     })
     BookPageResponse getBookSearch(
-        @Parameter(description = "タイトル")
-        @RequestParam(required = false) String title,
+        @Parameter(description = "タイトルまたは著者の検索キーワード")
+        @RequestParam(required = false) String keyword,
         @Parameter(description = "発売日付From")
         @RequestParam(required = false) LocalDate releaseDateFrom,
         @Parameter(description = "発売日付To")

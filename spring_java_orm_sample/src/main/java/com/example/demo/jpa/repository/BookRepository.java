@@ -55,7 +55,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             FROM book b
             JOIN publisher p ON b.publisher_id = p.id
             JOIN book_genre g ON b.genre_id = g.id
-            WHERE (:keyword IS NULL OR trim(:keyword) = '' OR lower(b.title) LIKE lower(concat('%', :keyword, '%')))
+            WHERE (:keyword IS NULL OR trim(:keyword) = ''
+                   OR lower(b.title) LIKE lower(concat(:keyword, '%'))
+                   OR lower(b.author) LIKE lower(concat(:keyword, '%')))
               AND (:releaseDateFrom IS NULL OR b.release_date >= :releaseDateFrom)
               AND (:releaseDateTo IS NULL OR b.release_date <= :releaseDateTo)
             ORDER BY b.id
@@ -81,7 +83,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         LEFT JOIN store s ON s.id = bs.book_stock_store_id
         ORDER BY b.id, bs.id
         """, nativeQuery = true)
-    List<BookWithStockRowProjection> findByTitleContainingIgnoreCase(
+    List<BookWithStockRowProjection> findByTitleOrAuthorStartingWithIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
         @Param("releaseDateTo") LocalDate releaseDateTo,
@@ -92,11 +94,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query(value = """
         SELECT count(*)
         FROM book b
-        WHERE (:keyword IS NULL OR trim(:keyword) = '' OR lower(b.title) LIKE lower(concat('%', :keyword, '%')))
+        WHERE (:keyword IS NULL OR trim(:keyword) = ''
+               OR lower(b.title) LIKE lower(concat(:keyword, '%'))
+               OR lower(b.author) LIKE lower(concat(:keyword, '%')))
           AND (:releaseDateFrom IS NULL OR b.release_date >= :releaseDateFrom)
           AND (:releaseDateTo IS NULL OR b.release_date <= :releaseDateTo)
         """, nativeQuery = true)
-    long countByTitleContainingIgnoreCase(
+    long countByTitleOrAuthorStartingWithIgnoreCase(
         @Param("keyword") String keyword,
         @Param("releaseDateFrom") LocalDate releaseDateFrom,
         @Param("releaseDateTo") LocalDate releaseDateTo
