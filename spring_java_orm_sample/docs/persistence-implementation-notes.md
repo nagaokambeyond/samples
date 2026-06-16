@@ -5,7 +5,7 @@
 - 現在のデフォルト実装は `BooksOperationServiceDoma` です。
 - `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
 - `BookDataValidatorJPA` / `BookDataValidatorMybatis` / `BookDataValidatorDoma` は永続化方式ごとのデータバリデーションを扱います。
-- `BookConverter` は projection / 表示向け Entity から response DTO への変換を扱います。
+- `BookConverter` は projection / 表示向け Entity から response DTO への変換を扱います。JPA の行 projection はここで書籍単位に集約し、`bookStockList` を組み立てます。
 - `book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。
 - 現在のスキーマには `publisher`、`book_genre`、`book`、`supplier`、`store`、`purchase_order`、`purchase_order_detail`、`book_stock` があります。
 - `purchase_order.purchase_order_type` は `PurchaseOrderType` で扱います。JPA / MyBatis / Doma の型変換設定を揃えてください。
@@ -19,8 +19,10 @@
 - `src/main/resources/META-INF/com/example/demo/doma/generator/dao` 配下の SQL も生成物として扱ってください。
 - 手書き SQL は `BookCustomDao` と `src/main/resources/META-INF/com/example/demo/doma/dao` 配下に追加してください。
 - Doma の DAO メソッドを追加する場合は、対応する SQL ファイルのパスとメソッド名を揃えてください。
-- `BookWithPublisherName` は Doma 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は SQL と `BookConverter` も更新してください。
-- `BookWithPublisherName` は `publisherName` と `genreName` を含みます。取得・検索 SQL では `publisher` と `book_genre` の結合を維持してください。
+- `BookWithPublisherName` は Doma 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は SQL、`BookWithPublisherNameAggregateStrategy`、`BookConverter` も更新してください。
+- `BookWithPublisherName` は `publisherName`、`genreName`、`bookStockList` を含みます。取得・検索 SQL では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
+- `bookStockList` は `BookStockWithStoreName` と `BookWithPublisherNameAggregateStrategy` で集約します。`book_stock` が存在しない書籍も返せるよう、在庫・店舗は LEFT JOIN を維持してください。
+- 一覧検索で在庫・店舗を結合する場合は、先に書籍を `limit` / `offset` でページングしてから `book_stock` / `store` を結合してください。在庫行の重複でページング件数が崩れないようにします。
 - 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleContainingIgnoreCase.sql` と `countByTitleContainingIgnoreCase.sql` の両方を更新してください。
 - 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
 - 検索では `limit` / `offset` を使います。offset は `PageCalculator.calculateOffset(page, size)` で算出してください。
@@ -36,8 +38,10 @@
 - `src/main/java/com/example/demo/mybatis/generator` 配下は MyBatis Generator の生成コードです。手作業での編集は避けてください。
 - `src/main/resources/com/example/demo/mybatis/generator` 配下の XML も生成物として扱ってください。
 - 手書き SQL は `BookCustomMapper` と `BookCustomMapper.xml` に追加してください。
-- `BookWithPublisherName` は MyBatis 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は resultMap と `BookConverter` も更新してください。
-- `BookWithPublisherName` は `publisherName` と `genreName` を含みます。取得・検索 SQL では `publisher` と `book_genre` の結合を維持してください。
+- `BookWithPublisherName` は MyBatis 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は resultMap、nested collection、`BookConverter` も更新してください。
+- `BookWithPublisherName` は `publisherName`、`genreName`、`bookStockList` を含みます。取得・検索 SQL では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
+- `bookStockList` は `BookStockWithStoreName` と `BookCustomMapper.xml` の `<collection>` で組み立てます。`notNullColumn="bs_id"` と `bs_*` 系の列 alias を維持してください。
+- 一覧検索で在庫・店舗を結合する場合は、先に書籍を `limit` / `offset` でページングしてから `book_stock` / `store` を結合してください。在庫行の重複でページング件数が崩れないようにします。
 - 検索では一覧取得 SQL と count SQL を対で扱ってください。条件を変更する場合は `selectByTitleContainingIgnoreCase` と `countByTitleContainingIgnoreCase` の両方を更新してください。
 - 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
 - 検索では `limit` / `offset` を使います。offset は `PageCalculator.calculateOffset(page, size)` で算出してください。
@@ -52,10 +56,11 @@
 
 - JPA 実装は `BooksOperationServiceJPA`、`BookRepository`、`PublisherRepository`、`BookGenreRepository`、`Book`、`Publisher`、`BookGenre` を中心に構成されています。
 - JPA Entity には `Supplier`、`Store`、`PurchaseOrder`、`PurchaseOrderDetail`、`BookStock` もあります。これらを Service/API から扱う場合は Repository、Validator、テストの追加を検討してください。
-- JPA 側の検索は Spring Data JPA Repository メソッドまたは明示的な `@Query` を優先してください。
-- JPA 側の取得・検索レスポンスは `BookWithPublisherNameProjection` を使います。列を変更する場合は projection、JPQL、`BookConverter` を揃えてください。
-- `BookWithPublisherNameProjection` は `publisherName` と `genreName` を含みます。取得・検索 JPQL では `Publisher` と `BookGenre` の結合を維持してください。
-- JPA 側のページング検索は `Pageable` と `countQuery` を使います。検索条件を変更する場合は取得クエリと countQuery の条件を揃えてください。
+- JPA 側の検索は Spring Data JPA Repository メソッドまたは明示的な `@Query` を優先してください。在庫リストのように1書籍が複数行になる取得では native query と projection の利用を許容します。
+- JPA 側の取得・検索レスポンスは `BookRepository.BookWithStockRowProjection` を使います。列を変更する場合は projection、native query、`BookConverter` を揃えてください。
+- `BookWithStockRowProjection` は `publisherName`、`genreName`、在庫・店舗表示用の行項目を含みます。取得・検索 query では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
+- JPA の `BookWithStockRowProjection` は1書籍1行ではなく、在庫単位の行を返します。`BookConverter.toResponseFromJpaRows` / `toResponseListFromJpaRows` で書籍単位に集約し、`bookStockList` を組み立ててください。
+- JPA 側のページング検索は、取得 query と count query の条件を揃えてください。一覧検索で在庫・店舗を結合する場合は、先に書籍をページングしてから `book_stock` / `store` を結合し、count query は書籍条件のみを数える方針を維持してください。
 - 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル条件を付けない方針を維持してください。
 - JPA 側の更新・削除では `findByIdWithWriteLock` による書き込みロックを維持してください。
 - JPA 側の `publisherId` / `genreId` 参照存在チェックは `PublisherRepository` / `BookGenreRepository` を使う `BookDataValidatorJPA` に集約してください。
@@ -84,7 +89,10 @@
   - Doma CodeGen の生成 Entity / DAO / SQL
   - 手書き MyBatis Mapper XML
   - 手書き Doma SQL
-  - JPA projection / MyBatis Entity / Doma Entity の `BookWithPublisherName`
+  - JPA `BookWithStockRowProjection`
+  - MyBatis Entity / Doma Entity の `BookWithPublisherName`
+  - MyBatis / Doma の `BookStockWithStoreName`
+  - Doma `BookWithPublisherNameAggregateStrategy`
   - 各永続化方式の `BookDataValidator*`
   - request / response DTO
   - `BookConverter`
@@ -98,6 +106,7 @@
 - `release_date` は検索条件と DTO に関係します。変更時は API バリデーションと3つの Service 実装を確認してください。
 - `publisher_id` は `publisher`、`genre_id` は `book_genre` への外部キーです。変更時は初期データ、生成 Mapper/DAO、外部キー参照チェックを確認してください。
 - `publisher_name` / `genre_name` はレスポンス表示項目です。変更時は projection / 表示向け Entity / SQL / `BookConverter` を確認してください。
+- `bookStockList` はレスポンス表示項目です。`book_stock` または `store` を変更する場合は、JPA の行 projection、MyBatis の nested collection、Doma の aggregate strategy、`BookStockResponse`、`BookConverter` を確認してください。
 - `purchase_order_type` は `PurchaseOrderType` と DB CHECK 制約に関係します。値追加・変更時は各永続化方式の型変換を確認してください。
 - 仕入・在庫系の外部キーを変更する場合は、`purchase_order.return_purchase_order_id`、`purchase_order.supplier_id`、`purchase_order.receiving_store_id`、`purchase_order_detail.purchase_order_id`、`purchase_order_detail.purchase_order_detail_book_id`、`book_stock.book_stock_store_id`、`book_stock.book_stock_book_id` の整合性を確認してください。
 - 検索条件を変更する場合は、JPA / MyBatis / Doma の一覧取得と件数取得が同じ条件になるよう確認してください。

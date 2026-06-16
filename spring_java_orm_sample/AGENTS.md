@@ -19,7 +19,7 @@
 
 API は `/api/books` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_order`、`purchase_order_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名を含む `BookPageResponse` を返します。
+現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_order`、`purchase_order_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名・ジャンル名・在庫リストを含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -59,7 +59,7 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/data/domain`: JPA / MyBatis / Doma で共有するドメイン型
 - `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース、ページ計算
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
-- `src/main/java/com/example/demo/converter`: projection / 表示向け Entity から response DTO への変換
+- `src/main/java/com/example/demo/converter`: projection / 表示向け Entity から response DTO への変換、在庫行の集約
 - `src/main/java/com/example/demo/config`: Spring 設定、例外ハンドリング、検索設定、ロック失敗リトライ設定
 - `src/main/java/com/example/demo/jpa`: JPA 実装
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装
@@ -79,6 +79,7 @@ Gradle Wrapper を使用してください。
 - `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
 - `PageCalculator` はページ数と offset の計算を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
+- `BookConverter` は本情報と `book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
 - `PurchaseOrderType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseOrderTypeConverter`、MyBatis は `PurchaseOrderTypeHandler`、Doma は `@Domain` で扱います。
 - 現在のデフォルト実装は `BooksOperationServiceDoma` です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
@@ -91,7 +92,7 @@ Gradle Wrapper を使用してください。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とします。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
-- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName` が含まれます。
+- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`bookStockList` が含まれます。
 - 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針
