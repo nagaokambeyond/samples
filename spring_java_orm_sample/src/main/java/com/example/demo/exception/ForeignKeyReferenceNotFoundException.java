@@ -1,7 +1,10 @@
 package com.example.demo.exception;
 
+import lombok.Getter;
+
 import java.util.Locale;
 
+@Getter
 public class ForeignKeyReferenceNotFoundException extends RuntimeException {
     private final String tableName;
     private final Long id;
@@ -14,14 +17,6 @@ public class ForeignKeyReferenceNotFoundException extends RuntimeException {
 
     public ForeignKeyReferenceNotFoundException(Class<?> entityClass, Long id) {
         this(resolveTableName(entityClass), id);
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     private static String resolveTableName(Class<?> entityClass) {
