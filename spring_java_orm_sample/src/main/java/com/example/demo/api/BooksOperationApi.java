@@ -109,7 +109,40 @@ public interface BooksOperationApi {
     @Operation(summary = "本登録")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(
+            responseCode = "400",
+            description = "リクエストエラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = {
+                    @ExampleObject(
+                        name = "invalidRequestBody",
+                        summary = "リクエストボディのバリデーションエラー",
+                        value = """
+                            {
+                              "detail": "Invalid request content.",
+                              "instance": "/api/books/create",
+                              "status": 400,
+                              "title": "Bad Request"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "publisherReferenceNotFound",
+                        summary = "出版社の参照先なし",
+                        value = """
+                            {
+                              "detail": "参照先データが存在しません: publisher(id=999)",
+                              "instance": "/api/books/create",
+                              "status": 400,
+                              "title": "データバリデーション"
+                            }
+                            """
+                    )
+                }
+            )
+        )
     })
     BookResponse createBook(
         @RequestBody @Valid @NotNull BookCreateRequest request
@@ -119,8 +152,59 @@ public interface BooksOperationApi {
     @Operation(summary = "本更新")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "リクエストエラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = {
+                    @ExampleObject(
+                        name = "invalidRequestBody",
+                        summary = "リクエストボディのバリデーションエラー",
+                        value = """
+                            {
+                              "detail": "Invalid request content.",
+                              "instance": "/api/books/update",
+                              "status": 400,
+                              "title": "Bad Request"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "publisherReferenceNotFound",
+                        summary = "出版社の参照先なし",
+                        value = """
+                            {
+                              "detail": "参照先データが存在しません: publisher(id=999)",
+                              "instance": "/api/books/update",
+                              "status": 400,
+                              "title": "データバリデーション"
+                            }
+                            """
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "データなし",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "bookNotFound",
+                    summary = "更新対象の本が存在しない",
+                    value = """
+                        {
+                          "instance": "/api/books/update",
+                          "status": 404,
+                          "title": "該当データなし"
+                        }
+                        """
+                )
+            )
+        ),
         @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
     })
     BookResponse updateBook(
@@ -131,8 +215,45 @@ public interface BooksOperationApi {
     @Operation(summary = "本削除")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
-        @ApiResponse(responseCode = "400", description = "リクエストエラー", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "リクエストエラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "invalidBookId",
+                    summary = "本IDの形式不正",
+                    value = """
+                        {
+                          "detail": "Failed to convert 'id' with value: 'abc'",
+                          "instance": "/api/books/abc",
+                          "status": 400,
+                          "title": "Bad Request"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "データなし",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "bookNotFound",
+                    summary = "削除対象の本が存在しない",
+                    value = """
+                        {
+                          "instance": "/api/books/999",
+                          "status": 404,
+                          "title": "該当データなし"
+                        }
+                        """
+                )
+            )
+        ),
         @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
     })
     void deleteBook(

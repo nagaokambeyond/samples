@@ -18,7 +18,6 @@ public class GlobalExceptionHandler {
         final var problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
 
         problem.setTitle("該当データなし");
-        problem.setDetail(ex.getMessage());
 
         return problem;
     }
