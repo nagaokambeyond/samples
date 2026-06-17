@@ -48,7 +48,25 @@ public interface BooksOperationApi {
                 )
             )
         ),
-        @ApiResponse(responseCode = "404", description = "データなし", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(
+            responseCode = "404",
+            description = "データなし",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "bookNotFound",
+                    summary = "取得対象の本が存在しない",
+                    value = """
+                        {
+                          "instance": "/api/books/999",
+                          "status": 404,
+                          "title": "該当データなし"
+                        }
+                        """
+                )
+            )
+        )
     })
     ResponseEntity<BookResponse> getBook(
         @Parameter(description = "本ID")
@@ -205,7 +223,26 @@ public interface BooksOperationApi {
                 )
             )
         ),
-        @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(
+            responseCode = "409",
+            description = "更新競合",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "updateConflict",
+                    summary = "他ユーザーによる更新競合",
+                    value = """
+                        {
+                          "detail": "他ユーザーによって更新されています",
+                          "instance": "/api/books/update",
+                          "status": 409,
+                          "title": "更新競合"
+                        }
+                        """
+                )
+            )
+        )
     })
     BookResponse updateBook(
         @RequestBody @Valid @NotNull BookUpdateRequest request
@@ -254,7 +291,26 @@ public interface BooksOperationApi {
                 )
             )
         ),
-        @ApiResponse(responseCode = "409", description = "更新競合", content = @Content(mediaType = "application/json",schema = @Schema(implementation = ProblemDetail.class)))
+        @ApiResponse(
+            responseCode = "409",
+            description = "更新競合",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "updateConflict",
+                    summary = "削除対象が他ユーザーにより更新中",
+                    value = """
+                        {
+                          "detail": "他ユーザーによって更新されています",
+                          "instance": "/api/books/1",
+                          "status": 409,
+                          "title": "更新競合"
+                        }
+                        """
+                )
+            )
+        )
     })
     void deleteBook(
         @Parameter(description = "本ID")
