@@ -3,6 +3,8 @@ package com.example.demo.doma.validator;
 import com.example.demo.doma.generator.dao.BookGenreDao;
 import com.example.demo.doma.generator.dao.PublisherDao;
 import com.example.demo.doma.generator.entity.Book;
+import com.example.demo.doma.generator.entity.BookGenre;
+import com.example.demo.doma.generator.entity.Publisher;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -18,9 +20,13 @@ public class BookDataValidatorDoma {
 
     public void foreignKeyValidate(Long publisherId, Long genreId) {
         final var publisher = publisherDao.selectById(publisherId);
+        if (Objects.isNull(publisher)) {
+            throw new ForeignKeyReferenceNotFoundException(Publisher.class, publisherId);
+        }
+
         final var bookGenre = bookGenreDao.selectById(genreId);
-        if (Objects.isNull(publisher) || Objects.isNull(bookGenre)) {
-            throw new ForeignKeyReferenceNotFoundException();
+        if (Objects.isNull(bookGenre)) {
+            throw new ForeignKeyReferenceNotFoundException(BookGenre.class, genreId);
         }
     }
 

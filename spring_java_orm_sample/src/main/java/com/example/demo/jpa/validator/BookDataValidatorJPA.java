@@ -2,6 +2,8 @@ package com.example.demo.jpa.validator;
 
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.jpa.entity.Book;
+import com.example.demo.jpa.entity.BookGenre;
+import com.example.demo.jpa.entity.Publisher;
 import com.example.demo.jpa.repository.BookGenreRepository;
 import com.example.demo.jpa.repository.PublisherRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +19,11 @@ public class BookDataValidatorJPA {
     private final BookGenreRepository bookGenreRepository;
 
     public void foreignKeyValidate(Long publisherId, Long genreId) {
-        if (!publisherRepository.existsById(publisherId) || !bookGenreRepository.existsById(genreId)) {
-            throw new ForeignKeyReferenceNotFoundException();
+        if (!publisherRepository.existsById(publisherId)) {
+            throw new ForeignKeyReferenceNotFoundException(Publisher.class, publisherId);
+        }
+        if (!bookGenreRepository.existsById(genreId)) {
+            throw new ForeignKeyReferenceNotFoundException(BookGenre.class, genreId);
         }
     }
 

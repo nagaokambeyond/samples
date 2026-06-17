@@ -200,13 +200,15 @@ class BooksOperationServiceJPATest {
     @Test
     void createThrowsWhenPublisherDoesNotExist() {
         assertThatThrownBy(() -> bookService.create(new BookCreateRequest("JPA入門", "Jiro", LocalDate.of(2021, 1, 1), 999L, 5L)))
-            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
+            .hasMessage("参照先データが存在しません: publisher(id=999)");
     }
 
     @Test
     void createThrowsWhenBookGenreDoesNotExist() {
         assertThatThrownBy(() -> bookService.create(new BookCreateRequest("JPA入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 999L)))
-            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
+            .hasMessage("参照先データが存在しません: book_genre(id=999)");
     }
 
     @Test
@@ -237,7 +239,8 @@ class BooksOperationServiceJPATest {
         final var before = bookService.findById(1L);
 
         assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, 5L, before.getVersion())))
-            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
+            .hasMessage("参照先データが存在しません: publisher(id=999)");
     }
 
     @Test
@@ -245,7 +248,8 @@ class BooksOperationServiceJPATest {
         final var before = bookService.findById(1L);
 
         assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "JPA更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 999L, before.getVersion())))
-            .isInstanceOf(ForeignKeyReferenceNotFoundException.class);
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
+            .hasMessage("参照先データが存在しません: book_genre(id=999)");
     }
 
     @Test
