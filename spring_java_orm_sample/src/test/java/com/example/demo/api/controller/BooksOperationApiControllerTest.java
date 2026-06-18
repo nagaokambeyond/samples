@@ -11,6 +11,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,8 +46,10 @@ class BooksOperationApiControllerTest {
     @Test
     void getBookSearchReturnsBadRequestWhenPageIsNegative() throws Exception {
         final var response = get("/api/books/search?keyword=spring&page=-1");
+        final var json = OBJECT_MAPPER.readTree(response.body());
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(getErrorFields(json)).contains("page");
     }
 
     @Test
@@ -67,11 +71,41 @@ class BooksOperationApiControllerTest {
         assertThat(json.get("content").get(0).get("genreName").asText()).isEqualTo("工学");
     }
 
+    @Test
+    void createBookReturnsBadRequestWithFieldErrorsWhenRequestBodyIsInvalid() throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/books/create"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(
+                """
+                {
+                  "title": "",
+                  "releaseDate": null,
+                  "publisherId": null,
+                  "genreId": null
+                }
+                """
+            ))
+            .build();
+        final var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
+        assertThat(getErrorFields(json)).contains("title", "releaseDate", "publisherId", "genreId");
+    }
+
     private HttpResponse<String> get(String path) throws Exception {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + path))
             .GET()
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private List<String> getErrorFields(com.fasterxml.jackson.databind.JsonNode json) {
+        final var fields = new ArrayList<String>();
+        json.get("errors").forEach(error -> fields.add(error.get("field").asText()));
+        return fields;
     }
 }

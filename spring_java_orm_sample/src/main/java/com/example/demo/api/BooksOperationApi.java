@@ -85,6 +85,24 @@ public interface BooksOperationApi {
                 schema = @Schema(implementation = ProblemDetail.class),
                 examples = {
                     @ExampleObject(
+                        name = "invalidPage",
+                        summary = "ページ番号が負の値",
+                        value = """
+                            {
+                              "detail": "getBookSearch.page: 0 以上の値にしてください",
+                              "errors": [
+                                {
+                                  "field": "page",
+                                  "message": "0 以上の値にしてください"
+                                }
+                              ],
+                              "instance": "/api/books/search",
+                              "status": 400,
+                              "title": "リクエストエラー"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
                         name = "missingReleaseDatePair",
                         summary = "発売日付の片方のみ指定",
                         value = """
@@ -139,10 +157,19 @@ public interface BooksOperationApi {
                         summary = "リクエストボディのバリデーションエラー",
                         value = """
                             {
-                              "detail": "Invalid request content.",
+                              "errors": [
+                                {
+                                  "field": "title",
+                                  "message": "1 から 100 の間のサイズにしてください"
+                                },
+                                {
+                                  "field": "releaseDate",
+                                  "message": "null は許可されていません"
+                                }
+                              ],
                               "instance": "/api/books/create",
                               "status": 400,
-                              "title": "Bad Request"
+                              "title": "リクエストバリデーションエラー"
                             }
                             """
                     ),
@@ -182,10 +209,19 @@ public interface BooksOperationApi {
                         summary = "リクエストボディのバリデーションエラー",
                         value = """
                             {
-                              "detail": "Invalid request content.",
+                              "errors": [
+                                {
+                                  "field": "title",
+                                  "message": "1 から 100 の間のサイズにしてください"
+                                },
+                                {
+                                  "field": "releaseDate",
+                                  "message": "null は許可されていません"
+                                }
+                              ],
                               "instance": "/api/books/update",
                               "status": 400,
-                              "title": "Bad Request"
+                              "title": "リクエストバリデーションエラー"
                             }
                             """
                     ),

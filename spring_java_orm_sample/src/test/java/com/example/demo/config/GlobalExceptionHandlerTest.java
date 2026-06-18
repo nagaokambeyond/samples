@@ -1,12 +1,24 @@
 package com.example.demo.config;
 
+import com.example.demo.api.BooksOperationApi;
+import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.jpa.entity.Publisher;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.entity.BookGenreEntity;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.constraints.Min;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.http.HttpStatus;
+import org.springframework.core.MethodParameter;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,5 +61,63 @@ class GlobalExceptionHandlerTest {
         final var problem = handler.handleForeignKeyReferenceNotFoundException(ex);
 
         assertThat(problem.getDetail()).isEqualTo("参照先データが存在しません: book_genre(id=999)");
+    }
+
+    @Test
+    void handleMethodArgumentNotValidExceptionReturnsFieldErrors() throws Exception {
+        final var request = new BookCreateRequest("", null, null, null, null);
+        final var bindingResult = new BeanPropertyBindingResult(request, "request");
+        bindingResult.addError(new FieldError("request", "title", "size must be between 1 and 100"));
+        bindingResult.addError(new FieldError("request", "releaseDate", "must not be null"));
+        final var methodParameter = new MethodParameter(
+            BooksOperationApi.class.getDeclaredMethod("createBook", BookCreateRequest.class),
+            0
+        );
+        final var ex = new MethodArgumentNotValidException(methodParameter, bindingResult);
+
+        final var problem = handler.handleMethodArgumentNotValidException(ex);
+
+        assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(problem.getTitle()).isEqualTo("リクエストバリデーションエラー");
+        assertThat(getErrorFields(problem.getProperties())).containsExactly("title", "releaseDate");
+        assertThat(getErrorMessages(problem.getProperties()))
+            .containsExactly("size must be between 1 and 100", "must not be null");
+    }
+
+    @Test
+    void handleConstraintViolationExceptionReturnsFieldErrors() {
+        try (final var validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            final var validator = validatorFactory.getValidator();
+            final var violations = validator.validate(new SearchCondition(-1));
+            final var ex = new ConstraintViolationException(violations);
+
+            final var problem = handler.handleConstraintViolationException(ex);
+
+            assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(problem.getTitle()).isEqualTo("リクエストエラー");
+            assertThat(problem.getDetail()).isNotBlank();
+            assertThat(getErrorFields(problem.getProperties())).containsExactly("page");
+            assertThat(getErrorMessages(problem.getProperties()).getFirst()).isNotBlank();
+        }
+    }
+
+    private List<String> getErrorFields(Map<String, Object> properties) {
+        return getErrors(properties).stream()
+            .map(error -> error.get("field"))
+            .toList();
+    }
+
+    private List<String> getErrorMessages(Map<String, Object> properties) {
+        return getErrors(properties).stream()
+            .map(error -> error.get("message"))
+            .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, String>> getErrors(Map<String, Object> properties) {
+        return (List<Map<String, String>>) properties.get("errors");
+    }
+
+    private record SearchCondition(@Min(0) int page) {
     }
 }
