@@ -84,7 +84,7 @@ public class BooksOperationServiceJPA implements BooksOperationService {
     @Transactional
     @Override
     public void delete(@NonNull Long id) {
-        Book book = bookRepository.findByIdWithWriteLock(id)
+        final var book = bookRepository.findByIdWithWriteLock(id)
             .orElseThrow(RepositoryDataNotfoundException::new);
 
         bookRepository.deleteById(book.getId());
