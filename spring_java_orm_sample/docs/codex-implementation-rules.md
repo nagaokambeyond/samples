@@ -14,7 +14,8 @@
 - 未使用なメソッドであれば削除する。
 - JPA / MyBatis / Doma で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
 - 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain` の対応を揃える。
-- SQLで副問合せでの記述が必要な場合、共通テーブル式を使用する。
+- API 関連のクラスは `api`、`api/controller`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
+- SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
 ## API 実装
 
@@ -22,7 +23,8 @@
 - OpenAPI 注釈は `BooksOperationApi` に集約する。Controller 側へ重複して追加しない。
 - API の入出力には Entity ではなく request / response DTO を使う。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
-- `BookResponse` には `publisherName` と `genreName` が含まれる。取得・検索系の SQL / JPQL は `publisher`、`book_genre` と結合し、`BookConverter` に渡す値を揃える。
+- `BookResponse` には `publisherName`、`genreName`、`bookStockList` が含まれる。取得・検索系の SQL / query は `publisher`、`book_genre`、`book_stock`、`store` と結合し、`BookConverter` に渡す値を揃える。
+- `bookStockList` の要素は `BookStockResponse` とし、`id`、`bookStockStoreId`、`storeName`、`bookStockQuantity` を返す。
 - 検索 API は任意の `keyword`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱う。`keyword` はタイトルまたは著者の前方一致条件として扱う。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
 - 日付範囲の相関チェックは `BooksOperationApiControllerValidator` に集約する。
@@ -41,6 +43,10 @@
 
 - `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースとして扱う。
 - Service インターフェースを変更する場合は、JPA / MyBatis / Doma の3実装をすべて確認する。
+- 現在のデフォルト実装は `BooksOperationServiceDoma` であり、実装切り替えに関わる変更では `@Primary` の扱いを確認する。
+- `BookConverter` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
+- JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の複数行を `BookConverter` で書籍単位に集約する。
+- MyBatis / Doma の取得・検索は、各表示向け Entity の `bookStockList` を `BookConverter` で `BookStockResponse` に変換する。
 - DB を読む・更新する Service メソッドには `@Transactional` を付ける。
 - `publisherId` は `publisher`、`genreId` は `book_genre` への外部キー。登録・更新時の参照存在チェックは各永続化方式の `BookDataValidator*` に集約する。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しない。
