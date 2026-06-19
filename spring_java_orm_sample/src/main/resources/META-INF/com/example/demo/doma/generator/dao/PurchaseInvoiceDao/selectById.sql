@@ -1,6 +1,6 @@
 select
   /*%expand*/*
 from
-  purchase_order_detail
+  purchase_invoice
 where
   id = /* id */1

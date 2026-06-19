@@ -1,6 +1,6 @@
 package com.example.demo.mybatis.generator.entity;
 
-import com.example.demo.data.domain.PurchaseOrderType;
+import com.example.demo.data.domain.PurchaseInvoiceType;
 import jakarta.annotation.Generated;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,58 +8,58 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PurchaseOrderEntityExample {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     protected String orderByClause;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     protected boolean distinct;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     protected List<Criteria> oredCriteria;
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public PurchaseOrderEntityExample() {
         oredCriteria = new ArrayList<>();
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public void setOrderByClause(String orderByClause) {
         this.orderByClause = orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public String getOrderByClause() {
         return orderByClause;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public boolean isDistinct() {
         return distinct;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public List<Criteria> getOredCriteria() {
         return oredCriteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public void or(Criteria criteria) {
         oredCriteria.add(criteria);
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public Criteria or() {
         Criteria criteria = createCriteriaInternal();
         oredCriteria.add(criteria);
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public Criteria createCriteria() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
@@ -68,22 +68,22 @@ public class PurchaseOrderEntityExample {
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     protected Criteria createCriteriaInternal() {
         Criteria criteria = new Criteria();
         return criteria;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public void clear() {
         oredCriteria.clear();
         orderByClause = null;
         distinct = false;
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     protected abstract static class GeneratedCriteria {
-        protected List<Criterion> purchaseOrderTypeCriteria;
+        protected List<Criterion> purchaseInvoiceTypeCriteria;
 
         protected List<Criterion> allCriteria;
 
@@ -92,39 +92,39 @@ public class PurchaseOrderEntityExample {
         protected GeneratedCriteria() {
             super();
             criteria = new ArrayList<>();
-            purchaseOrderTypeCriteria = new ArrayList<>();
+            purchaseInvoiceTypeCriteria = new ArrayList<>();
         }
 
-        public List<Criterion> getPurchaseOrderTypeCriteria() {
-            return purchaseOrderTypeCriteria;
+        public List<Criterion> getPurchaseInvoiceTypeCriteria() {
+            return purchaseInvoiceTypeCriteria;
         }
 
-        protected void addPurchaseOrderTypeCriterion(String condition, Object value, String property) {
+        protected void addPurchaseInvoiceTypeCriterion(String condition, Object value, String property) {
             if (value == null) {
                 throw new RuntimeException("Value for " + property + " cannot be null");
             }
-            purchaseOrderTypeCriteria.add(new Criterion(condition, value, "com.example.demo.mybatis.typehandler.PurchaseOrderTypeHandler"));
+            purchaseInvoiceTypeCriteria.add(new Criterion(condition, value, "com.example.demo.mybatis.typehandler.PurchaseInvoiceTypeHandler"));
             allCriteria = null;
         }
 
-        protected void addPurchaseOrderTypeCriterion(String condition, PurchaseOrderType value1, PurchaseOrderType value2, String property) {
+        protected void addPurchaseInvoiceTypeCriterion(String condition, PurchaseInvoiceType value1, PurchaseInvoiceType value2, String property) {
             if (value1 == null || value2 == null) {
                 throw new RuntimeException("Between values for " + property + " cannot be null");
             }
-            purchaseOrderTypeCriteria.add(new Criterion(condition, value1, value2, "com.example.demo.mybatis.typehandler.PurchaseOrderTypeHandler"));
+            purchaseInvoiceTypeCriteria.add(new Criterion(condition, value1, value2, "com.example.demo.mybatis.typehandler.PurchaseInvoiceTypeHandler"));
             allCriteria = null;
         }
 
         public boolean isValid() {
             return criteria.size() > 0
-                || purchaseOrderTypeCriteria.size() > 0;
+                || purchaseInvoiceTypeCriteria.size() > 0;
         }
 
         public List<Criterion> getAllCriteria() {
             if (allCriteria == null) {
                 allCriteria = new ArrayList<>();
                 allCriteria.addAll(criteria);
-                allCriteria.addAll(purchaseOrderTypeCriteria);
+                allCriteria.addAll(purchaseInvoiceTypeCriteria);
             }
             return allCriteria;
         }
@@ -217,183 +217,183 @@ public class PurchaseOrderEntityExample {
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeIsNull() {
-            addCriterion("purchase_order_type is null");
+        public Criteria andPurchaseInvoiceTypeIsNull() {
+            addCriterion("purchase_invoice_type is null");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeIsNotNull() {
-            addCriterion("purchase_order_type is not null");
+        public Criteria andPurchaseInvoiceTypeIsNotNull() {
+            addCriterion("purchase_invoice_type is not null");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeEqualTo(PurchaseOrderType value) {
-            addPurchaseOrderTypeCriterion("purchase_order_type =", value, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeEqualTo(PurchaseInvoiceType value) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type =", value, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeNotEqualTo(PurchaseOrderType value) {
-            addPurchaseOrderTypeCriterion("purchase_order_type <>", value, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeNotEqualTo(PurchaseInvoiceType value) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type <>", value, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeGreaterThan(PurchaseOrderType value) {
-            addPurchaseOrderTypeCriterion("purchase_order_type >", value, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeGreaterThan(PurchaseInvoiceType value) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type >", value, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeGreaterThanOrEqualTo(PurchaseOrderType value) {
-            addPurchaseOrderTypeCriterion("purchase_order_type >=", value, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeGreaterThanOrEqualTo(PurchaseInvoiceType value) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type >=", value, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeLessThan(PurchaseOrderType value) {
-            addPurchaseOrderTypeCriterion("purchase_order_type <", value, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeLessThan(PurchaseInvoiceType value) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type <", value, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeLessThanOrEqualTo(PurchaseOrderType value) {
-            addPurchaseOrderTypeCriterion("purchase_order_type <=", value, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeLessThanOrEqualTo(PurchaseInvoiceType value) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type <=", value, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeIn(List<PurchaseOrderType> values) {
-            addPurchaseOrderTypeCriterion("purchase_order_type in", values, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeIn(List<PurchaseInvoiceType> values) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type in", values, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeNotIn(List<PurchaseOrderType> values) {
-            addPurchaseOrderTypeCriterion("purchase_order_type not in", values, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeNotIn(List<PurchaseInvoiceType> values) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type not in", values, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeBetween(PurchaseOrderType value1, PurchaseOrderType value2) {
-            addPurchaseOrderTypeCriterion("purchase_order_type between", value1, value2, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeBetween(PurchaseInvoiceType value1, PurchaseInvoiceType value2) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type between", value1, value2, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderTypeNotBetween(PurchaseOrderType value1, PurchaseOrderType value2) {
-            addPurchaseOrderTypeCriterion("purchase_order_type not between", value1, value2, "purchaseOrderType");
+        public Criteria andPurchaseInvoiceTypeNotBetween(PurchaseInvoiceType value1, PurchaseInvoiceType value2) {
+            addPurchaseInvoiceTypeCriterion("purchase_invoice_type not between", value1, value2, "purchaseInvoiceType");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdIsNull() {
-            addCriterion("return_purchase_order_id is null");
+        public Criteria andReturnPurchaseInvoiceIdIsNull() {
+            addCriterion("return_purchase_invoice_id is null");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdIsNotNull() {
-            addCriterion("return_purchase_order_id is not null");
+        public Criteria andReturnPurchaseInvoiceIdIsNotNull() {
+            addCriterion("return_purchase_invoice_id is not null");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdEqualTo(Long value) {
-            addCriterion("return_purchase_order_id =", value, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdEqualTo(Long value) {
+            addCriterion("return_purchase_invoice_id =", value, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdNotEqualTo(Long value) {
-            addCriterion("return_purchase_order_id <>", value, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdNotEqualTo(Long value) {
+            addCriterion("return_purchase_invoice_id <>", value, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdGreaterThan(Long value) {
-            addCriterion("return_purchase_order_id >", value, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdGreaterThan(Long value) {
+            addCriterion("return_purchase_invoice_id >", value, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdGreaterThanOrEqualTo(Long value) {
-            addCriterion("return_purchase_order_id >=", value, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdGreaterThanOrEqualTo(Long value) {
+            addCriterion("return_purchase_invoice_id >=", value, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdLessThan(Long value) {
-            addCriterion("return_purchase_order_id <", value, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdLessThan(Long value) {
+            addCriterion("return_purchase_invoice_id <", value, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdLessThanOrEqualTo(Long value) {
-            addCriterion("return_purchase_order_id <=", value, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdLessThanOrEqualTo(Long value) {
+            addCriterion("return_purchase_invoice_id <=", value, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdIn(List<Long> values) {
-            addCriterion("return_purchase_order_id in", values, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdIn(List<Long> values) {
+            addCriterion("return_purchase_invoice_id in", values, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdNotIn(List<Long> values) {
-            addCriterion("return_purchase_order_id not in", values, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdNotIn(List<Long> values) {
+            addCriterion("return_purchase_invoice_id not in", values, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdBetween(Long value1, Long value2) {
-            addCriterion("return_purchase_order_id between", value1, value2, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdBetween(Long value1, Long value2) {
+            addCriterion("return_purchase_invoice_id between", value1, value2, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andReturnPurchaseOrderIdNotBetween(Long value1, Long value2) {
-            addCriterion("return_purchase_order_id not between", value1, value2, "returnPurchaseOrderId");
+        public Criteria andReturnPurchaseInvoiceIdNotBetween(Long value1, Long value2) {
+            addCriterion("return_purchase_invoice_id not between", value1, value2, "returnPurchaseInvoiceId");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateIsNull() {
-            addCriterion("purchase_order_date is null");
+        public Criteria andPurchaseInvoiceDateIsNull() {
+            addCriterion("purchase_invoice_date is null");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateIsNotNull() {
-            addCriterion("purchase_order_date is not null");
+        public Criteria andPurchaseInvoiceDateIsNotNull() {
+            addCriterion("purchase_invoice_date is not null");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateEqualTo(LocalDate value) {
-            addCriterion("purchase_order_date =", value, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateEqualTo(LocalDate value) {
+            addCriterion("purchase_invoice_date =", value, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateNotEqualTo(LocalDate value) {
-            addCriterion("purchase_order_date <>", value, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateNotEqualTo(LocalDate value) {
+            addCriterion("purchase_invoice_date <>", value, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateGreaterThan(LocalDate value) {
-            addCriterion("purchase_order_date >", value, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateGreaterThan(LocalDate value) {
+            addCriterion("purchase_invoice_date >", value, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateGreaterThanOrEqualTo(LocalDate value) {
-            addCriterion("purchase_order_date >=", value, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateGreaterThanOrEqualTo(LocalDate value) {
+            addCriterion("purchase_invoice_date >=", value, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateLessThan(LocalDate value) {
-            addCriterion("purchase_order_date <", value, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateLessThan(LocalDate value) {
+            addCriterion("purchase_invoice_date <", value, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateLessThanOrEqualTo(LocalDate value) {
-            addCriterion("purchase_order_date <=", value, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateLessThanOrEqualTo(LocalDate value) {
+            addCriterion("purchase_invoice_date <=", value, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateIn(List<LocalDate> values) {
-            addCriterion("purchase_order_date in", values, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateIn(List<LocalDate> values) {
+            addCriterion("purchase_invoice_date in", values, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateNotIn(List<LocalDate> values) {
-            addCriterion("purchase_order_date not in", values, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateNotIn(List<LocalDate> values) {
+            addCriterion("purchase_invoice_date not in", values, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateBetween(LocalDate value1, LocalDate value2) {
-            addCriterion("purchase_order_date between", value1, value2, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateBetween(LocalDate value1, LocalDate value2) {
+            addCriterion("purchase_invoice_date between", value1, value2, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderDateNotBetween(LocalDate value1, LocalDate value2) {
-            addCriterion("purchase_order_date not between", value1, value2, "purchaseOrderDate");
+        public Criteria andPurchaseInvoiceDateNotBetween(LocalDate value1, LocalDate value2) {
+            addCriterion("purchase_invoice_date not between", value1, value2, "purchaseInvoiceDate");
             return (Criteria) this;
         }
 
@@ -517,63 +517,63 @@ public class PurchaseOrderEntityExample {
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountIsNull() {
-            addCriterion("purchase_order_amount is null");
+        public Criteria andPurchaseInvoiceAmountIsNull() {
+            addCriterion("purchase_invoice_amount is null");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountIsNotNull() {
-            addCriterion("purchase_order_amount is not null");
+        public Criteria andPurchaseInvoiceAmountIsNotNull() {
+            addCriterion("purchase_invoice_amount is not null");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountEqualTo(Long value) {
-            addCriterion("purchase_order_amount =", value, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountEqualTo(Long value) {
+            addCriterion("purchase_invoice_amount =", value, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountNotEqualTo(Long value) {
-            addCriterion("purchase_order_amount <>", value, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountNotEqualTo(Long value) {
+            addCriterion("purchase_invoice_amount <>", value, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountGreaterThan(Long value) {
-            addCriterion("purchase_order_amount >", value, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountGreaterThan(Long value) {
+            addCriterion("purchase_invoice_amount >", value, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountGreaterThanOrEqualTo(Long value) {
-            addCriterion("purchase_order_amount >=", value, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountGreaterThanOrEqualTo(Long value) {
+            addCriterion("purchase_invoice_amount >=", value, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountLessThan(Long value) {
-            addCriterion("purchase_order_amount <", value, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountLessThan(Long value) {
+            addCriterion("purchase_invoice_amount <", value, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountLessThanOrEqualTo(Long value) {
-            addCriterion("purchase_order_amount <=", value, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountLessThanOrEqualTo(Long value) {
+            addCriterion("purchase_invoice_amount <=", value, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountIn(List<Long> values) {
-            addCriterion("purchase_order_amount in", values, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountIn(List<Long> values) {
+            addCriterion("purchase_invoice_amount in", values, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountNotIn(List<Long> values) {
-            addCriterion("purchase_order_amount not in", values, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountNotIn(List<Long> values) {
+            addCriterion("purchase_invoice_amount not in", values, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountBetween(Long value1, Long value2) {
-            addCriterion("purchase_order_amount between", value1, value2, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountBetween(Long value1, Long value2) {
+            addCriterion("purchase_invoice_amount between", value1, value2, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
-        public Criteria andPurchaseOrderAmountNotBetween(Long value1, Long value2) {
-            addCriterion("purchase_order_amount not between", value1, value2, "purchaseOrderAmount");
+        public Criteria andPurchaseInvoiceAmountNotBetween(Long value1, Long value2) {
+            addCriterion("purchase_invoice_amount not between", value1, value2, "purchaseInvoiceAmount");
             return (Criteria) this;
         }
 
@@ -765,7 +765,7 @@ public class PurchaseOrderEntityExample {
         }
     }
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice")
     public static class Criterion {
         private String condition;
 

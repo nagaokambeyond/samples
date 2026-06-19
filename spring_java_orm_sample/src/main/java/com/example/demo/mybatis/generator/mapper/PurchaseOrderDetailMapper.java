@@ -9,36 +9,36 @@ import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface PurchaseOrderDetailMapper {
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     long countByExample(PurchaseOrderDetailEntityExample example);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int deleteByExample(PurchaseOrderDetailEntityExample example);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int deleteByPrimaryKey(Long id);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int insert(PurchaseOrderDetailEntity row);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int insertSelective(PurchaseOrderDetailEntity row);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     List<PurchaseOrderDetailEntity> selectByExample(PurchaseOrderDetailEntityExample example);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     PurchaseOrderDetailEntity selectByPrimaryKey(Long id);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int updateByExampleSelective(@Param("row") PurchaseOrderDetailEntity row, @Param("example") PurchaseOrderDetailEntityExample example);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int updateByExample(@Param("row") PurchaseOrderDetailEntity row, @Param("example") PurchaseOrderDetailEntityExample example);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int updateByPrimaryKeySelective(PurchaseOrderDetailEntity row);
 
-    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_order_detail")
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source Table: purchase_invoice_detail")
     int updateByPrimaryKey(PurchaseOrderDetailEntity row);
 }

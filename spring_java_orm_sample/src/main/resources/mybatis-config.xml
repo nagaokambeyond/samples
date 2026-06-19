@@ -5,6 +5,6 @@
 
 <configuration>
     <typeHandlers>
-        <typeHandler handler="com.example.demo.mybatis.typehandler.PurchaseOrderTypeHandler"/>
+        <typeHandler handler="com.example.demo.mybatis.typehandler.PurchaseInvoiceTypeHandler"/>
     </typeHandlers>
 </configuration>

@@ -1,6 +1,6 @@
 package com.example.demo.doma.generator.dao;
 
-import com.example.demo.doma.generator.entity.PurchaseOrder;
+import com.example.demo.doma.generator.entity.PurchaseInvoiceDetail;
 import org.seasar.doma.Dao;
 import org.seasar.doma.Delete;
 import org.seasar.doma.Insert;
@@ -10,41 +10,41 @@ import org.seasar.doma.Update;
 /**
  */
 @Dao
-public interface PurchaseOrderDao {
+public interface PurchaseInvoiceDetailDao {
 
     /**
      * @param id
-     * @return the PurchaseOrder entity
+     * @return the PurchaseInvoiceDetail entity
      */
     @Select
-    PurchaseOrder selectById(Long id);
+    PurchaseInvoiceDetail selectById(Long id);
 
     /**
      * @param id
      * @param version
-     * @return the PurchaseOrder entity
+     * @return the PurchaseInvoiceDetail entity
      */
     @Select(ensureResult = true)
-    PurchaseOrder selectByIdAndVersion(Long id, Long version);
+    PurchaseInvoiceDetail selectByIdAndVersion(Long id, Long version);
 
     /**
      * @param entity
      * @return affected rows
      */
     @Insert
-    int insert(PurchaseOrder entity);
+    int insert(PurchaseInvoiceDetail entity);
 
     /**
      * @param entity
      * @return affected rows
      */
     @Update
-    int update(PurchaseOrder entity);
+    int update(PurchaseInvoiceDetail entity);
 
     /**
      * @param entity
      * @return affected rows
      */
     @Delete
-    int delete(PurchaseOrder entity);
+    int delete(PurchaseInvoiceDetail entity);
 }

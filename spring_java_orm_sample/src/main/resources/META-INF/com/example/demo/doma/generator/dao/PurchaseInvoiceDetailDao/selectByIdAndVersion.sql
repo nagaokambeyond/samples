@@ -1,7 +1,7 @@
 select
   /*%expand*/*
 from
-  purchase_order_detail
+  purchase_invoice_detail
 where
   id = /* id */1
   and

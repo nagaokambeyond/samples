@@ -3,5 +3,5 @@ package com.example.demo.doma.generator.entity;
 
 /**
  */
-public abstract class AbstractPurchaseOrder {
+public abstract class AbstractPurchaseInvoiceDetail {
 }

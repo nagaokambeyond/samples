@@ -17,7 +17,7 @@ import org.seasar.doma.jdbc.dialect.Dialect;
 /**
  * 
  */
-public class PurchaseOrderDaoTest {
+public class PurchaseInvoiceDaoTest {
 
     /** */
     protected SqlFileRepository repository;
@@ -85,7 +85,7 @@ public class PurchaseOrderDaoTest {
      */
     @Test
     public void testSelectById(TestInfo testInfo) throws Exception {
-        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().get(), "META-INF/com/example/demo/doma/generator/dao/PurchaseOrderDao/selectById.sql", dialect);
+        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().get(), "META-INF/com/example/demo/doma/generator/dao/PurchaseInvoiceDao/selectById.sql", dialect);
         execute(sqlFile);
     }
 
@@ -95,7 +95,7 @@ public class PurchaseOrderDaoTest {
      */
     @Test
     public void testSelectByIdAndVersion(TestInfo testInfo) throws Exception {
-        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().get(), "META-INF/com/example/demo/doma/generator/dao/PurchaseOrderDao/selectByIdAndVersion.sql", dialect);
+        SqlFile sqlFile = repository.getSqlFile(testInfo.getTestMethod().get(), "META-INF/com/example/demo/doma/generator/dao/PurchaseInvoiceDao/selectByIdAndVersion.sql", dialect);
         execute(sqlFile);
     }
 

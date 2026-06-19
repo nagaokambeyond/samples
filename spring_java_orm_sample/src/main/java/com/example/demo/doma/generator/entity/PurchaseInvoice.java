@@ -1,6 +1,6 @@
 package com.example.demo.doma.generator.entity;
 
-import com.example.demo.data.domain.PurchaseOrderType;
+import com.example.demo.data.domain.PurchaseInvoiceType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.seasar.doma.Column;
@@ -15,9 +15,9 @@ import org.seasar.doma.Version;
 /**
  * 
  */
-@Entity(listener = PurchaseOrderListener.class, metamodel = @Metamodel)
-@Table(name = "purchase_order")
-public class PurchaseOrder extends AbstractPurchaseOrder {
+@Entity(listener = PurchaseInvoiceListener.class, metamodel = @Metamodel)
+@Table(name = "purchase_invoice")
+public class PurchaseInvoice extends AbstractPurchaseInvoice {
 
     /** */
     @Id
@@ -26,16 +26,16 @@ public class PurchaseOrder extends AbstractPurchaseOrder {
     Long id;
 
     /** 仕入伝票種別 */
-    @Column(name = "purchase_order_type")
-    PurchaseOrderType purchaseOrderType;
+    @Column(name = "purchase_invoice_type")
+    PurchaseInvoiceType purchaseInvoiceType;
 
     /** 返品元仕入伝票ID */
-    @Column(name = "return_purchase_order_id")
-    Long returnPurchaseOrderId;
+    @Column(name = "return_purchase_invoice_id")
+    Long returnPurchaseInvoiceId;
 
     /** 仕入伝票日付 */
-    @Column(name = "purchase_order_date")
-    LocalDate purchaseOrderDate;
+    @Column(name = "purchase_invoice_date")
+    LocalDate purchaseInvoiceDate;
 
     /** 仕入先ID */
     @Column(name = "supplier_id")
@@ -46,8 +46,8 @@ public class PurchaseOrder extends AbstractPurchaseOrder {
     Long receivingStoreId;
 
     /** 仕入伝票金額 */
-    @Column(name = "purchase_order_amount")
-    Long purchaseOrderAmount;
+    @Column(name = "purchase_invoice_amount")
+    Long purchaseInvoiceAmount;
 
     /** 作成日時 */
     @Column(name = "create_at")
@@ -81,57 +81,57 @@ public class PurchaseOrder extends AbstractPurchaseOrder {
     }
 
     /** 
-     * Returns the purchaseOrderType.
+     * Returns the purchaseInvoiceType.
      * 
-     * @return the purchaseOrderType
+     * @return the purchaseInvoiceType
      */
-    public PurchaseOrderType getPurchaseOrderType() {
-        return purchaseOrderType;
+    public PurchaseInvoiceType getPurchaseInvoiceType() {
+        return purchaseInvoiceType;
     }
 
     /** 
-     * Sets the purchaseOrderType.
+     * Sets the purchaseInvoiceType.
      * 
-     * @param purchaseOrderType the purchaseOrderType
+     * @param purchaseInvoiceType the purchaseInvoiceType
      */
-    public void setPurchaseOrderType(PurchaseOrderType purchaseOrderType) {
-        this.purchaseOrderType = purchaseOrderType;
+    public void setPurchaseInvoiceType(PurchaseInvoiceType purchaseInvoiceType) {
+        this.purchaseInvoiceType = purchaseInvoiceType;
     }
 
     /** 
-     * Returns the returnPurchaseOrderId.
+     * Returns the returnPurchaseInvoiceId.
      * 
-     * @return the returnPurchaseOrderId
+     * @return the returnPurchaseInvoiceId
      */
-    public Long getReturnPurchaseOrderId() {
-        return returnPurchaseOrderId;
+    public Long getReturnPurchaseInvoiceId() {
+        return returnPurchaseInvoiceId;
     }
 
     /** 
-     * Sets the returnPurchaseOrderId.
+     * Sets the returnPurchaseInvoiceId.
      * 
-     * @param returnPurchaseOrderId the returnPurchaseOrderId
+     * @param returnPurchaseInvoiceId the returnPurchaseInvoiceId
      */
-    public void setReturnPurchaseOrderId(Long returnPurchaseOrderId) {
-        this.returnPurchaseOrderId = returnPurchaseOrderId;
+    public void setReturnPurchaseInvoiceId(Long returnPurchaseInvoiceId) {
+        this.returnPurchaseInvoiceId = returnPurchaseInvoiceId;
     }
 
     /** 
-     * Returns the purchaseOrderDate.
+     * Returns the purchaseInvoiceDate.
      * 
-     * @return the purchaseOrderDate
+     * @return the purchaseInvoiceDate
      */
-    public LocalDate getPurchaseOrderDate() {
-        return purchaseOrderDate;
+    public LocalDate getPurchaseInvoiceDate() {
+        return purchaseInvoiceDate;
     }
 
     /** 
-     * Sets the purchaseOrderDate.
+     * Sets the purchaseInvoiceDate.
      * 
-     * @param purchaseOrderDate the purchaseOrderDate
+     * @param purchaseInvoiceDate the purchaseInvoiceDate
      */
-    public void setPurchaseOrderDate(LocalDate purchaseOrderDate) {
-        this.purchaseOrderDate = purchaseOrderDate;
+    public void setPurchaseInvoiceDate(LocalDate purchaseInvoiceDate) {
+        this.purchaseInvoiceDate = purchaseInvoiceDate;
     }
 
     /** 
@@ -171,21 +171,21 @@ public class PurchaseOrder extends AbstractPurchaseOrder {
     }
 
     /** 
-     * Returns the purchaseOrderAmount.
+     * Returns the purchaseInvoiceAmount.
      * 
-     * @return the purchaseOrderAmount
+     * @return the purchaseInvoiceAmount
      */
-    public Long getPurchaseOrderAmount() {
-        return purchaseOrderAmount;
+    public Long getPurchaseInvoiceAmount() {
+        return purchaseInvoiceAmount;
     }
 
     /** 
-     * Sets the purchaseOrderAmount.
+     * Sets the purchaseInvoiceAmount.
      * 
-     * @param purchaseOrderAmount the purchaseOrderAmount
+     * @param purchaseInvoiceAmount the purchaseInvoiceAmount
      */
-    public void setPurchaseOrderAmount(Long purchaseOrderAmount) {
-        this.purchaseOrderAmount = purchaseOrderAmount;
+    public void setPurchaseInvoiceAmount(Long purchaseInvoiceAmount) {
+        this.purchaseInvoiceAmount = purchaseInvoiceAmount;
     }
 
     /** 

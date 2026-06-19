@@ -1,7 +1,7 @@
 package com.example.demo.jpa.entity;
 
-import com.example.demo.data.domain.PurchaseOrderType;
-import com.example.demo.jpa.typeconverter.PurchaseOrderTypeConverter;
+import com.example.demo.data.domain.PurchaseInvoiceType;
+import com.example.demo.jpa.typeconverter.PurchaseInvoiceTypeConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -17,12 +17,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "purchase_order", comment = "仕入伝票", indexes ={
-    @Index(name = "idx_purchase_order_01", columnList = "purchase_order_type"),
-    @Index(name = "idx_purchase_order_02", columnList = "return_purchase_order_id"),
-    @Index(name = "idx_purchase_order_03", columnList = "purchase_order_date"),
-    @Index(name = "idx_purchase_order_04", columnList = "supplier_id"),
-    @Index(name = "idx_purchase_order_05", columnList = "receiving_store_id")
+@Table(name = "purchase_invoice", comment = "仕入伝票", indexes ={
+    @Index(name = "idx_purchase_invoice_01", columnList = "purchase_invoice_type"),
+    @Index(name = "idx_purchase_invoice_02", columnList = "return_purchase_invoice_id"),
+    @Index(name = "idx_purchase_invoice_03", columnList = "purchase_invoice_date"),
+    @Index(name = "idx_purchase_invoice_04", columnList = "supplier_id"),
+    @Index(name = "idx_purchase_invoice_05", columnList = "receiving_store_id")
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -34,15 +34,15 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(comment = "仕入伝票種別")
-    @Convert(converter = PurchaseOrderTypeConverter.class)
+    @Column(name = "purchase_invoice_type", comment = "仕入伝票種別")
+    @Convert(converter = PurchaseInvoiceTypeConverter.class)
     @NotNull
-    private PurchaseOrderType purchaseOrderType;
+    private PurchaseInvoiceType purchaseInvoiceType;
 
-    @Column(comment = "返品元仕入伝票ID")
+    @Column(name = "return_purchase_invoice_id", comment = "返品元仕入伝票ID")
     private Long returnPurchaseOrderId;
 
-    @Column(comment = "仕入伝票日付")
+    @Column(name = "purchase_invoice_date", comment = "仕入伝票日付")
     @NotNull
     private LocalDate purchaseOrderDate;
 
@@ -54,7 +54,7 @@ public class PurchaseOrder {
     @NotNull
     private Long receivingStoreId;
 
-    @Column(comment = "仕入伝票金額")
+    @Column(name = "purchase_invoice_amount", comment = "仕入伝票金額")
     @NotNull
     private Long purchaseOrderAmount;
 

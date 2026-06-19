@@ -19,7 +19,7 @@
 
 API は `/api/books` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_order`、`purchase_order_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名・ジャンル名・在庫リストを含む `BookPageResponse` を返します。
+現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名・ジャンル名・在庫リストを含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -91,7 +91,7 @@ Gradle Wrapper を使用してください。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookConverter` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
 - Doma の取得・検索は `BookWithPublisherNameAggregateStrategy` で `bookStockList` を集約します。
-- `PurchaseOrderType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseOrderTypeConverter`、MyBatis は `PurchaseOrderTypeHandler`、Doma は `@Domain` で扱います。
+- `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain` で扱います。
 - 現在のデフォルト実装は `BooksOperationServiceDoma` です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。

@@ -17,11 +17,11 @@ http://localhost:8080/scalar
 erDiagram
     publisher ||--o{ book : "publishes"
     book_genre ||--o{ book : "categorizes"
-    supplier ||--o{ purchase_order : "supplies"
-    store ||--o{ purchase_order : "receives"
-    purchase_order ||--o{ purchase_order : "return source"
-    purchase_order ||--o{ purchase_order_detail : "has"
-    book ||--o{ purchase_order_detail : "ordered"
+    supplier ||--o{ purchase_invoice : "supplies"
+    store ||--o{ purchase_invoice : "receives"
+    purchase_invoice ||--o{ purchase_invoice : "return source"
+    purchase_invoice ||--o{ purchase_invoice_detail : "has"
+    book ||--o{ purchase_invoice_detail : "ordered"
     store ||--o{ book_stock : "stocks"
     book ||--o{ book_stock : "stocked"
 
@@ -69,26 +69,26 @@ erDiagram
         BIGINT version
     }
 
-    purchase_order {
+    purchase_invoice {
         BIGINT id PK
-        INTEGER purchase_order_type
-        BIGINT return_purchase_order_id FK
-        DATE purchase_order_date
+        INTEGER purchase_invoice_type
+        BIGINT return_purchase_invoice_id FK
+        DATE purchase_invoice_date
         BIGINT supplier_id FK
         BIGINT receiving_store_id FK
-        BIGINT purchase_order_amount
+        BIGINT purchase_invoice_amount
         TIMESTAMP create_at
         TIMESTAMP update_at
         BIGINT version
     }
 
-    purchase_order_detail {
+    purchase_invoice_detail {
         BIGINT id PK
-        BIGINT purchase_order_id FK
-        BIGINT purchase_order_detail_book_id FK
-        INTEGER purchase_order_detail_unit_price
-        INTEGER purchase_order_detail_quantity
-        BIGINT purchase_order_detail_amount
+        BIGINT purchase_invoice_id FK
+        BIGINT purchase_invoice_detail_book_id FK
+        INTEGER purchase_invoice_detail_unit_price
+        INTEGER purchase_invoice_detail_quantity
+        BIGINT purchase_invoice_detail_amount
         TIMESTAMP create_at
         TIMESTAMP update_at
         BIGINT version
@@ -104,4 +104,3 @@ erDiagram
         BIGINT version
     }
 ```
-

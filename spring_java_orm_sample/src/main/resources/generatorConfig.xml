@@ -42,15 +42,15 @@
         <table tableName="store" domainObjectName="StoreEntity" mapperName="StoreMapper">
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
-        <table tableName="purchase_order" domainObjectName="PurchaseOrderEntity" mapperName="PurchaseOrderMapper">
+        <table tableName="purchase_invoice" domainObjectName="PurchaseOrderEntity" mapperName="PurchaseOrderMapper">
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
             <columnOverride
-                    column="purchase_order_type"
-                    property="purchaseOrderType"
-                    javaType="com.example.demo.data.domain.PurchaseOrderType"
-                    typeHandler="com.example.demo.mybatis.typehandler.PurchaseOrderTypeHandler"/>
+                    column="purchase_invoice_type"
+                    property="purchaseInvoiceType"
+                    javaType="com.example.demo.data.domain.PurchaseInvoiceType"
+                    typeHandler="com.example.demo.mybatis.typehandler.PurchaseInvoiceTypeHandler"/>
         </table>
-        <table tableName="purchase_order_detail" domainObjectName="PurchaseOrderDetailEntity" mapperName="PurchaseOrderDetailMapper">
+        <table tableName="purchase_invoice_detail" domainObjectName="PurchaseOrderDetailEntity" mapperName="PurchaseOrderDetailMapper">
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
     </context>

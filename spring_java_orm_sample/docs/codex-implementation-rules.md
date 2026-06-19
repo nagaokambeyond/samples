@@ -34,8 +34,8 @@
 
 ## ドメイン型と変換
 
-- `PurchaseOrderType` は仕入伝票種別を表す共有ドメイン型として扱う。
-- `PurchaseOrderType` の値を変更する場合は、DB の CHECK 制約、初期データ、JPA `PurchaseOrderTypeConverter`、MyBatis `PurchaseOrderTypeHandler`、Doma `@Domain` の整合性を確認する。
+- `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型として扱う。
+- `PurchaseInvoiceType` の値を変更する場合は、DB の CHECK 制約、初期データ、JPA `PurchaseInvoiceTypeConverter`、MyBatis `PurchaseInvoiceTypeHandler`、Doma `@Domain` の整合性を確認する。
 - MyBatis TypeHandler を追加・変更する場合は、`src/main/resources/mybatis-config.xml` に登録する。
 - Doma CodeGen の型解決を変更する場合は、`src/main/resources/codegen/entityPropertyClassNames.properties` と `build.gradle` の `domaCodeGen` 設定を確認する。
 
@@ -79,8 +79,8 @@
 - Doma 生成 BookGenre DAO: `BookGenreDaoTest`
 - Doma 生成 Supplier DAO: `SupplierDaoTest`
 - Doma 生成 Store DAO: `StoreDaoTest`
-- Doma 生成 PurchaseOrder DAO: `PurchaseOrderDaoTest`
-- Doma 生成 PurchaseOrderDetail DAO: `PurchaseOrderDetailDaoTest`
+- Doma 生成 PurchaseInvoice DAO: `PurchaseInvoiceDaoTest`
+- Doma 生成 PurchaseInvoiceDetail DAO: `PurchaseInvoiceDetailDaoTest`
 - Doma 生成 BookStock DAO: `BookStockDaoTest`
 - ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
 - 行ロック関連: `BookRowLock`

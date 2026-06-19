@@ -14,9 +14,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "purchase_order_detail", comment = "仕入伝票明細", indexes ={
-    @Index(name = "idx_purchase_order_detail_01", columnList = "purchase_order_id"),
-    @Index(name = "idx_purchase_order_detail_02", columnList = "purchase_order_detail_book_id"),
+@Table(name = "purchase_invoice_detail", comment = "仕入伝票明細", indexes ={
+    @Index(name = "idx_purchase_invoice_detail_01", columnList = "purchase_invoice_id"),
+    @Index(name = "idx_purchase_invoice_detail_02", columnList = "purchase_invoice_detail_book_id"),
 })
 @EntityListeners(AuditingEntityListener.class)
 @Getter
@@ -28,23 +28,23 @@ public class PurchaseOrderDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(comment = "仕入伝票ID")
+    @Column(name = "purchase_invoice_id", comment = "仕入伝票ID")
     @NotNull
     private Long purchaseOrderId;
 
-    @Column(comment = "仕入伝票明細本ID")
+    @Column(name = "purchase_invoice_detail_book_id", comment = "仕入伝票明細本ID")
     @NotNull
     private Long purchaseOrderDetailBookId;
 
-    @Column(comment = "仕入伝票明細単価")
+    @Column(name = "purchase_invoice_detail_unit_price", comment = "仕入伝票明細単価")
     @NotNull
     private Integer purchaseOrderDetailUnitPrice;
 
-    @Column(comment = "仕入伝票明細数量")
+    @Column(name = "purchase_invoice_detail_quantity", comment = "仕入伝票明細数量")
     @NotNull
     private Integer purchaseOrderDetailQuantity;
 
-    @Column(comment = "仕入伝票明細金額")
+    @Column(name = "purchase_invoice_detail_amount", comment = "仕入伝票明細金額")
     @NotNull
     private Long purchaseOrderDetailAmount;
 
