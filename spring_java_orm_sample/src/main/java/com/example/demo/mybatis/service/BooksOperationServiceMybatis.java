@@ -5,8 +5,8 @@ import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.config.RetryableOnLockFailure;
-import com.example.demo.converter.BookConverter;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.mybatis.converter.BookOperationConverterMybatis;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.mapper.BookCustomMapper;
@@ -27,7 +27,7 @@ import java.util.Objects;
 public class BooksOperationServiceMybatis implements BooksOperationService {
     private final BookMapper bookMapper;
     private final BookCustomMapper bookCustomMapper;
-    private final BookConverter converter;
+    private final BookOperationConverterMybatis converter;
     private final BookDataValidatorMybatis dataValidator;
 
     @Transactional(readOnly = true)
@@ -43,7 +43,7 @@ public class BooksOperationServiceMybatis implements BooksOperationService {
         final var books = bookCustomMapper.selectByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomMapper.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
-            converter.toResponseFromMybatisBooks(books),
+            converter.toResponse(books),
             page,
             size,
             totalElements,

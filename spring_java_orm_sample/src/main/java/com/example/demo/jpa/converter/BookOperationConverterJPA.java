@@ -1,8 +1,8 @@
-package com.example.demo.converter;
+package com.example.demo.jpa.converter;
 
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.api.response.BookStockResponse;
-import com.example.demo.jpa.repository.BookRepository.BookWithStockRowProjection;
+import com.example.demo.jpa.repository.BookRepository;
 import lombok.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,17 +11,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 
-
 @Component
-public class BookConverter {
-    public BookResponse toResponseFromJpaRows(List<BookWithStockRowProjection> rows) {
+public class BookOperationConverterJPA {
+    public BookResponse toResponseFromJpaRows(List<BookRepository.BookWithStockRowProjection> rows) {
         return toResponseListFromJpaRows(rows).getFirst();
     }
 
-    public List<BookResponse> toResponseListFromJpaRows(List<BookWithStockRowProjection> rows) {
-        final var responses = new LinkedHashMap<Long, BookResponseBuilder>();
+    public List<BookResponse> toResponseListFromJpaRows(List<BookRepository.BookWithStockRowProjection> rows) {
+        final var responses = new LinkedHashMap<Long, BookOperationConverterJPA.BookResponseBuilder>();
         for (final var row : rows) {
-            final var builder = responses.computeIfAbsent(row.getId(), id -> new BookResponseBuilder(row));
+            final var builder = responses.computeIfAbsent(row.getId(), id -> new BookOperationConverterJPA.BookResponseBuilder(row));
             if (Objects.nonNull(row.getBookStockId())) {
                 builder.getBookStockList().add(new BookStockResponse(
                     row.getBookStockId(),
@@ -31,61 +30,7 @@ public class BookConverter {
                 ));
             }
         }
-        return responses.values().stream().map(BookResponseBuilder::build).toList();
-    }
-
-    public BookResponse toResponse(com.example.demo.mybatis.entity.BookWithPublisherName book) {
-        return new BookResponse(
-            book.getId(),
-            book.getTitle(),
-            book.getAuthor(),
-            book.getReleaseDate(),
-            book.getPublisherId(),
-            book.getPublisherName(),
-            book.getGenreId(),
-            book.getGenreName(),
-            book.getUpdateAt(),
-            book.getVersion(),
-            book.getBookStockList().stream()
-                .map(bookStock -> new BookStockResponse(
-                    bookStock.getId(),
-                    bookStock.getBookStockStoreId(),
-                    bookStock.getStoreName(),
-                    bookStock.getBookStockQuantity()
-                ))
-                .toList()
-        );
-    }
-
-    public List<BookResponse> toResponseFromMybatisBooks(List<com.example.demo.mybatis.entity.BookWithPublisherName> books) {
-        return books.stream().map(this::toResponse).toList();
-    }
-
-    public BookResponse toResponse(com.example.demo.doma.entity.BookWithPublisherName book) {
-        return new BookResponse(
-            book.getId(),
-            book.getTitle(),
-            book.getAuthor(),
-            book.getReleaseDate(),
-            book.getPublisherId(),
-            book.getPublisherName(),
-            book.getGenreId(),
-            book.getGenreName(),
-            book.getUpdateAt(),
-            book.getVersion(),
-            book.getBookStockList().stream()
-                .map(bookStock -> new BookStockResponse(
-                    bookStock.getId(),
-                    bookStock.getBookStockStoreId(),
-                    bookStock.getStoreName(),
-                    bookStock.getBookStockQuantity()
-                ))
-                .toList()
-        );
-    }
-
-    public List<BookResponse> toResponseFromDomaBooks(List<com.example.demo.doma.entity.BookWithPublisherName> books) {
-        return books.stream().map(this::toResponse).toList();
+        return responses.values().stream().map(BookOperationConverterJPA.BookResponseBuilder::build).toList();
     }
 
     @Value
@@ -102,7 +47,7 @@ public class BookConverter {
         Long version;
         List<BookStockResponse> bookStockList;
 
-        private BookResponseBuilder(BookWithStockRowProjection row) {
+        private BookResponseBuilder(BookRepository.BookWithStockRowProjection row) {
             this(
                 row.getId(),
                 row.getTitle(),

@@ -5,7 +5,7 @@ import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.config.RetryableOnLockFailure;
-import com.example.demo.converter.BookConverter;
+import com.example.demo.doma.converter.BookOperationConverterDoma;
 import com.example.demo.doma.dao.BookCustomDao;
 import com.example.demo.doma.generator.dao.BookDao;
 import com.example.demo.doma.generator.entity.Book;
@@ -31,7 +31,7 @@ import java.util.Objects;
 public class BooksOperationServiceDoma implements BooksOperationService {
     private final BookDao bookDao;
     private final BookCustomDao bookCustomDao;
-    private final BookConverter converter;
+    private final BookOperationConverterDoma converter;
     private final BookDataValidatorDoma dataValidator;
 
     @Transactional(readOnly = true)
@@ -47,7 +47,7 @@ public class BooksOperationServiceDoma implements BooksOperationService {
         final var books = bookCustomDao.selectByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomDao.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
-            converter.toResponseFromDomaBooks(books),
+            converter.toResponse(books),
             page,
             size,
             totalElements,
@@ -125,5 +125,4 @@ public class BooksOperationServiceDoma implements BooksOperationService {
         }
         return book;
     }
-
 }

@@ -2,8 +2,8 @@ package com.example.demo.jpa.service;
 
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.config.RetryableOnLockFailure;
-import com.example.demo.converter.BookConverter;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.jpa.converter.BookOperationConverterJPA;
 import com.example.demo.jpa.entity.Book;
 import com.example.demo.jpa.repository.BookRepository;
 import com.example.demo.api.request.BookCreateRequest;
@@ -23,7 +23,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class BooksOperationServiceJPA implements BooksOperationService {
     private final BookRepository bookRepository;
-    private final BookConverter converter;
+    private final BookOperationConverterJPA converter;
     private final BookDataValidatorJPA dataValidator;
 
     @Transactional(readOnly = true)
