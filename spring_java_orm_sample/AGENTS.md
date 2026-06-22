@@ -2,7 +2,7 @@
 
 ## プロジェクト概要
 
-このプロジェクトは、Java 21 / Gradle / Spring Boot を使った書籍管理 API のサンプルアプリケーションです。
+このプロジェクトは、Java 21 / Gradle / Spring Boot を使った書籍・仕入管理 API のサンプルアプリケーションです。
 
 主な技術要素は以下です。
 
@@ -17,7 +17,7 @@
 - Spring Security
 - springdoc-openapi
 
-API は `/api/books` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
+API は `/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
 現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名・ジャンル名・在庫リストを含む `BookPageResponse` を返します。
 
@@ -63,11 +63,10 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/data/domain`: JPA / MyBatis / Doma で共有するドメイン型
 - `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース、ページ計算
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
-- `src/main/java/com/example/demo/converter`: projection / 表示向け Entity から response DTO への変換、在庫行の集約
 - `src/main/java/com/example/demo/config`: Spring 設定、例外ハンドリング、検索設定、ロック失敗リトライ設定
-- `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、型変換、データバリデーションを含みます。
-- `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
-- `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / データバリデーションと、CodeGen 生成コードを含みます。
+- `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
+- `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / converter / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
+- `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / converter / データバリデーションと、CodeGen 生成コードを含みます。
 - `src/main/resources/application.yaml`: アプリケーション設定
 - `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
 - `src/main/resources/codegen`: Doma CodeGen 補助設定
@@ -82,16 +81,21 @@ Gradle Wrapper を使用してください。
 ## 重要な設計方針
 
 - `BooksOperationApi` は API 定義と OpenAPI 注釈を扱います。
+- `PurchaseOperationApi` は仕入 API 定義と OpenAPI 注釈を扱います。
 - `BooksOperationApiController` は `BooksOperationApi` を実装し、Service に処理を委譲します。
+- `PurchaseOperationApiController` は `PurchaseOperationApi` を実装し、Service に処理を委譲します。
 - `BooksOperationApiControllerValidator` は API 入力の相関バリデーションを扱います。
 - `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
+- `PurchaseOperationService` は仕入登録の Service インターフェースです。現在の実装は `PurchaseOperationServiceDoma` です。
 - `PageCalculator` はページ数と offset の計算を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
-- `BookConverter` は本情報と `book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
-- JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookConverter` で書籍単位に集約します。
+- `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` は本情報と `book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
+- JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookOperationConverterJPA` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
 - Doma の取得・検索は `BookWithPublisherNameAggregateStrategy` で `bookStockList` を集約します。
+- 仕入登録は `PurchaseOperationServiceDoma` が `PurchaseInvoice` / `PurchaseInvoiceDetail` を登録し、`BookStockCustomDao` で在庫をロックして新規作成または数量加算します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain` で扱います。
+- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト実装は `BooksOperationServiceDoma` です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
@@ -104,6 +108,8 @@ Gradle Wrapper を使用してください。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
 - `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`bookStockList` が含まれます。
+- 仕入登録 API は `/api/purchases/create` で、`PurchaseInvoiceCreateRequest` と明細リストを受け取り、`PurchaseInvoiceResponse` を返します。
+- 仕入登録時は `supplierId`、`receivingStoreId`、明細の本 ID を参照チェックし、明細金額と伝票金額を計算します。
 - 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針
