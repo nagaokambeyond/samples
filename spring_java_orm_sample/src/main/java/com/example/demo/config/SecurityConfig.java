@@ -22,7 +22,7 @@ public class SecurityConfig {
         return (web) -> web.ignoring()
             .requestMatchers(
                 "/swagger-ui/**", "/v3/api-docs*/**",
-                "/api/books/**",
+                "/api/books/**", "/api/purchases/**",
                 "/h2-console/**",
                 "/scalar/**", "/health/**"
             );

@@ -1,7 +1,6 @@
 package com.example.demo.data.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import org.seasar.doma.Domain;
 
 @Domain(valueType = int.class, factoryMethod = "of")
@@ -15,7 +14,6 @@ public enum PurchaseInvoiceType {
         this.value = value;
     }
 
-    @JsonValue
     public int getValue() {
         return value;
     }
