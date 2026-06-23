@@ -6,6 +6,8 @@ import com.example.demo.jpa.repository.BookRepository;
 import lombok.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,12 +69,12 @@ public class BookOperationConverterJPA {
             Long id,
             String title,
             String author,
-            java.time.LocalDate releaseDate,
+            LocalDate releaseDate,
             Long publisherId,
             String publisherName,
             Long genreId,
             String genreName,
-            java.time.LocalDateTime updateAt,
+            LocalDateTime updateAt,
             Long version,
             List<BookStockResponse> bookStockList
         ) {
