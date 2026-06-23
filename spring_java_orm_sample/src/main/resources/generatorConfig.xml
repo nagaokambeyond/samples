@@ -53,5 +53,8 @@
         <table tableName="purchase_invoice_detail" domainObjectName="PurchaseOrderDetailEntity" mapperName="PurchaseOrderDetailMapper">
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
+        <table tableName="book_stock" domainObjectName="BookStockEntity" mapperName="BookStockMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
     </context>
 </generatorConfiguration>

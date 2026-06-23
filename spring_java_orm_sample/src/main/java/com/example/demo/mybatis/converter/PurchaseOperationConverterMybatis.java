@@ -1,0 +1,90 @@
+package com.example.demo.mybatis.converter;
+
+import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
+import com.example.demo.api.response.PurchaseInvoiceDetailResponse;
+import com.example.demo.api.response.PurchaseInvoiceResponse;
+import com.example.demo.data.domain.PurchaseInvoiceType;
+import com.example.demo.mybatis.generator.entity.BookStockEntity;
+import com.example.demo.mybatis.generator.entity.PurchaseOrderDetailEntity;
+import com.example.demo.mybatis.generator.entity.PurchaseOrderEntity;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class PurchaseOperationConverterMybatis {
+    public List<PurchaseOrderDetailEntity> toPurchaseInvoiceDetails(
+        PurchaseInvoiceCreateRequest request,
+        LocalDateTime now
+    ) {
+        return request.getDetails().stream().map(purchaseInvoiceDetail -> {
+            final var row = new PurchaseOrderDetailEntity();
+
+            row.setPurchaseInvoiceDetailBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
+            row.setPurchaseInvoiceDetailUnitPrice(purchaseInvoiceDetail.getPurchaseInvoiceDetailUnitPrice());
+            row.setPurchaseInvoiceDetailQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
+
+            final var amount = (long) row.getPurchaseInvoiceDetailUnitPrice() * row.getPurchaseInvoiceDetailQuantity();
+            row.setPurchaseInvoiceDetailAmount(amount);
+            row.setCreateAt(now);
+            row.setUpdateAt(now);
+            row.setVersion(1L);
+
+            return row;
+        }).toList();
+    }
+
+    public PurchaseOrderEntity toPurchaseInvoice(PurchaseInvoiceCreateRequest request, long amount, LocalDateTime now) {
+        final var result = new PurchaseOrderEntity();
+        result.setPurchaseInvoiceType(PurchaseInvoiceType.PURCHASE);
+        result.setPurchaseInvoiceDate(request.getPurchaseInvoiceDate());
+        result.setSupplierId(request.getSupplierId());
+        result.setReceivingStoreId(request.getReceivingStoreId());
+        result.setPurchaseInvoiceAmount(amount);
+        result.setCreateAt(now);
+        result.setUpdateAt(now);
+        result.setVersion(1L);
+        return result;
+    }
+
+    public BookStockEntity toBookStock(Long storeId, PurchaseOrderDetailEntity purchaseInvoiceDetail, LocalDateTime now) {
+        final var result = new BookStockEntity();
+        result.setBookStockStoreId(storeId);
+        result.setBookStockBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
+        result.setBookStockQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
+        result.setCreateAt(now);
+        result.setUpdateAt(now);
+        result.setVersion(1L);
+
+        return result;
+    }
+
+    public PurchaseInvoiceResponse toResponse(PurchaseOrderEntity purchaseInvoice, List<PurchaseOrderDetailEntity> details) {
+        final var list = details.stream().map(row -> new PurchaseInvoiceDetailResponse(
+            row.getId(),
+            row.getPurchaseInvoiceId(),
+            row.getPurchaseInvoiceDetailBookId(),
+            row.getPurchaseInvoiceDetailUnitPrice(),
+            row.getPurchaseInvoiceDetailQuantity(),
+            row.getPurchaseInvoiceDetailAmount(),
+            row.getUpdateAt(),
+            row.getVersion()
+        )).toList();
+
+        return new PurchaseInvoiceResponse(
+            purchaseInvoice.getId(),
+            purchaseInvoice.getPurchaseInvoiceType(),
+            purchaseInvoice.getReturnPurchaseInvoiceId(),
+            purchaseInvoice.getPurchaseInvoiceDate(),
+            purchaseInvoice.getSupplierId(),
+            purchaseInvoice.getReceivingStoreId(),
+            purchaseInvoice.getPurchaseInvoiceAmount(),
+            purchaseInvoice.getUpdateAt(),
+            purchaseInvoice.getVersion(),
+            list
+        );
+    }
+}

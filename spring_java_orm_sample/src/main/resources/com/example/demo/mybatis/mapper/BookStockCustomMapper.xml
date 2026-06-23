@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.demo.mybatis.mapper.BookStockCustomMapper">
+  <resultMap id="BookStockEntityResultMap" type="com.example.demo.mybatis.generator.entity.BookStockEntity">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="book_stock_store_id" jdbcType="BIGINT" property="bookStockStoreId" />
+    <result column="book_stock_book_id" jdbcType="BIGINT" property="bookStockBookId" />
+    <result column="book_stock_quantity" jdbcType="INTEGER" property="bookStockQuantity" />
+    <result column="create_at" jdbcType="TIMESTAMP" property="createAt" />
+    <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
+    <result column="version" jdbcType="BIGINT" property="version" />
+  </resultMap>
+
+  <sql id="Book_Stock_Columns">
+    id, book_stock_store_id, book_stock_book_id, book_stock_quantity, create_at, update_at, version
+  </sql>
+
+  <select id="selectByStoreIdAndBookIdWithWriteLock" resultMap="BookStockEntityResultMap">
+    select
+    <include refid="Book_Stock_Columns" />
+    from book_stock
+    where book_stock_store_id = #{bookStockStoreId,jdbcType=BIGINT}
+      and book_stock_book_id = #{bookStockBookId,jdbcType=BIGINT}
+    for update nowait
+  </select>
+</mapper>
