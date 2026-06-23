@@ -13,11 +13,11 @@ import java.util.Objects;
 
 @Component
 public class BookOperationConverterJPA {
-    public BookResponse toResponseFromJpaRows(List<BookRepository.BookWithStockRowProjection> rows) {
-        return toResponseListFromJpaRows(rows).getFirst();
+    public BookResponse toResponseFrom(List<BookRepository.BookWithStockRowProjection> rows) {
+        return toResponse(rows).getFirst();
     }
 
-    public List<BookResponse> toResponseListFromJpaRows(List<BookRepository.BookWithStockRowProjection> rows) {
+    public List<BookResponse> toResponse(List<BookRepository.BookWithStockRowProjection> rows) {
         final var responses = new LinkedHashMap<Long, BookOperationConverterJPA.BookResponseBuilder>();
         for (final var row : rows) {
             final var builder = responses.computeIfAbsent(row.getId(), id -> new BookOperationConverterJPA.BookResponseBuilder(row));

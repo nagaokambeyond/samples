@@ -33,7 +33,7 @@ public class BooksOperationServiceJPA implements BooksOperationService {
         if (books.isEmpty()) {
             throw new RepositoryDataNotfoundException();
         }
-        return converter.toResponseFromJpaRows(books);
+        return converter.toResponseFrom(books);
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +43,7 @@ public class BooksOperationServiceJPA implements BooksOperationService {
         final var books = bookRepository.findByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookRepository.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
         return new BookPageResponse(
-            converter.toResponseListFromJpaRows(books),
+            converter.toResponse(books),
             page,
             size,
             totalElements,
