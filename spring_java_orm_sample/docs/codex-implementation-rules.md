@@ -42,22 +42,22 @@
 - `PurchaseInvoiceType` の値を変更する場合は、DB の `check_purchase_invoice_type` 制約、初期データ、JPA `PurchaseInvoiceTypeConverter`、MyBatis `PurchaseInvoiceTypeHandler`、Doma `@Domain` の整合性を確認する。
 - MyBatis TypeHandler を追加・変更する場合は、`src/main/resources/mybatis-config.xml` に登録する。
 - Doma CodeGen の型解決を変更する場合は、`src/main/resources/codegen/entityPropertyClassNames.properties` と `build.gradle` の `domaCodeGen` 設定を確認する。
-- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
+- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。`book_stock` は `BookStockEntity` / `BookStockMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
 
 ## Service と例外
 
 - `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースとして扱う。
 - Service インターフェースを変更する場合は、JPA / MyBatis / Doma の3実装をすべて確認する。
-- `PurchaseOperationService` は仕入登録の Service インターフェースとして扱う。現在の実装は `PurchaseOperationServiceDoma` である。
-- 現在のデフォルト実装は `BooksOperationServiceDoma` であり、実装切り替えに関わる変更では `@Primary` の扱いを確認する。
+- `PurchaseOperationService` は JPA / MyBatis / Doma 共通の仕入登録 Service インターフェースとして扱う。
+- 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` であり、実装切り替えに関わる変更では `@Primary` の扱いを確認する。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
-- `PurchaseOperationConverterDoma` は仕入登録用 Entity、明細金額、伝票金額、在庫 Entity、response DTO への変換を扱う。
+- `PurchaseOperationConverterJPA` / `PurchaseOperationConverterMybatis` / `PurchaseOperationConverterDoma` は仕入登録用 Entity、明細金額、伝票金額、在庫 Entity、response DTO への変換を扱う。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の複数行を `BookOperationConverterJPA` で書籍単位に集約する。
 - MyBatis / Doma の取得・検索は、各表示向け Entity の `bookStockList` を各 `BookOperationConverter*` で `BookStockResponse` に変換する。
 - DB を読む・更新する Service メソッドには `@Transactional` を付ける。
 - `publisherId` は `publisher`、`genreId` は `book_genre` への外部キー。登録・更新時の参照存在チェックは各永続化方式の `BookDataValidator*` に集約する。
-- 仕入登録時の `supplierId`、`receivingStoreId`、明細の本 ID の参照存在チェックは `PurchaseDataValidatorDoma` に集約する。
-- 仕入登録では `PurchaseInvoice`、`PurchaseInvoiceDetail` を登録し、`BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で在庫行をロックしてから新規作成または数量加算する。
+- 仕入登録時の `supplierId`、`receivingStoreId`、明細の本 ID の参照存在チェックは各永続化方式の `PurchaseDataValidator*` に集約する。
+- 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で在庫行をロックしてから新規作成または数量加算する。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しない。
 - 排他ロックを取得して更新・削除する Service メソッドには、必要に応じて `@RetryableOnLockFailure` を付ける。
 - 更新競合は `ObjectOptimisticLockingFailureException` / `PessimisticLockingFailureException` と `GlobalExceptionHandler` により HTTP 409 として扱う。
@@ -81,7 +81,9 @@
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
 - ページ計算: `PageCalculatorTest`
 - JPA 実装: `BooksOperationServiceJPATest`
+- JPA 仕入実装: `PurchaseOperationServiceJPATest`
 - MyBatis 実装: `BooksOperationServiceMybatisTest`
+- MyBatis 仕入実装: `PurchaseOperationServiceMybatisTest`
 - Doma 実装: `BooksOperationServiceDomaTest`
 - Doma 仕入実装: `PurchaseOperationServiceDomaTest`
 - Doma 仕入データバリデーション: `PurchaseDataValidatorDomaTest`

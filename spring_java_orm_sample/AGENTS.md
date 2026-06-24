@@ -86,17 +86,17 @@ Gradle Wrapper を使用してください。
 - `PurchaseOperationApiController` は `PurchaseOperationApi` を実装し、Service に処理を委譲します。
 - `BooksOperationApiControllerValidator` は API 入力の相関バリデーションを扱います。
 - `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
-- `PurchaseOperationService` は仕入登録の Service インターフェースです。現在の実装は `PurchaseOperationServiceDoma` です。
+- `PurchaseOperationService` は JPA / MyBatis / Doma 共通の仕入登録 Service インターフェースです。
 - `PageCalculator` はページ数と offset の計算を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` は本情報と `book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookOperationConverterJPA` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
 - Doma の取得・検索は `BookWithPublisherNameAggregateStrategy` で `bookStockList` を集約します。
-- 仕入登録は `PurchaseOperationServiceDoma` が `PurchaseInvoice` / `PurchaseInvoiceDetail` を登録し、`BookStockCustomDao` で在庫をロックして新規作成または数量加算します。
+- 仕入登録は JPA / MyBatis / Doma の各 `PurchaseOperationService*` が `PurchaseInvoice` / `PurchaseInvoiceDetail` 相当のデータを登録し、在庫をロックして新規作成または数量加算します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain` で扱います。
-- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。生成名を変更する場合は影響範囲を確認してください。
-- 現在のデフォルト実装は `BooksOperationServiceDoma` です。
+- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
+- 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ Generator / CodeGen を実行してください。
