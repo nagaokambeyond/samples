@@ -2,9 +2,9 @@ package com.example.demo.api.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.Value;
+import lombok.Data;
 
-@Value
+@Data
 public class BookStockResponse {
     @Schema(description = "本在庫ID", type = "integer", format = "int64")
     @NotNull

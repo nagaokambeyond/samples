@@ -3,7 +3,9 @@ package com.example.demo.jpa.converter;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.api.response.BookStockResponse;
 import com.example.demo.jpa.repository.BookRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -14,7 +16,10 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class BookOperationConverterJPA {
+    private final ModelMapper modelMapper;
+
     public BookResponse toResponseFrom(List<BookRepository.BookWithStockRowProjection> rows) {
         return toResponse(rows).getFirst();
     }
@@ -24,15 +29,18 @@ public class BookOperationConverterJPA {
         for (final var row : rows) {
             final var builder = responses.computeIfAbsent(row.getId(), id -> new BookOperationConverterJPA.BookResponseBuilder(row));
             if (Objects.nonNull(row.getBookStockId())) {
-                builder.getBookStockList().add(new BookStockResponse(
-                    row.getBookStockId(),
-                    row.getBookStockStoreId(),
-                    row.getStoreName(),
-                    row.getBookStockQuantity()
-                ));
+                final var bookStock = modelMapper.map(row, BookStockResponse.class);
+                bookStock.setId(row.getBookStockId());
+                builder.getBookStockList().add(bookStock);
             }
         }
-        return responses.values().stream().map(BookOperationConverterJPA.BookResponseBuilder::build).toList();
+        return responses.values().stream().map(this::build).toList();
+    }
+
+    private BookResponse build(BookResponseBuilder builder) {
+        final var response = modelMapper.map(builder, BookResponse.class);
+        response.setBookStockList(builder.getBookStockList());
+        return response;
     }
 
     @Value
@@ -91,20 +99,5 @@ public class BookOperationConverterJPA {
             this.bookStockList = bookStockList;
         }
 
-        private BookResponse build() {
-            return new BookResponse(
-                id,
-                title,
-                author,
-                releaseDate,
-                publisherId,
-                publisherName,
-                genreId,
-                genreName,
-                updateAt,
-                version,
-                bookStockList
-            );
-        }
     }
 }

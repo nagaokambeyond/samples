@@ -42,13 +42,13 @@ public class BooksOperationServiceMybatis implements BooksOperationService {
         final var offset = PageCalculator.calculateOffset(page, size);
         final var books = bookCustomMapper.selectByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo, size, offset);
         final var totalElements = bookCustomMapper.countByTitleOrAuthorStartingWithIgnoreCase(keyword, releaseDateFrom, releaseDateTo);
-        return new BookPageResponse(
-            converter.toResponse(books),
-            page,
-            size,
-            totalElements,
-            PageCalculator.calculateTotalPages(totalElements, size)
-        );
+        final var response = new BookPageResponse();
+        response.setContent(converter.toResponse(books));
+        response.setPage(page);
+        response.setSize(size);
+        response.setTotalElements(totalElements);
+        response.setTotalPages(PageCalculator.calculateTotalPages(totalElements, size));
+        return response;
     }
 
     @Transactional

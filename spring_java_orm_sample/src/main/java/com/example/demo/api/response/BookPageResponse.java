@@ -2,11 +2,11 @@ package com.example.demo.api.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.Value;
+import lombok.Data;
 
 import java.util.List;
 
-@Value
+@Data
 public class BookPageResponse {
     @Schema(description = "検索結果")
     @NotNull

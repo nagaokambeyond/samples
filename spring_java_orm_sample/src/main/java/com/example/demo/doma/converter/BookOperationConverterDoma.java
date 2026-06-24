@@ -2,34 +2,24 @@ package com.example.demo.doma.converter;
 
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.api.response.BookStockResponse;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import com.example.demo.doma.entity.BookWithPublisherName;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class BookOperationConverterDoma {
+    private final ModelMapper modelMapper;
+
     public BookResponse toResponse(BookWithPublisherName book) {
-        return new BookResponse(
-            book.getId(),
-            book.getTitle(),
-            book.getAuthor(),
-            book.getReleaseDate(),
-            book.getPublisherId(),
-            book.getPublisherName(),
-            book.getGenreId(),
-            book.getGenreName(),
-            book.getUpdateAt(),
-            book.getVersion(),
-            book.getBookStockList().stream()
-                .map(bookStock -> new BookStockResponse(
-                    bookStock.getId(),
-                    bookStock.getBookStockStoreId(),
-                    bookStock.getStoreName(),
-                    bookStock.getBookStockQuantity()
-                ))
-                .toList()
-        );
+        final var response = modelMapper.map(book, BookResponse.class);
+        response.setBookStockList(book.getBookStockList().stream()
+            .map(bookStock -> modelMapper.map(bookStock, BookStockResponse.class))
+            .toList());
+        return response;
     }
 
     public List<BookResponse> toResponse(List<BookWithPublisherName> books) {
