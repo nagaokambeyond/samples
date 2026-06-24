@@ -1,4 +1,4 @@
-package com.example.demo.api;
+package com.example.demo.api.log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
