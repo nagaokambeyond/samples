@@ -24,12 +24,7 @@ public class PurchaseOperationConverterMybatis {
         LocalDateTime now
     ) {
         return request.getDetails().stream().map(purchaseInvoiceDetail -> {
-            final var row = new PurchaseOrderDetailEntity();
-
-            row.setPurchaseInvoiceDetailBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
-            row.setPurchaseInvoiceDetailUnitPrice(purchaseInvoiceDetail.getPurchaseInvoiceDetailUnitPrice());
-            row.setPurchaseInvoiceDetailQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
-
+            final var row = modelMapper.map(purchaseInvoiceDetail, PurchaseOrderDetailEntity.class);
             final var amount = (long) row.getPurchaseInvoiceDetailUnitPrice() * row.getPurchaseInvoiceDetailQuantity();
             row.setPurchaseInvoiceDetailAmount(amount);
             row.setCreateAt(now);
@@ -41,11 +36,8 @@ public class PurchaseOperationConverterMybatis {
     }
 
     public PurchaseOrderEntity toPurchaseInvoice(PurchaseInvoiceCreateRequest request, long amount, LocalDateTime now) {
-        final var result = new PurchaseOrderEntity();
+        final var result = modelMapper.map(request, PurchaseOrderEntity.class);
         result.setPurchaseInvoiceType(PurchaseInvoiceType.PURCHASE);
-        result.setPurchaseInvoiceDate(request.getPurchaseInvoiceDate());
-        result.setSupplierId(request.getSupplierId());
-        result.setReceivingStoreId(request.getReceivingStoreId());
         result.setPurchaseInvoiceAmount(amount);
         result.setCreateAt(now);
         result.setUpdateAt(now);

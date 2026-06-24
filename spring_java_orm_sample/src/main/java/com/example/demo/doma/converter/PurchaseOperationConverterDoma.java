@@ -24,12 +24,7 @@ public class PurchaseOperationConverterDoma {
         LocalDateTime now
     ) {
         return request.getDetails().stream().map(purchaseInvoiceDetail -> {
-            final var row = new PurchaseInvoiceDetail();
-
-            row.setPurchaseInvoiceDetailBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
-            row.setPurchaseInvoiceDetailUnitPrice(purchaseInvoiceDetail.getPurchaseInvoiceDetailUnitPrice());
-            row.setPurchaseInvoiceDetailQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
-
+            final var row = modelMapper.map(purchaseInvoiceDetail, PurchaseInvoiceDetail.class);
             final var amount = ((long) row.getPurchaseInvoiceDetailUnitPrice() * (long) row.getPurchaseInvoiceDetailQuantity());
             row.setPurchaseInvoiceDetailAmount(amount);
             row.setCreateAt(now);
@@ -40,11 +35,8 @@ public class PurchaseOperationConverterDoma {
     }
 
     public PurchaseInvoice toPurchaseInvoice(PurchaseInvoiceCreateRequest request, long amount, LocalDateTime now) {
-        final var result = new PurchaseInvoice();
+        final var result = modelMapper.map(request, PurchaseInvoice.class);
         result.setPurchaseInvoiceType(PurchaseInvoiceType.PURCHASE);
-        result.setPurchaseInvoiceDate(request.getPurchaseInvoiceDate());
-        result.setSupplierId(request.getSupplierId());
-        result.setReceivingStoreId(request.getReceivingStoreId());
         result.setPurchaseInvoiceAmount(amount);
         result.setCreateAt(now);
         result.setUpdateAt(now);
