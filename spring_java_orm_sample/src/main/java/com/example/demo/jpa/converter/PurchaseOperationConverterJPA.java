@@ -8,6 +8,7 @@ import com.example.demo.jpa.entity.BookStock;
 import com.example.demo.jpa.entity.PurchaseOrder;
 import com.example.demo.jpa.entity.PurchaseOrderDetail;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class PurchaseOperationConverterJPA {
+    private final ModelMapper modelMapper;
+
     public List<PurchaseOrderDetail> toPurchaseInvoiceDetails(
         PurchaseInvoiceCreateRequest request,
         LocalDateTime now
@@ -63,28 +66,21 @@ public class PurchaseOperationConverterJPA {
     }
 
     public PurchaseInvoiceResponse toResponse(PurchaseOrder purchaseInvoice, List<PurchaseOrderDetail> details) {
-        final var list = details.stream().map(row -> new PurchaseInvoiceDetailResponse(
-            row.getId(),
-            row.getPurchaseOrderId(),
-            row.getPurchaseOrderDetailBookId(),
-            row.getPurchaseOrderDetailUnitPrice(),
-            row.getPurchaseOrderDetailQuantity(),
-            row.getPurchaseOrderDetailAmount(),
-            row.getUpdateAt(),
-            row.getVersion()
-        )).toList();
+        final var list = details.stream().map(row -> {
+            final var detail = modelMapper.map(row, PurchaseInvoiceDetailResponse.class);
+            detail.setPurchaseInvoiceId(row.getPurchaseOrderId());
+            detail.setPurchaseInvoiceDetailBookId(row.getPurchaseOrderDetailBookId());
+            detail.setPurchaseInvoiceDetailUnitPrice(row.getPurchaseOrderDetailUnitPrice());
+            detail.setPurchaseInvoiceDetailQuantity(row.getPurchaseOrderDetailQuantity());
+            detail.setPurchaseInvoiceDetailAmount(row.getPurchaseOrderDetailAmount());
+            return detail;
+        }).toList();
 
-        return new PurchaseInvoiceResponse(
-            purchaseInvoice.getId(),
-            purchaseInvoice.getPurchaseInvoiceType(),
-            purchaseInvoice.getReturnPurchaseOrderId(),
-            purchaseInvoice.getPurchaseOrderDate(),
-            purchaseInvoice.getSupplierId(),
-            purchaseInvoice.getReceivingStoreId(),
-            purchaseInvoice.getPurchaseOrderAmount(),
-            purchaseInvoice.getUpdateAt(),
-            purchaseInvoice.getVersion(),
-            list
-        );
+        final var response = modelMapper.map(purchaseInvoice, PurchaseInvoiceResponse.class);
+        response.setReturnPurchaseInvoiceId(purchaseInvoice.getReturnPurchaseOrderId());
+        response.setPurchaseInvoiceDate(purchaseInvoice.getPurchaseOrderDate());
+        response.setPurchaseInvoiceAmount(purchaseInvoice.getPurchaseOrderAmount());
+        response.setDetail(list);
+        return response;
     }
 }

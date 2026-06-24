@@ -8,6 +8,7 @@ import com.example.demo.mybatis.generator.entity.BookStockEntity;
 import com.example.demo.mybatis.generator.entity.PurchaseOrderDetailEntity;
 import com.example.demo.mybatis.generator.entity.PurchaseOrderEntity;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class PurchaseOperationConverterMybatis {
+    private final ModelMapper modelMapper;
+
     public List<PurchaseOrderDetailEntity> toPurchaseInvoiceDetails(
         PurchaseInvoiceCreateRequest request,
         LocalDateTime now
@@ -63,28 +66,12 @@ public class PurchaseOperationConverterMybatis {
     }
 
     public PurchaseInvoiceResponse toResponse(PurchaseOrderEntity purchaseInvoice, List<PurchaseOrderDetailEntity> details) {
-        final var list = details.stream().map(row -> new PurchaseInvoiceDetailResponse(
-            row.getId(),
-            row.getPurchaseInvoiceId(),
-            row.getPurchaseInvoiceDetailBookId(),
-            row.getPurchaseInvoiceDetailUnitPrice(),
-            row.getPurchaseInvoiceDetailQuantity(),
-            row.getPurchaseInvoiceDetailAmount(),
-            row.getUpdateAt(),
-            row.getVersion()
-        )).toList();
+        final var list = details.stream()
+            .map(row -> modelMapper.map(row, PurchaseInvoiceDetailResponse.class))
+            .toList();
 
-        return new PurchaseInvoiceResponse(
-            purchaseInvoice.getId(),
-            purchaseInvoice.getPurchaseInvoiceType(),
-            purchaseInvoice.getReturnPurchaseInvoiceId(),
-            purchaseInvoice.getPurchaseInvoiceDate(),
-            purchaseInvoice.getSupplierId(),
-            purchaseInvoice.getReceivingStoreId(),
-            purchaseInvoice.getPurchaseInvoiceAmount(),
-            purchaseInvoice.getUpdateAt(),
-            purchaseInvoice.getVersion(),
-            list
-        );
+        final var response = modelMapper.map(purchaseInvoice, PurchaseInvoiceResponse.class);
+        response.setDetail(list);
+        return response;
     }
 }

@@ -57,21 +57,20 @@ class PurchaseOperationApiControllerTest {
     @Test
     void createPurchaseInvoiceReturnsOkAndResponse() throws Exception {
         final var updateAt = LocalDateTime.of(2026, 2, 1, 10, 0);
-        when(purchaseOperationService.create(any())).thenReturn(new PurchaseInvoiceResponse(
-            10L,
-            PurchaseInvoiceType.PURCHASE,
-            null,
-            LocalDate.of(2026, 2, 1),
-            1L,
-            2L,
-            3500L,
-            updateAt,
-            1L,
-            List.of(
-                new PurchaseInvoiceDetailResponse(20L, 10L, 1L, 1000, 2, 2000L, updateAt, 1L),
-                new PurchaseInvoiceDetailResponse(21L, 10L, 2L, 500, 3, 1500L, updateAt, 1L)
-            )
+        final var responseBody = new PurchaseInvoiceResponse();
+        responseBody.setId(10L);
+        responseBody.setPurchaseInvoiceType(PurchaseInvoiceType.PURCHASE);
+        responseBody.setPurchaseInvoiceDate(LocalDate.of(2026, 2, 1));
+        responseBody.setSupplierId(1L);
+        responseBody.setReceivingStoreId(2L);
+        responseBody.setPurchaseInvoiceAmount(3500L);
+        responseBody.setUpdateAt(updateAt);
+        responseBody.setVersion(1L);
+        responseBody.setDetail(List.of(
+            purchaseInvoiceDetailResponse(20L, 10L, 1L, 1000, 2, 2000L, updateAt),
+            purchaseInvoiceDetailResponse(21L, 10L, 2L, 500, 3, 1500L, updateAt)
         ));
+        when(purchaseOperationService.create(any())).thenReturn(responseBody);
 
         final var response = post(
             """
@@ -215,5 +214,26 @@ class PurchaseOperationApiControllerTest {
         final var fields = new ArrayList<String>();
         json.get("errors").forEach(error -> fields.add(error.get("field").asText()));
         return fields;
+    }
+
+    private PurchaseInvoiceDetailResponse purchaseInvoiceDetailResponse(
+        Long id,
+        Long purchaseInvoiceId,
+        Long purchaseInvoiceDetailBookId,
+        Integer purchaseInvoiceDetailUnitPrice,
+        Integer purchaseInvoiceDetailQuantity,
+        Long purchaseInvoiceDetailAmount,
+        LocalDateTime updateAt
+    ) {
+        final var response = new PurchaseInvoiceDetailResponse();
+        response.setId(id);
+        response.setPurchaseInvoiceId(purchaseInvoiceId);
+        response.setPurchaseInvoiceDetailBookId(purchaseInvoiceDetailBookId);
+        response.setPurchaseInvoiceDetailUnitPrice(purchaseInvoiceDetailUnitPrice);
+        response.setPurchaseInvoiceDetailQuantity(purchaseInvoiceDetailQuantity);
+        response.setPurchaseInvoiceDetailAmount(purchaseInvoiceDetailAmount);
+        response.setUpdateAt(updateAt);
+        response.setVersion(1L);
+        return response;
     }
 }

@@ -2,11 +2,11 @@ package com.example.demo.api.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
-import lombok.Value;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Value
+@Data
 public class PurchaseInvoiceDetailResponse {
     @Schema(description = "仕入伝票明細ID", type = "integer", format = "int64")
     @NotNull

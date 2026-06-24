@@ -4,13 +4,13 @@ import com.example.demo.data.domain.PurchaseInvoiceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import lombok.Value;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Value
+@Data
 public class PurchaseInvoiceResponse {
     @Schema(description = "仕入伝票ID", type = "integer", format = "int64")
     @NotNull
