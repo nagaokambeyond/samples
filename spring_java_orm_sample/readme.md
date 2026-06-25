@@ -8,6 +8,7 @@ http://localhost:8080/scalar
 ```shell
 ./gradlew domaCodeGenAll
 ./gradlew runMyBatisGenerator
+./gradlew generateJooq
 ./gradlew test
 ```
 

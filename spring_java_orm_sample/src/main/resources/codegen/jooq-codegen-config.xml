@@ -1,0 +1,19 @@
+<configuration>
+    <jdbc>
+        <driver>org.h2.Driver</driver>
+        <url>${domaCodeGenUrl}</url>
+        <user>sa</user>
+        <password></password>
+    </jdbc>
+    <generator>
+        <database>
+            <name>org.jooq.meta.h2.H2Database</name>
+            <inputSchema>public</inputSchema>
+            <includes>book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock</includes>
+        </database>
+        <target>
+            <packageName>com.example.demo.jooq.generated</packageName>
+            <directory>src/main/java</directory>
+        </target>
+    </generator>
+</configuration>

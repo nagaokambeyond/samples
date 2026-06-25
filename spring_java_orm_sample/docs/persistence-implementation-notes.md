@@ -3,7 +3,7 @@
 ## 全体方針
 
 - 現在のデフォルト実装は `BooksOperationServiceDoma` です。
-- `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースです。
+- `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースです。
 - `BookDataValidatorJPA` / `BookDataValidatorMybatis` / `BookDataValidatorDoma` は永続化方式ごとのデータバリデーションを扱います。
 - `BookConverter` は projection / 表示向け Entity から response DTO への変換を扱います。JPA の行 projection はここで書籍単位に集約し、`bookStockList` を組み立てます。
 - `book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。
@@ -11,7 +11,18 @@
 - `purchase_invoice.purchase_invoice_type` は `PurchaseInvoiceType` で扱います。JPA / MyBatis / Doma の型変換設定を揃えてください。
 - Service 内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに `@RetryableOnLockFailure` を付けてリトライします。
 - ページング検索の offset と totalPages は `PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
-- JPA / MyBatis / Doma のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
+- JPA / MyBatis / Doma / jOOQ のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
+
+## jOOQ
+
+- `src/main/java/com/example/demo/jooq` 配下は jOOQ 手書き実装です。
+- jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に生成します。
+- 生成元スキーマは MyBatis Generator / Doma CodeGen と同じ `src/main/resources/generator-schema.sql` です。スキーマ変更時は `./gradlew generateJooq` と `./gradlew test` で整合性を確認してください。
+- jOOQ の Service 実装は `DSLContext` と `com.example.demo.jooq.generated.Tables` を使い、API には既存の request / response DTO を返します。
+- `purchase_invoice_type` は jOOQ では DB 上の `Integer` として扱い、保存時は `PurchaseInvoiceType#getValue()`、レスポンス変換時は `PurchaseInvoiceType.of(...)` を使います。
+- 一覧検索で在庫・店舗を結合する場合は、先に書籍を `limit` / `offset` でページングしてから `book_stock` / `store` を結合してください。在庫行の重複でページング件数が崩れないようにします。
+- jOOQ の行ロック取得は `forUpdate().noWait()` を使い、ロック失敗は `PessimisticLockingFailureException` に変換して既存の `RetryableOnLockFailure` / `GlobalExceptionHandler` に乗せます。
+- jOOQ 実装は既定 Bean ではありません。通常の API 実行は引き続き Doma の `@Primary` 実装を使います。
 
 ## Doma
 
@@ -108,6 +119,7 @@
 - `publisher_name` / `genre_name` はレスポンス表示項目です。変更時は projection / 表示向け Entity / SQL / `BookConverter` を確認してください。
 - `bookStockList` はレスポンス表示項目です。`book_stock` または `store` を変更する場合は、JPA の行 projection、MyBatis の nested collection、Doma の aggregate strategy、`BookStockResponse`、`BookConverter` を確認してください。
 - `purchase_invoice_type` は `PurchaseInvoiceType` と DB CHECK 制約に関係します。値追加・変更時は各永続化方式の型変換を確認してください。
+- jOOQ 生成コードの対象テーブルは `build.gradle` の `generateJooq` タスク内の `includes` で管理しています。
 - 仕入・在庫系の外部キーを変更する場合は、`purchase_invoice.return_purchase_invoice_id`、`purchase_invoice.supplier_id`、`purchase_invoice.receiving_store_id`、`purchase_invoice_detail.purchase_invoice_id`、`purchase_invoice_detail.purchase_invoice_detail_book_id`、`book_stock.book_stock_store_id`、`book_stock.book_stock_book_id` の整合性を確認してください。
 - 検索条件を変更する場合は、JPA / MyBatis / Doma の一覧取得と件数取得が同じ条件になるよう確認してください。
 
@@ -118,6 +130,8 @@
 ```shell
 ./gradlew runMyBatisGenerator
 ./gradlew domaCodeGenLocalAll
+./gradlew generateJooq
 ```
 
 MyBatis Generator と Doma CodeGen はファイルを上書きする可能性があります。実行前後で差分を確認してください。
+jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力されます。再生成後は差分を確認してください。

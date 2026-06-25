@@ -12,8 +12,8 @@
 - record にしたいところでは、Lombok の `@Value` を付けた class にする。
 - API のリクエスト、レスポンス項目にある `List` には `@NotNull` を付ける。
 - 未使用なメソッドであれば削除する。
-- JPA / MyBatis / Doma で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
-- 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain` の対応を揃える。
+- JPA / MyBatis / Doma / jOOQ で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
+- 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の値変換の対応を揃える。
 - API 関連のクラスは `api`、`api/controller`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
 - 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、3方式で本当に共有できる責務か確認する。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
@@ -46,10 +46,11 @@
 
 ## Service と例外
 
-- `BooksOperationService` は JPA / MyBatis / Doma 共通の Service インターフェースとして扱う。
-- Service インターフェースを変更する場合は、JPA / MyBatis / Doma の3実装をすべて確認する。
-- `PurchaseOperationService` は JPA / MyBatis / Doma 共通の仕入登録 Service インターフェースとして扱う。
+- `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースとして扱う。
+- Service インターフェースを変更する場合は、JPA / MyBatis / Doma / jOOQ の4実装をすべて確認する。
+- `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースとして扱う。
 - 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` であり、実装切り替えに関わる変更では `@Primary` の扱いを確認する。
+- jOOQ 実装は `src/main/java/com/example/demo/jooq` 配下に置き、生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力する。生成コードを直接編集しない。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
 - `PurchaseOperationConverterJPA` / `PurchaseOperationConverterMybatis` / `PurchaseOperationConverterDoma` は仕入登録用 Entity、明細金額、伝票金額、在庫 Entity、response DTO への変換を扱う。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の複数行を `BookOperationConverterJPA` で書籍単位に集約する。
@@ -96,6 +97,8 @@
 - Doma 生成 PurchaseInvoice DAO: `PurchaseInvoiceDaoTest`
 - Doma 生成 PurchaseInvoiceDetail DAO: `PurchaseInvoiceDetailDaoTest`
 - Doma 生成 BookStock DAO: `BookStockDaoTest`
+- jOOQ 実装: `BooksOperationServiceJooqTest`
+- jOOQ 仕入実装: `PurchaseOperationServiceJooqTest`
 - ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
 - 行ロック関連: `BookRowLock`
 
