@@ -9,13 +9,14 @@
 - DI は既存コードと同じく Lombok の `@RequiredArgsConstructor` を基本にする。
 - メソッド内の変数宣言には、`final var` を積極的に使う。
 - `LocalDateTime.now()` を頻繁に呼ばず、同じ処理内では必要に応じて値を使い回す。
-- record にしたいところでは、Lombok の `@Value` を付けた class にする。
+- request DTO や内部 row など不変にしたい class は Lombok の `@Value` を基本にする。
+- response DTO は ModelMapper や jOOQ converter から setter で組み立てるため、既存コードと同じく Lombok の `@Data` を基本にする。
 - API のリクエスト、レスポンス項目にある `List` には `@NotNull` を付ける。
 - 未使用なメソッドであれば削除する。
 - JPA / MyBatis / Doma / jOOQ で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
 - 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の値変換の対応を揃える。
 - API 関連のクラスは `api`、`api/controller`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
-- 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、3方式で本当に共有できる責務か確認する。
+- 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
 ## API 実装
@@ -30,7 +31,7 @@
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
 - 日付範囲の相関チェックは `BooksOperationApiControllerValidator` に集約する。
 - `page` は 0 始まりとする。ページサイズはリクエストパラメータではなく、`application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込む。
-- 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を3つの Service 実装で揃える。
+- 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を4つの Service 実装で揃える。
 - ページ数と offset の計算は `PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
 - 仕入登録 API は `/api/purchases/create` とし、`PurchaseInvoiceCreateRequest` で `purchaseInvoiceDate`、`supplierId`、`receivingStoreId`、明細リストを受け取る。
 - `PurchaseInvoiceCreateRequest.details` は `@Valid`、`@NotEmpty`、`@NotNull`、`@Size(max = 10)` を維持する。明細の単価は 1〜10000、数量は 1〜1000 の制約を維持する。
@@ -51,14 +52,15 @@
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースとして扱う。
 - 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` であり、実装切り替えに関わる変更では `@Primary` の扱いを確認する。
 - jOOQ 実装は `src/main/java/com/example/demo/jooq` 配下に置き、生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力する。生成コードを直接編集しない。
-- `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
-- `PurchaseOperationConverterJPA` / `PurchaseOperationConverterMybatis` / `PurchaseOperationConverterDoma` は仕入登録用 Entity、明細金額、伝票金額、在庫 Entity、response DTO への変換を扱う。
+- `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
+- `PurchaseOperationConverterJPA` / `PurchaseOperationConverterMybatis` / `PurchaseOperationConverterDoma` / `PurchaseOperationConverterJooq` は仕入登録用 Entity / row、明細金額、伝票金額、在庫 Entity / row、response DTO への変換を扱う。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の複数行を `BookOperationConverterJPA` で書籍単位に集約する。
 - MyBatis / Doma の取得・検索は、各表示向け Entity の `bookStockList` を各 `BookOperationConverter*` で `BookStockResponse` に変換する。
+- jOOQ の取得・検索は `BookWithStockRow` の複数行を `BookOperationConverterJooq` で書籍単位に集約する。
 - DB を読む・更新する Service メソッドには `@Transactional` を付ける。
 - `publisherId` は `publisher`、`genreId` は `book_genre` への外部キー。登録・更新時の参照存在チェックは各永続化方式の `BookDataValidator*` に集約する。
 - 仕入登録時の `supplierId`、`receivingStoreId`、明細の本 ID の参照存在チェックは各永続化方式の `PurchaseDataValidator*` に集約する。
-- 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で在庫行をロックしてから新規作成または数量加算する。
+- 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock`、jOOQ は `forUpdate().noWait()` で在庫行をロックしてから新規作成または数量加算する。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しない。
 - 排他ロックを取得して更新・削除する Service メソッドには、必要に応じて `@RetryableOnLockFailure` を付ける。
 - 更新競合は `ObjectOptimisticLockingFailureException` / `PessimisticLockingFailureException` と `GlobalExceptionHandler` により HTTP 409 として扱う。
@@ -89,17 +91,9 @@
 - Doma 仕入実装: `PurchaseOperationServiceDomaTest`
 - Doma 仕入データバリデーション: `PurchaseDataValidatorDomaTest`
 - 仕入 API Controller: `PurchaseOperationApiControllerTest`
-- Doma 生成 DAO: `BookDaoTest`
-- Doma 生成 Publisher DAO: `PublisherDaoTest`
-- Doma 生成 BookGenre DAO: `BookGenreDaoTest`
-- Doma 生成 Supplier DAO: `SupplierDaoTest`
-- Doma 生成 Store DAO: `StoreDaoTest`
-- Doma 生成 PurchaseInvoice DAO: `PurchaseInvoiceDaoTest`
-- Doma 生成 PurchaseInvoiceDetail DAO: `PurchaseInvoiceDetailDaoTest`
-- Doma 生成 BookStock DAO: `BookStockDaoTest`
 - jOOQ 実装: `BooksOperationServiceJooqTest`
 - jOOQ 仕入実装: `PurchaseOperationServiceJooqTest`
 - ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
 - 行ロック関連: `BookRowLock`
 
-API、Security、DB 設定、JPA / MyBatis / Doma の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
+API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
