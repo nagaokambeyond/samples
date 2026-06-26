@@ -22,16 +22,24 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 ext {
+    // Versions
     domaVersion = '3.14.0'
     domaSpringBootVersion = '3.0.0'
     myBatisGeneratorVersion = '2.0.0'
     myBatisSpringBootVersion = '4.0.1'
     springDocVersion = '3.0.3'
 
+    // Code generation
     codeGenSchema = 'src/main/resources/generator-schema.sql'
-    domaCodeGenUrl = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM '${codeGenSchema}'"
+    codeGenJdbcUrl = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM '${codeGenSchema}'"
+    generatedTablePattern = 'book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock'
+
+    // Generated packages and directories
     domaDaoPackage = 'com.example.demo.doma.generator.dao'
     domaEntityPackage = 'com.example.demo.doma.generator.entity'
+    jooqGeneratedPackage = 'com.example.demo.jooq.generated'
+    jooqGeneratedDirectory = 'src/main/java'
+    jooqGeneratedOutputDirectory = "${jooqGeneratedDirectory}/com/example/demo/jooq/generated"
 }
 
 java {
@@ -50,6 +58,7 @@ configurations {
 }
 
 dependencies {
+    // Spring Boot
     implementation 'org.springframework.boot:spring-boot-h2console'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-jooq'
@@ -61,17 +70,21 @@ dependencies {
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-scalar:${springDocVersion}"
 
+    // MyBatis
     implementation "org.mybatis.spring.boot:mybatis-spring-boot-starter:${myBatisSpringBootVersion}"
     mybatisTasks "org.mybatis.generator:mybatis-generator-core:${myBatisGeneratorVersion}"
     mybatisTasks "com.h2database:h2:${h2Version}"
 
+    // jOOQ
     jooqCodegen 'org.jooq:jooq-codegen'
     jooqCodegen "com.h2database:h2:${h2Version}"
 
+    // Doma
     implementation "org.seasar.doma.boot:doma-spring-boot-starter:${domaSpringBootVersion}"
     implementation "org.seasar.doma:doma-core:${domaVersion}"
     annotationProcessor "org.seasar.doma:doma-processor:${domaVersion}"
 
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
@@ -79,6 +92,7 @@ dependencies {
 
     implementation 'org.modelmapper:modelmapper:3.2.6'
 
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testCompileOnly 'org.projectlombok:lombok'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -89,20 +103,40 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+def jooqCodeGenJdbcUrl = codeGenJdbcUrl as String
+def jooqGeneratedTablePattern = generatedTablePattern as String
+def jooqCodeGenPackage = jooqGeneratedPackage as String
+def jooqCodeGenDirectory = jooqGeneratedDirectory as String
+
 tasks.register('generateJooq', JavaExec) {
     group = 'jooq'
     description = 'Generates jOOQ classes from the local H2 generator schema.'
+
     def configFile = layout.buildDirectory.file("tmp/jooq-codegen-config.xml")
     def configTemplateFile = file("src/main/resources/codegen/jooq-codegen-config.xml")
+
     classpath = configurations.jooqCodegen
     mainClass = 'org.jooq.codegen.GenerationTool'
     inputs.files(codeGenSchema, configTemplateFile)
-    outputs.dir("src/main/java/com/example/demo/jooq/generated")
+    inputs.properties(
+            codeGenJdbcUrl: jooqCodeGenJdbcUrl,
+            generatedTablePattern: jooqGeneratedTablePattern,
+            jooqGeneratedPackage: jooqCodeGenPackage,
+            jooqGeneratedDirectory: jooqCodeGenDirectory
+    )
+    outputs.dir(jooqGeneratedOutputDirectory)
     args = [configFile.get().asFile.absolutePath]
+
     doFirst {
         final var jooqConfigFile = configFile.get().asFile
+        final var jooqConfigText = configTemplateFile.text
+                .replace('${codeGenJdbcUrl}', jooqCodeGenJdbcUrl)
+                .replace('${generatedTablePattern}', jooqGeneratedTablePattern)
+                .replace('${jooqGeneratedPackage}', jooqCodeGenPackage)
+                .replace('${jooqGeneratedDirectory}', jooqCodeGenDirectory)
+
         jooqConfigFile.parentFile.mkdirs()
-        jooqConfigFile.text = configTemplateFile.text.replace('${domaCodeGenUrl}', domaCodeGenUrl)
+        jooqConfigFile.text = jooqConfigText
     }
 }
 
@@ -110,21 +144,26 @@ tasks.named('compileJava') {
     dependsOn tasks.named('generateJooq')
 }
 
+def domaCodeGenJdbcUrl = codeGenJdbcUrl as String
+def domaGeneratedTablePattern = generatedTablePattern as String
+def domaGeneratedEntityPackage = domaEntityPackage as String
+def domaGeneratedDaoPackage = domaDaoPackage as String
+
 domaCodeGen {
     register('local') {
-        url.set(domaCodeGenUrl)
+        url.set(domaCodeGenJdbcUrl)
         user.set('sa')
         password.set('')
-        tableNamePattern.set('book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock')
+        tableNamePattern.set(domaGeneratedTablePattern)
 
         entity {
-            packageName.set(domaEntityPackage)
+            packageName.set(domaGeneratedEntityPackage)
             entityPropertyClassNamesFile.set(
                 file("src/main/resources/codegen/entityPropertyClassNames.properties")
             )
         }
         dao {
-            packageName.set(domaDaoPackage)
+            packageName.set(domaGeneratedDaoPackage)
         }
     }
 }
@@ -132,21 +171,16 @@ domaCodeGen {
 tasks.register('runMyBatisGenerator') {
     doLast {
         ant.project.setBaseDir(projectDir)
-        // Antタスクを定義します
+
         ant.taskdef(
                 name: 'mybatisGenerator',
-                // MyBatis Generatorが提供する自動生成のAntタスククラスを指定します
                 classname: 'org.mybatis.generator.ant.GeneratorAntTask',
-                // MyBatis GeneratorのAntタスク実行時に使用するクラスパスを指定します
                 classpath: configurations.mybatisTasks.asPath
         )
-        // 上記に定義したAntタスクを実行します
+
         ant.mybatisGenerator(
-                // 生成するファイルの上書きを許可します
                 overwrite: true,
-                // MyBatis Generatorの設定ファイルを指定します
                 configfile: file('src/main/resources/generatorConfig.xml'),
-                // 詳細なログを出力します
                 verbose: true
         )
     }
