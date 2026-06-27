@@ -3,7 +3,6 @@ package com.example.demo.mybatis.service;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.data.domain.PurchaseInvoiceType;
-import com.example.demo.doma.service.PurchaseOperationServiceDoma;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.mybatis.generator.mapper.BookStockMapper;
 import com.example.demo.mybatis.generator.mapper.PurchaseOrderDetailMapper;
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
+@ActiveProfiles("mybatis")
 @Transactional
 class PurchaseOperationServiceMybatisTest {
     @Autowired
@@ -53,8 +54,8 @@ class PurchaseOperationServiceMybatisTest {
     private DataSource dataSource;
 
     @Test
-    void usesDomaAsPrimaryPurchaseServiceAndCreatesMybatisPurchaseServiceBean() {
-        assertThat(purchaseOperationService).isInstanceOf(PurchaseOperationServiceDoma.class);
+    void usesMybatisAsPrimaryPurchaseService() {
+        assertThat(purchaseOperationService).isInstanceOf(PurchaseOperationServiceMybatis.class);
         assertThat(purchaseOperationServiceMybatis).isNotNull();
     }
 

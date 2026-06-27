@@ -3,6 +3,7 @@ package com.example.demo.jooq.converter;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.api.response.BookStockResponse;
 import com.example.demo.jooq.entity.BookWithStockRow;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 @Component
+@Profile("jooq")
 public class BookOperationConverterJooq {
     public BookResponse toResponse(List<BookWithStockRow> rows) {
         return toResponseList(rows).getFirst();

@@ -6,6 +6,7 @@ import com.example.demo.jpa.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@Profile("jpa")
 @RequiredArgsConstructor
 public class BookOperationConverterJPA {
     private final ModelMapper modelMapper;

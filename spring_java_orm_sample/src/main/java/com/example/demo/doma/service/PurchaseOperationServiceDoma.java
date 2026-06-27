@@ -16,6 +16,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.seasar.doma.jdbc.OptimisticLockException;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Service
+@Profile("doma")
 @Primary
 @RequiredArgsConstructor
 public class PurchaseOperationServiceDoma implements PurchaseOperationService {

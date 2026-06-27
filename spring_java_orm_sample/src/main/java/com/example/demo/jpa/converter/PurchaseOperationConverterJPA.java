@@ -9,12 +9,14 @@ import com.example.demo.jpa.entity.PurchaseOrder;
 import com.example.demo.jpa.entity.PurchaseOrderDetail;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
+@Profile("jpa")
 @RequiredArgsConstructor
 public class PurchaseOperationConverterJPA {
     private final ModelMapper modelMapper;

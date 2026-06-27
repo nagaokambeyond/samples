@@ -7,12 +7,14 @@ import com.example.demo.jpa.entity.Publisher;
 import com.example.demo.jpa.repository.BookGenreRepository;
 import com.example.demo.jpa.repository.PublisherRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Component
+@Profile("jpa")
 @RequiredArgsConstructor
 public class BookDataValidatorJPA {
     private final PublisherRepository publisherRepository;

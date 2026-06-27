@@ -3,7 +3,6 @@ package com.example.demo.jpa.service;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.data.domain.PurchaseInvoiceType;
-import com.example.demo.doma.service.PurchaseOperationServiceDoma;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.jpa.repository.BookStockRepository;
 import com.example.demo.jpa.repository.PurchaseOrderDetailRepository;
@@ -14,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
+@ActiveProfiles("jpa")
 @Transactional
 class PurchaseOperationServiceJPATest {
     @Autowired
@@ -53,8 +54,8 @@ class PurchaseOperationServiceJPATest {
     private DataSource dataSource;
 
     @Test
-    void usesDomaAsPrimaryPurchaseServiceAndCreatesJpaPurchaseServiceBean() {
-        assertThat(purchaseOperationService).isInstanceOf(PurchaseOperationServiceDoma.class);
+    void usesJpaAsPrimaryPurchaseService() {
+        assertThat(purchaseOperationService).isInstanceOf(PurchaseOperationServiceJPA.class);
         assertThat(purchaseOperationServiceJPA).isNotNull();
     }
 

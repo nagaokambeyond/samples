@@ -4,6 +4,7 @@ import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.jooq.entity.BookWithStockRow;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
+import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
@@ -13,6 +14,7 @@ import static com.example.demo.jooq.generated.Tables.BOOK_GENRE;
 import static com.example.demo.jooq.generated.Tables.PUBLISHER;
 
 @Component
+@Profile("jooq")
 @RequiredArgsConstructor
 public class BookDataValidatorJooq {
     private final DSLContext dsl;

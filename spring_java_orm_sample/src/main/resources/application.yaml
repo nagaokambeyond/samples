@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    default: jooq
   application:
     name: demo
   datasource:
@@ -6,6 +8,10 @@ spring:
     username: sa
     password:
     driver-class-name: org.h2.Driver
+  data:
+    jpa:
+      repositories:
+        enabled: false
   jpa:
     defer-datasource-initialization: true
     hibernate:

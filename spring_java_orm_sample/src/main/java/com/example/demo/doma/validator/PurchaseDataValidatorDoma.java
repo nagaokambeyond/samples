@@ -13,12 +13,14 @@ import com.example.demo.doma.generator.entity.Store;
 import com.example.demo.doma.generator.entity.Supplier;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 
 @Component
+@Profile("doma")
 @RequiredArgsConstructor
 public class PurchaseDataValidatorDoma {
     private final BookDao bookDao;

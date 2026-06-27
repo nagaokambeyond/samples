@@ -3,7 +3,6 @@ package com.example.demo.jooq.service;
 import com.example.demo.BookRowLock;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
-import com.example.demo.doma.service.BooksOperationServiceDoma;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.service.BooksOperationService;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
+@ActiveProfiles("jooq")
 @Transactional
 class BooksOperationServiceJooqTest {
     @Autowired
@@ -34,8 +35,8 @@ class BooksOperationServiceJooqTest {
     private DataSource dataSource;
 
     @Test
-    void keepsDomaAsPrimaryBookService() {
-        assertThat(primaryBooksOperationService).isInstanceOf(BooksOperationServiceDoma.class);
+    void usesJooqAsPrimaryBookService() {
+        assertThat(primaryBooksOperationService).isInstanceOf(BooksOperationServiceJooq.class);
     }
 
     @Test

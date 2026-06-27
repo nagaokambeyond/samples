@@ -17,6 +17,7 @@ import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.exception.DataAccessException;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import static org.jooq.impl.DSL.lower;
 import static org.jooq.impl.DSL.noCondition;
 
 @Service
+@Profile("jooq")
 @RequiredArgsConstructor
 public class BooksOperationServiceJooq implements BooksOperationService {
     private final DSLContext dsl;

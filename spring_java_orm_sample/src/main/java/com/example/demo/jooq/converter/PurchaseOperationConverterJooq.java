@@ -7,11 +7,13 @@ import com.example.demo.api.response.PurchaseInvoiceResponse;
 import com.example.demo.data.domain.PurchaseInvoiceType;
 import com.example.demo.jooq.entity.PurchaseInvoiceDetailRow;
 import com.example.demo.jooq.entity.PurchaseInvoiceRow;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Profile("jooq")
 public class PurchaseOperationConverterJooq {
     public PurchaseInvoiceResponse toResponse(PurchaseInvoiceRow purchaseInvoice, List<PurchaseInvoiceDetailRow> details) {
         final var response = new PurchaseInvoiceResponse();

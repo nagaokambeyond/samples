@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.resilience.retry.MethodRetryEvent;
+import org.springframework.test.context.ActiveProfiles;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@ActiveProfiles({"doma", "jpa", "mybatis"})
 class LockFailureRetryTest {
     @Autowired
     private BooksOperationServiceJPA jpaBookService;

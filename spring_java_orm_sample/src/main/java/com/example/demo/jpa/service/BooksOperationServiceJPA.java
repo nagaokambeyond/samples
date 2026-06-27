@@ -14,12 +14,14 @@ import com.example.demo.service.BooksOperationService;
 import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 @Service
+@Profile("jpa")
 @RequiredArgsConstructor
 public class BooksOperationServiceJPA implements BooksOperationService {
     private final BookRepository bookRepository;

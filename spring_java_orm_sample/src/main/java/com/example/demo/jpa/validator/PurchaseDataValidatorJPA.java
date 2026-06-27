@@ -10,11 +10,13 @@ import com.example.demo.jpa.repository.BookRepository;
 import com.example.demo.jpa.repository.StoreRepository;
 import com.example.demo.jpa.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Profile("jpa")
 @RequiredArgsConstructor
 public class PurchaseDataValidatorJPA {
     private final BookRepository bookRepository;

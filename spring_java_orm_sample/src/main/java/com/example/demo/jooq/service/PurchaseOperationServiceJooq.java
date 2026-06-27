@@ -14,6 +14,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,7 @@ import static com.example.demo.jooq.generated.Tables.PURCHASE_INVOICE;
 import static com.example.demo.jooq.generated.Tables.PURCHASE_INVOICE_DETAIL;
 
 @Service
+@Profile("jooq")
 @RequiredArgsConstructor
 public class PurchaseOperationServiceJooq implements PurchaseOperationService {
     private final DSLContext dsl;

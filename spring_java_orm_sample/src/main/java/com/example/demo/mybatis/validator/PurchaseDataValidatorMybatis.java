@@ -10,12 +10,14 @@ import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.generator.mapper.StoreMapper;
 import com.example.demo.mybatis.generator.mapper.SupplierMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 
 @Component
+@Profile("mybatis")
 @RequiredArgsConstructor
 public class PurchaseDataValidatorMybatis {
     private final BookMapper bookMapper;

@@ -7,12 +7,14 @@ import com.example.demo.mybatis.generator.entity.PublisherEntity;
 import com.example.demo.mybatis.generator.mapper.BookGenreMapper;
 import com.example.demo.mybatis.generator.mapper.PublisherMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Component
+@Profile("mybatis")
 @RequiredArgsConstructor
 public class BookDataValidatorMybatis {
     private final PublisherMapper publisherMapper;

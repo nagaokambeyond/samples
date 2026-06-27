@@ -9,12 +9,14 @@ import com.example.demo.doma.generator.entity.PurchaseInvoice;
 import com.example.demo.doma.generator.entity.PurchaseInvoiceDetail;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
+@Profile("doma")
 @RequiredArgsConstructor
 public class PurchaseOperationConverterDoma {
     private final ModelMapper modelMapper;

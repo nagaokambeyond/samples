@@ -7,12 +7,14 @@ import com.example.demo.doma.generator.entity.BookGenre;
 import com.example.demo.doma.generator.entity.Publisher;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Component
+@Profile("doma")
 @RequiredArgsConstructor
 public class BookDataValidatorDoma {
     private final PublisherDao publisherDao;

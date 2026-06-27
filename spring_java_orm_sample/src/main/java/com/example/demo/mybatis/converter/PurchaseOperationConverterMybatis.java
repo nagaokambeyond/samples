@@ -9,12 +9,14 @@ import com.example.demo.mybatis.generator.entity.PurchaseOrderDetailEntity;
 import com.example.demo.mybatis.generator.entity.PurchaseOrderEntity;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
+@Profile("mybatis")
 @RequiredArgsConstructor
 public class PurchaseOperationConverterMybatis {
     private final ModelMapper modelMapper;

@@ -3,7 +3,6 @@ package com.example.demo.jooq.service;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.data.domain.PurchaseInvoiceType;
-import com.example.demo.doma.service.PurchaseOperationServiceDoma;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.service.PurchaseOperationService;
 import org.junit.jupiter.api.Test;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 @SpringBootTest
+@ActiveProfiles("jooq")
 @Transactional
 class PurchaseOperationServiceJooqTest {
     @Autowired
@@ -41,8 +42,8 @@ class PurchaseOperationServiceJooqTest {
     private DataSource dataSource;
 
     @Test
-    void keepsDomaAsPrimaryPurchaseService() {
-        assertThat(primaryPurchaseOperationService).isInstanceOf(PurchaseOperationServiceDoma.class);
+    void usesJooqAsPrimaryPurchaseService() {
+        assertThat(primaryPurchaseOperationService).isInstanceOf(PurchaseOperationServiceJooq.class);
     }
 
     @Test

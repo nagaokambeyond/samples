@@ -4,10 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
+@Profile("jpa")
 @Slf4j
 public class LogAspect {
     @Around("execution(* com.example.demo.jpa.repository.*..*(..))")

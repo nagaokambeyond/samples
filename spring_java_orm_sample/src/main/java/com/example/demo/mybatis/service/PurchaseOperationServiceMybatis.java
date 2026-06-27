@@ -13,6 +13,7 @@ import com.example.demo.mybatis.validator.PurchaseDataValidatorMybatis;
 import com.example.demo.service.PurchaseOperationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Service
+@Profile("mybatis")
 @RequiredArgsConstructor
 public class PurchaseOperationServiceMybatis implements PurchaseOperationService {
     private final PurchaseDataValidatorMybatis dataValidator;
