@@ -34,3 +34,4 @@ search:
 logging:
   level:
     org.seasar.doma.jdbc.LogKind.SQL: DEBUG
+    org.jooq.tools.LoggerListener: DEBUG
