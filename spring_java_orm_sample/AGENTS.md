@@ -73,9 +73,11 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / converter / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
 - `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / converter / データバリデーションと、CodeGen 生成コードを含みます。
-- `src/main/java/com/example/demo/jooq`: jOOQ 実装。Service、converter、validator、表示向け row、jOOQ 生成コードを含みます。
+- `src/main/java/com/example/demo/jooq`: jOOQ 実装。Service、DSL component、converter、validator、表示向け row、jOOQ 生成コードを含みます。
+- `src/main/java/com/example/demo/jooq/dsl`: jOOQ の手書き SQL / DSL 組み立て
 - `src/main/java/com/example/demo/jooq/generated`: jOOQ 生成コード
 - `src/main/resources/application.yaml`: アプリケーション設定
+- `src/main/resources/application-jpa.yaml`: JPA profile 用の Spring Data JPA Repository 有効化設定
 - `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
 - `src/main/resources/codegen`: Doma CodeGen / jOOQ CodeGen 補助設定
 - `src/main/resources/com/example/demo/mybatis/mapper`: 手書き MyBatis SQL
@@ -83,7 +85,7 @@ Gradle Wrapper を使用してください。
 - `src/main/resources/META-INF/com/example/demo/doma/dao`: 手書き Doma SQL
 - `src/main/resources/META-INF/com/example/demo/doma/generator/dao`: Doma CodeGen 生成 SQL
 - `src/main/resources/data.sql`: 起動時の初期データ
-- `src/main/resources/generator-schema.sql`: MyBatis Generator / Doma CodeGen 用スキーマ
+- `src/main/resources/generator-schema.sql`: MyBatis Generator / Doma CodeGen / jOOQ CodeGen 用スキーマ
 - `src/test/java/com/example/demo`: アプリケーション、API、永続化実装、例外ハンドリングのテスト
 
 ## 重要な設計方針
@@ -102,10 +104,11 @@ Gradle Wrapper を使用してください。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
 - Doma の取得・検索は `BookWithPublisherNameAggregateStrategy` で `bookStockList` を集約します。
 - jOOQ の取得・検索は `BookWithStockRow` の在庫行を `BookOperationConverterJooq` で書籍単位に集約します。
+- jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。
 - 仕入登録は JPA / MyBatis / Doma / jOOQ の各 `PurchaseOperationService*` が `PurchaseInvoice` / `PurchaseInvoiceDetail` 相当のデータを登録し、在庫をロックして新規作成または数量加算します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain`、jOOQ は converter / Service 側の値変換で扱います。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
-- 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` です。
+- 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: jooq` です。通常起動では `BooksOperationServiceJooq` と `PurchaseOperationServiceJooq` が使われます。Doma 実装には `@Primary` が付いているため、複数 profile を同時に有効化する場合は Service Bean の優先順位を確認してください。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象です。

@@ -2,7 +2,8 @@
 
 ## 全体方針
 
-- 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` です。
+- 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: jooq` です。通常起動では `BooksOperationServiceJooq` と `PurchaseOperationServiceJooq` が使われます。
+- Doma 実装の `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` には `@Primary` が付いています。複数 profile を同時に有効化する場合は、Service Bean の優先順位を確認してください。
 - `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースです。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースです。
 - `BookDataValidatorJPA` / `BookDataValidatorMybatis` / `BookDataValidatorDoma` / `BookDataValidatorJooq` は永続化方式ごとの本データバリデーションを扱います。
@@ -12,6 +13,7 @@
 - `book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。
 - 現在のスキーマには `publisher`、`book_genre`、`book`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock` があります。
 - `purchase_invoice.purchase_invoice_type` は `PurchaseInvoiceType` で扱います。JPA / MyBatis / Doma / jOOQ の型変換設定を揃えてください。
+- profile や Spring Data JPA repository の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の両方を確認してください。
 - Service 内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに `@RetryableOnLockFailure` を付けてリトライします。
 - ページング検索の offset と totalPages は `PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
 - JPA / MyBatis / Doma / jOOQ のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
@@ -24,13 +26,14 @@
 - jOOQ CodeGen のテンプレートは `src/main/resources/codegen/jooq-codegen-config.xml` です。`build.gradle` の `generateJooq` タスクでテンプレート変数を置換して生成します。
 - `compileJava` は `generateJooq` に依存しています。通常のビルドでも jOOQ 生成コードが更新される可能性があるため、生成差分を確認してください。
 - jOOQ の生成対象テーブルは `build.gradle` の `generatedTablePattern` で管理しています。テーブル追加・削除時は MyBatis / Doma と合わせて更新してください。
-- jOOQ の Service 実装は `DSLContext` と `com.example.demo.jooq.generated.Tables` を使い、API には既存の request / response DTO を返します。
+- jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。Service 実装は DSL component、validator、converter を組み合わせ、API には既存の request / response DTO を返します。
+- jOOQ の DSL component は `DSLContext` と `com.example.demo.jooq.generated.Tables` を使います。Service に新しい jOOQ クエリを直接増やす前に、既存 DSL component の責務として追加できるか確認してください。
 - 本検索・取得では `BookWithStockRow` を使い、`BookOperationConverterJooq` で書籍単位に集約します。
 - 仕入登録では `PurchaseInvoiceRow` / `PurchaseInvoiceDetailRow` を response 変換用 row として使います。
 - `purchase_invoice_type` は jOOQ では DB 上の `Integer` として扱い、保存時は `PurchaseInvoiceType#getValue()`、レスポンス変換時は `PurchaseInvoiceType.of(...)` を使います。
 - 一覧検索で在庫・店舗を結合する場合は、先に書籍を `limit` / `offset` でページングしてから `book_stock` / `store` を結合してください。在庫行の重複でページング件数が崩れないようにします。
-- jOOQ の行ロック取得は `forUpdate().noWait()` を使い、ロック失敗は `PessimisticLockingFailureException` に変換して既存の `RetryableOnLockFailure` / `GlobalExceptionHandler` に乗せます。
-- jOOQ 実装は既定 Bean ではありません。通常の API 実行は引き続き Doma の `@Primary` 実装を使います。
+- jOOQ の行ロック取得は `BookOperationDsl` / `PurchaseOperationDsl` で `forUpdate().noWait()` を使い、ロック失敗は `PessimisticLockingFailureException` に変換して既存の `RetryableOnLockFailure` / `GlobalExceptionHandler` に乗せます。
+- jOOQ 実装は現在のデフォルト profile で有効になります。既定の永続化方式を変更する場合は、`application.yaml` の `spring.profiles.default`、各実装の `@Profile`、Doma の `@Primary` を合わせて確認してください。
 
 ## Doma
 
@@ -78,6 +81,7 @@
 - JPA 実装は `BooksOperationServiceJPA`、`BookRepository`、`PublisherRepository`、`BookGenreRepository`、`Book`、`Publisher`、`BookGenre` を中心に構成されています。
 - 仕入登録は `PurchaseOperationServiceJPA`、`PurchaseOrderRepository`、`PurchaseOrderDetailRepository`、`BookStockRepository`、`PurchaseDataValidatorJPA`、`PurchaseOperationConverterJPA` を中心に構成されています。
 - JPA Entity には `Supplier`、`Store`、`PurchaseOrder`、`PurchaseOrderDetail`、`BookStock` もあります。
+- `application.yaml` では Spring Data JPA repository を無効化し、`application-jpa.yaml` で有効化します。JPA profile の起動確認や設定変更時は、両方の設定を確認してください。
 - JPA 側の検索は Spring Data JPA Repository メソッドまたは明示的な `@Query` を優先してください。在庫リストのように1書籍が複数行になる取得では native query と projection の利用を許容します。
 - JPA 側の取得・検索レスポンスは `BookRepository.BookWithStockRowProjection` を使います。列を変更する場合は projection、native query、`BookOperationConverterJPA` を揃えてください。
 - `BookWithStockRowProjection` は `publisherName`、`genreName`、在庫・店舗表示用の行項目を含みます。取得・検索 query では `publisher`、`book_genre`、`book_stock`、`store` の結合を維持してください。
@@ -114,7 +118,7 @@
   - jOOQ 生成コード
   - 手書き MyBatis Mapper XML
   - 手書き Doma SQL
-  - jOOQ Service / converter / validator
+  - jOOQ DSL / Service / converter / validator
   - JPA `BookWithStockRowProjection`
   - jOOQ `BookWithStockRow`
   - MyBatis Entity / Doma Entity の `BookWithPublisherName`
