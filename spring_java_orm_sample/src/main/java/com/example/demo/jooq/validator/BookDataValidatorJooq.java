@@ -1,30 +1,29 @@
 package com.example.demo.jooq.validator;
 
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
+import com.example.demo.jooq.dsl.BookGenreDsl;
+import com.example.demo.jooq.dsl.PublisherDsl;
 import com.example.demo.jooq.entity.BookWithStockRow;
 import lombok.RequiredArgsConstructor;
-import org.jooq.DSLContext;
 import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
-import static com.example.demo.jooq.generated.Tables.BOOK_GENRE;
-import static com.example.demo.jooq.generated.Tables.PUBLISHER;
-
 @Component
 @Profile("jooq")
 @RequiredArgsConstructor
 public class BookDataValidatorJooq {
-    private final DSLContext dsl;
+    private final PublisherDsl publisherDsl;
+    private final BookGenreDsl bookGenreDsl;
 
     public void foreignKeyValidate(Long publisherId, Long genreId) {
-        if (!dsl.fetchExists(PUBLISHER, PUBLISHER.ID.eq(publisherId))) {
+        if (!publisherDsl.existsPublisher(publisherId)) {
             throw new ForeignKeyReferenceNotFoundException("publisher", publisherId);
         }
 
-        if (!dsl.fetchExists(BOOK_GENRE, BOOK_GENRE.ID.eq(genreId))) {
+        if (!bookGenreDsl.exists(genreId)) {
             throw new ForeignKeyReferenceNotFoundException("book_genre", genreId);
         }
     }
