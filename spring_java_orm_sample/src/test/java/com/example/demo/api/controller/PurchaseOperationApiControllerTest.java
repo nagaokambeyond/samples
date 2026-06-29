@@ -205,9 +205,27 @@ class PurchaseOperationApiControllerTest {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + "/api/purchases/create"))
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + login())
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String login() throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/auth/login"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(
+                """
+                {
+                  "username": "admin",
+                  "password": "password"
+                }
+                """
+            ))
+            .build();
+        final var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return OBJECT_MAPPER.readTree(response.body()).get("accessToken").asText();
     }
 
     private List<String> getErrorFields(JsonNode json) {

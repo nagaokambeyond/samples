@@ -30,10 +30,19 @@ class BooksOperationApiControllerTest {
     }
 
     @Test
-    void getBooksReturnsNotFound() throws Exception {
+    void getBooksReturnsUnauthorizedWhenTokenIsMissing() throws Exception {
         final var response = get("/api/books");
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    void getBookReturnsOkWhenTokenIsMissing() throws Exception {
+        final var response = get("/api/books/1");
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(json.get("id").asLong()).isEqualTo(1L);
     }
 
     @Test
@@ -76,6 +85,7 @@ class BooksOperationApiControllerTest {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + "/api/books/create"))
             .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + login())
             .POST(HttpRequest.BodyPublishers.ofString(
                 """
                 {
@@ -101,6 +111,23 @@ class BooksOperationApiControllerTest {
             .GET()
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String login() throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/auth/login"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(
+                """
+                {
+                  "username": "admin",
+                  "password": "password"
+                }
+                """
+            ))
+            .build();
+        final var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        return OBJECT_MAPPER.readTree(response.body()).get("accessToken").asText();
     }
 
     private List<String> getErrorFields(com.fasterxml.jackson.databind.JsonNode json) {

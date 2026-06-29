@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -143,6 +144,7 @@ public interface BooksOperationApi {
 
     @PostMapping("/create")
     @Operation(summary = "本登録")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(
@@ -187,6 +189,26 @@ public interface BooksOperationApi {
                     )
                 }
             )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "認証エラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "unauthorized",
+                    summary = "認証トークンなし",
+                    value = """
+                        {
+                          "detail": "Unauthorized",
+                          "instance": "/api/books/create",
+                          "status": 401,
+                          "title": "Unauthorized"
+                        }
+                        """
+                )
+            )
         )
     })
     BookResponse createBook(
@@ -195,6 +217,7 @@ public interface BooksOperationApi {
 
     @PostMapping("/update")
     @Operation(summary = "本更新")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(
@@ -260,6 +283,26 @@ public interface BooksOperationApi {
             )
         ),
         @ApiResponse(
+            responseCode = "401",
+            description = "認証エラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "unauthorized",
+                    summary = "認証トークンなし",
+                    value = """
+                        {
+                          "detail": "Unauthorized",
+                          "instance": "/api/books/update",
+                          "status": 401,
+                          "title": "Unauthorized"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
             responseCode = "409",
             description = "更新競合",
             content = @Content(
@@ -286,6 +329,7 @@ public interface BooksOperationApi {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "本削除")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(
@@ -322,6 +366,26 @@ public interface BooksOperationApi {
                           "instance": "/api/books/999",
                           "status": 404,
                           "title": "該当データなし"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "認証エラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "unauthorized",
+                    summary = "認証トークンなし",
+                    value = """
+                        {
+                          "detail": "Unauthorized",
+                          "instance": "/api/books/1",
+                          "status": 401,
+                          "title": "Unauthorized"
                         }
                         """
                 )

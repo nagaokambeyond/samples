@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public interface PurchaseOperationApi {
     @PostMapping("/create")
     @Operation(summary = "仕入伝票登録")
+    @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(
@@ -64,6 +66,26 @@ public interface PurchaseOperationApi {
                             """
                     )
                 }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "認証エラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "unauthorized",
+                    summary = "認証トークンなし",
+                    value = """
+                        {
+                          "detail": "Unauthorized",
+                          "instance": "/api/purchases/create",
+                          "status": 401,
+                          "title": "Unauthorized"
+                        }
+                        """
+                )
             )
         ),
         @ApiResponse(
