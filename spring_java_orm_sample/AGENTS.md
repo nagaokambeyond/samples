@@ -19,7 +19,7 @@
 - springdoc-openapi
 - ModelMapper
 
-API は `/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
+API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
 現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名・ジャンル名・在庫リストを含む `BookPageResponse` を返します。
 
@@ -69,7 +69,7 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/data/domain`: JPA / MyBatis / Doma / jOOQ で共有するドメイン型
 - `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース、ページ計算
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
-- `src/main/java/com/example/demo/config`: Spring 設定、例外ハンドリング、検索設定、ロック失敗リトライ設定
+- `src/main/java/com/example/demo/config`: Spring 設定、Security / JWT、例外ハンドリング、検索設定、ロック失敗リトライ設定
 - `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / converter / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
 - `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / converter / データバリデーションと、CodeGen 生成コードを含みます。
@@ -92,8 +92,10 @@ Gradle Wrapper を使用してください。
 
 - `BooksOperationApi` は API 定義と OpenAPI 注釈を扱います。
 - `PurchaseOperationApi` は仕入 API 定義と OpenAPI 注釈を扱います。
+- `AuthOperationApi` は認証 API 定義と OpenAPI 注釈を扱います。
 - `BooksOperationApiController` は `BooksOperationApi` を実装し、Service に処理を委譲します。
 - `PurchaseOperationApiController` は `PurchaseOperationApi` を実装し、Service に処理を委譲します。
+- `AuthOperationApiController` は `AuthOperationApi` を実装し、`AuthenticationManager` と `JwtTokenService` で Bearer token を発行します。
 - `BooksOperationApiControllerValidator` は API 入力の相関バリデーションを扱います。
 - `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースです。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースです。
@@ -104,11 +106,12 @@ Gradle Wrapper を使用してください。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
 - Doma の取得・検索は `BookWithPublisherNameAggregateStrategy` で `bookStockList` を集約します。
 - jOOQ の取得・検索は `BookWithStockRow` の在庫行を `BookOperationConverterJooq` で書籍単位に集約します。
-- jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。
+- jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。参照存在チェックは `BookDsl` / `BookGenreDsl` / `PublisherDsl` / `StoreDsl` / `SupplierDsl` を使います。
 - 仕入登録は JPA / MyBatis / Doma / jOOQ の各 `PurchaseOperationService*` が `PurchaseInvoice` / `PurchaseInvoiceDetail` 相当のデータを登録し、在庫をロックして新規作成または数量加算します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain`、jOOQ は converter / Service 側の値変換で扱います。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
-- 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: jooq` です。通常起動では `BooksOperationServiceJooq` と `PurchaseOperationServiceJooq` が使われます。Doma 実装には `@Primary` が付いているため、複数 profile を同時に有効化する場合は Service Bean の優先順位を確認してください。
+- 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
+- 認証設定は `application.yaml` の `app.auth` 配下で管理します。`/api/auth/login` は公開され、書籍の取得・検索以外の API は Bearer token が必要です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象です。
@@ -120,9 +123,10 @@ Gradle Wrapper を使用してください。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
 - `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`bookStockList` が含まれます。
+- 認証 API は `/api/auth/login` で、`LoginRequest` を受け取り、`LoginResponse` として `Bearer` token、ユーザー名、有効期限秒数を返します。
 - 仕入登録 API は `/api/purchases/create` で、`PurchaseInvoiceCreateRequest` と明細リストを受け取り、`PurchaseInvoiceResponse` を返します。
 - 仕入登録時は `supplierId`、`receivingStoreId`、明細の本 ID を参照チェックし、明細金額と伝票金額を計算します。
-- 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合は `GlobalExceptionHandler` で ProblemDetail に変換されます。
+- 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合、認証エラーは `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針
 

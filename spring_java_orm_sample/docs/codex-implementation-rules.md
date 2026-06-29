@@ -21,9 +21,12 @@
 
 ## API 実装
 
-- API 仕様を変更する場合は、`BooksOperationApi` / `PurchaseOperationApi`、各 Controller、request / response DTO、API validator、`GlobalExceptionHandler`、`readme.md` の整合性を確認する。
-- OpenAPI 注釈は `BooksOperationApi` / `PurchaseOperationApi` に集約する。Controller 側へ重複して追加しない。
+- API 仕様を変更する場合は、`AuthOperationApi` / `BooksOperationApi` / `PurchaseOperationApi`、各 Controller、request / response DTO、API validator、`GlobalExceptionHandler`、`readme.md` の整合性を確認する。
+- OpenAPI 注釈は `AuthOperationApi` / `BooksOperationApi` / `PurchaseOperationApi` に集約する。Controller 側へ重複して追加しない。
 - API の入出力には Entity ではなく request / response DTO を使う。
+- 認証 API は `/api/auth/login` とし、`LoginRequest` でユーザー名とパスワードを受け取り、`LoginResponse` で `Bearer` token、ユーザー名、有効期限秒数を返す。
+- Security / JWT 設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`application.yaml` の `app.auth`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。
+- 書籍の取得・検索は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - `BookResponse` には `publisherName`、`genreName`、`bookStockList` が含まれる。取得・検索系の SQL / query は `publisher`、`book_genre`、`book_stock`、`store` と結合し、永続化方式ごとの `BookOperationConverter*` に渡す値を揃える。
 - `bookStockList` の要素は `BookStockResponse` とし、`id`、`bookStockStoreId`、`storeName`、`bookStockQuantity` を返す。
@@ -31,7 +34,7 @@
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
 - 日付範囲の相関チェックは `BooksOperationApiControllerValidator` に集約する。
 - `page` は 0 始まりとする。ページサイズはリクエストパラメータではなく、`application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込む。
-- Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の役割を確認する。通常のデフォルト profile は `application.yaml`、JPA repository の有効化は `application-jpa.yaml` で扱う。
+- Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の役割を確認する。現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma`、JPA repository の有効化は `application-jpa.yaml` で扱う。
 - 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を4つの Service 実装で揃える。
 - ページ数と offset の計算は `PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
 - 仕入登録 API は `/api/purchases/create` とし、`PurchaseInvoiceCreateRequest` で `purchaseInvoiceDate`、`supplierId`、`receivingStoreId`、明細リストを受け取る。
@@ -51,7 +54,7 @@
 - `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースとして扱う。
 - Service インターフェースを変更する場合は、JPA / MyBatis / Doma / jOOQ の4実装をすべて確認する。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースとして扱う。
-- 現在のデフォルト実装は `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` であり、実装切り替えに関わる変更では `@Primary` の扱いを確認する。
+- 現在のデフォルト profile は `doma` であり、通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` を使う。実装切り替えに関わる変更では `application.yaml` の `spring.profiles.default`、各実装の `@Profile`、Doma 実装の `@Primary` の扱いを確認する。
 - jOOQ 実装は `src/main/java/com/example/demo/jooq` 配下に置く。手書きの SQL / DSL 組み立ては `jooq/dsl`、Service は `jooq/service`、変換は `jooq/converter`、参照存在チェックは `jooq/validator` の役割に合わせる。
 - jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力する。生成コードを直接編集しない。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
@@ -59,7 +62,7 @@
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の複数行を `BookOperationConverterJPA` で書籍単位に集約する。
 - MyBatis / Doma の取得・検索は、各表示向け Entity の `bookStockList` を各 `BookOperationConverter*` で `BookStockResponse` に変換する。
 - jOOQ の取得・検索は `BookWithStockRow` の複数行を `BookOperationConverterJooq` で書籍単位に集約する。
-- jOOQ の取得・検索・更新 SQL は `BookOperationDsl` / `PurchaseOperationDsl` に集約する。Service へ新しい jOOQ クエリを追加する場合は、既存の DSL component に置くべき責務か先に確認する。
+- jOOQ の取得・検索・更新 SQL は `BookOperationDsl` / `PurchaseOperationDsl` に集約する。参照存在チェックは `BookDsl` / `BookGenreDsl` / `PublisherDsl` / `StoreDsl` / `SupplierDsl` を使う。Service や validator へ新しい jOOQ クエリを直接追加する場合は、既存の DSL component に置くべき責務か先に確認する。
 - DB を読む・更新する Service メソッドには `@Transactional` を付ける。
 - `publisherId` は `publisher`、`genreId` は `book_genre` への外部キー。登録・更新時の参照存在チェックは各永続化方式の `BookDataValidator*` に集約する。
 - 仕入登録時の `supplierId`、`receivingStoreId`、明細の本 ID の参照存在チェックは各永続化方式の `PurchaseDataValidator*` に集約する。
@@ -84,6 +87,7 @@
 
 - API 相関バリデーション: `BooksOperationApiControllerValidatorTest`
 - API Controller: `BooksOperationApiControllerTest`
+- 認証 API / Security: `AuthOperationApiControllerTest`
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
 - ページ計算: `PageCalculatorTest`
 - JPA 実装: `BooksOperationServiceJPATest`
