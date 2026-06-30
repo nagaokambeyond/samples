@@ -67,6 +67,26 @@ public interface AuthOperationApi {
                         """
                 )
             )
+        ),
+        @ApiResponse(
+            responseCode = "429",
+            description = "リクエスト回数制限",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "loginRateLimitExceeded",
+                    summary = "ログインリクエスト回数の日次上限超過",
+                    value = """
+                        {
+                          "detail": "ログインリクエスト回数が日次上限を超えました",
+                          "instance": "/api/auth/login",
+                          "status": 429,
+                          "title": "リクエスト回数制限"
+                        }
+                        """
+                )
+            )
         )
     })
     LoginResponse login(

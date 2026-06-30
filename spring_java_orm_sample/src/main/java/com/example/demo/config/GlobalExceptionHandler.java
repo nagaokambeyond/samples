@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.exception.CorrelationValidationFailureException;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
+import com.example.demo.exception.LoginRateLimitExceededException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
@@ -84,6 +85,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         problem.setTitle("認証エラー");
         problem.setDetail("ユーザー名またはパスワードが不正です");
+
+        return problem;
+    }
+
+    @ExceptionHandler(LoginRateLimitExceededException.class)
+    public ProblemDetail handleLoginRateLimitExceededException(LoginRateLimitExceededException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.TOO_MANY_REQUESTS);
+
+        problem.setTitle("リクエスト回数制限");
+        problem.setDetail("ログインリクエスト回数が日次上限を超えました");
 
         return problem;
     }

@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.example.demo.api.BooksOperationApi;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
+import com.example.demo.exception.LoginRateLimitExceededException;
 import com.example.demo.jpa.entity.Publisher;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.entity.BookGenreEntity;
@@ -99,6 +100,15 @@ class GlobalExceptionHandlerTest {
             assertThat(getErrorFields(problem.getProperties())).containsExactly("page");
             assertThat(getErrorMessages(problem.getProperties()).getFirst()).isNotBlank();
         }
+    }
+
+    @Test
+    void handleLoginRateLimitExceededExceptionReturnsTooManyRequests() {
+        final var problem = handler.handleLoginRateLimitExceededException(new LoginRateLimitExceededException());
+
+        assertThat(problem.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
+        assertThat(problem.getTitle()).isEqualTo("リクエスト回数制限");
+        assertThat(problem.getDetail()).isEqualTo("ログインリクエスト回数が日次上限を超えました");
     }
 
     private List<String> getErrorFields(Map<String, Object> properties) {

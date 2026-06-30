@@ -4,6 +4,7 @@ import com.example.demo.api.AuthOperationApi;
 import com.example.demo.api.request.LoginRequest;
 import com.example.demo.api.response.LoginResponse;
 import com.example.demo.config.JwtTokenService;
+import com.example.demo.config.LoginRateLimitService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthOperationApiController implements AuthOperationApi {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenService;
+    private final LoginRateLimitService loginRateLimitService;
 
     @Override
     public LoginResponse login(@Valid @NotNull LoginRequest request) {
+        loginRateLimitService.consume(request.getUsername());
         final var authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken.unauthenticated(request.getUsername(), request.getPassword())
         );
