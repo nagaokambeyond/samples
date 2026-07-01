@@ -69,7 +69,7 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/data/domain`: JPA / MyBatis / Doma / jOOQ で共有するドメイン型
 - `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース、ページ計算
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
-- `src/main/java/com/example/demo/config`: Spring 設定、Security / JWT、例外ハンドリング、検索設定、ロック失敗リトライ設定
+- `src/main/java/com/example/demo/config`: Spring 設定、Security / JWT、ログイン回数制限、例外ハンドリング、検索設定、ロック失敗リトライ設定
 - `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / converter / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
 - `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / converter / データバリデーションと、CodeGen 生成コードを含みます。
@@ -95,7 +95,7 @@ Gradle Wrapper を使用してください。
 - `AuthOperationApi` は認証 API 定義と OpenAPI 注釈を扱います。
 - `BooksOperationApiController` は `BooksOperationApi` を実装し、Service に処理を委譲します。
 - `PurchaseOperationApiController` は `PurchaseOperationApi` を実装し、Service に処理を委譲します。
-- `AuthOperationApiController` は `AuthOperationApi` を実装し、`AuthenticationManager` と `JwtTokenService` で Bearer token を発行します。
+- `AuthOperationApiController` は `AuthOperationApi` を実装し、`LoginRateLimitService`、`AuthenticationManager`、`JwtTokenService` でログイン回数制限、認証、Bearer token 発行、ログイン回数制限リセットを扱います。
 - `BooksOperationApiControllerValidator` は API 入力の相関バリデーションを扱います。
 - `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースです。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースです。
@@ -111,7 +111,7 @@ Gradle Wrapper を使用してください。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain`、jOOQ は converter / Service 側の値変換で扱います。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
-- 認証設定は `application.yaml` の `app.auth` 配下で管理します。`/api/auth/login` は公開され、書籍の取得・検索以外の API は Bearer token が必要です。
+- 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login` は公開され、書籍の取得・検索以外の API は Bearer token が必要です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象です。
@@ -124,9 +124,10 @@ Gradle Wrapper を使用してください。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
 - `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`bookStockList` が含まれます。
 - 認証 API は `/api/auth/login` で、`LoginRequest` を受け取り、`LoginResponse` として `Bearer` token、ユーザー名、有効期限秒数を返します。
+- ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` で、Bearer token が必要です。
 - 仕入登録 API は `/api/purchases/create` で、`PurchaseInvoiceCreateRequest` と明細リストを受け取り、`PurchaseInvoiceResponse` を返します。
 - 仕入登録時は `supplierId`、`receivingStoreId`、明細の本 ID を参照チェックし、明細金額と伝票金額を計算します。
-- 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合、認証エラーは `GlobalExceptionHandler` で ProblemDetail に変換されます。
+- 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合、認証エラー、ログイン回数制限超過は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針
 

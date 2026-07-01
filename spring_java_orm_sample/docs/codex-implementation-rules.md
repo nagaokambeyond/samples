@@ -25,7 +25,8 @@
 - OpenAPI 注釈は `AuthOperationApi` / `BooksOperationApi` / `PurchaseOperationApi` に集約する。Controller 側へ重複して追加しない。
 - API の入出力には Entity ではなく request / response DTO を使う。
 - 認証 API は `/api/auth/login` とし、`LoginRequest` でユーザー名とパスワードを受け取り、`LoginResponse` で `Bearer` token、ユーザー名、有効期限秒数を返す。
-- Security / JWT 設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`application.yaml` の `app.auth`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。
+- ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` とし、Bearer token 必須で 204 を返す。
+- Security / JWT / ログイン回数制限の設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml` の `app.auth` / `app.auth.login-rate-limit`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。
 - 書籍の取得・検索は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - `BookResponse` には `publisherName`、`genreName`、`bookStockList` が含まれる。取得・検索系の SQL / query は `publisher`、`book_genre`、`book_stock`、`store` と結合し、永続化方式ごとの `BookOperationConverter*` に渡す値を揃える。
@@ -73,6 +74,7 @@
 - データなしは `RepositoryDataNotfoundException` と `GlobalExceptionHandler` により HTTP 404 として扱う。
 - 相関バリデーションエラーは `CorrelationValidationFailureException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
 - 外部キー参照先なしは `ForeignKeyReferenceNotFoundException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
+- ログイン回数制限超過は `LoginRateLimitExceededException` と `GlobalExceptionHandler` により HTTP 429 として扱う。
 - Bean Validation のパラメータ違反は `ConstraintViolationException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
 
 ## テスト
@@ -87,7 +89,8 @@
 
 - API 相関バリデーション: `BooksOperationApiControllerValidatorTest`
 - API Controller: `BooksOperationApiControllerTest`
-- 認証 API / Security: `AuthOperationApiControllerTest`
+- 認証 API / Security: `AuthOperationApiControllerTest`、`AuthOperationApiLoginRateLimitTest`
+- ログイン回数制限: `LoginRateLimitServiceTest`
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
 - ページ計算: `PageCalculatorTest`
 - JPA 実装: `BooksOperationServiceJPATest`
