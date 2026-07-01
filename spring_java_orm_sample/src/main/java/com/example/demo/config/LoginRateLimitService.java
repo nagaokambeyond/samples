@@ -33,6 +33,10 @@ public class LoginRateLimitService {
         counters.compute(username, (key, counter) -> nextCounter(counter, today));
     }
 
+    public void resetAll() {
+        counters.clear();
+    }
+
     private LoginAttemptCounter nextCounter(LoginAttemptCounter counter, LocalDate today) {
         if (counter == null || !counter.date().equals(today)) {
             return new LoginAttemptCounter(today, 1);

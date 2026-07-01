@@ -58,6 +58,16 @@ class LoginRateLimitServiceTest {
         assertThatNoException().isThrownBy(() -> service.consume("admin"));
     }
 
+    @Test
+    void resetAllClearsCounters() {
+        final var service = createService(1, Instant.parse("2026-07-01T00:00:00Z"));
+        service.consume("admin");
+
+        service.resetAll();
+
+        assertThatNoException().isThrownBy(() -> service.consume("admin"));
+    }
+
     private LoginRateLimitService createService(int dailyLimit, Instant instant) {
         return createService(dailyLimit, Clock.fixed(instant, ZONE_ID));
     }

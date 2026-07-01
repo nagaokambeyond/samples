@@ -22,6 +22,9 @@ TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login \
 
 curl http://localhost:8080/api/books/search?page=0 \
   -H "Authorization: Bearer ${TOKEN}"
+
+curl -X POST http://localhost:8080/api/auth/login-rate-limit/reset \
+  -H "Authorization: Bearer ${TOKEN}"
 ```
 
 # ER図

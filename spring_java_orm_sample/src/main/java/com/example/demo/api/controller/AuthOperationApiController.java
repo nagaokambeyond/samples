@@ -34,4 +34,9 @@ public class AuthOperationApiController implements AuthOperationApi {
         response.setExpiresIn(jwtTokenService.getExpiresInSeconds());
         return response;
     }
+
+    @Override
+    public void resetLoginRateLimit() {
+        loginRateLimitService.resetAll();
+    }
 }

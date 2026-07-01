@@ -70,6 +70,32 @@ class AuthOperationApiLoginRateLimitTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
+    @Test
+    void resetLoginRateLimitClearsExceededCounters() throws Exception {
+        postLogin("reset-user", "wrong-password");
+        postLogin("reset-user", "wrong-password");
+        assertThat(postLogin("reset-user", "wrong-password").statusCode())
+            .isEqualTo(HttpStatus.TOO_MANY_REQUESTS.value());
+
+        final var token = login();
+        final var resetResponse = postResetLoginRateLimit(token);
+        final var response = postLogin("reset-user", "wrong-password");
+
+        assertThat(resetResponse.statusCode()).isEqualTo(HttpStatus.NO_CONTENT.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    void resetLoginRateLimitReturnsUnauthorizedWhenTokenIsMissing() throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/auth/login-rate-limit/reset"))
+            .POST(HttpRequest.BodyPublishers.noBody())
+            .build();
+        final var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
     private HttpResponse<String> postLogin(String username, String password) throws Exception {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + "/api/auth/login"))
@@ -82,6 +108,20 @@ class AuthOperationApiLoginRateLimitTest {
                 }
                 """.formatted(username, password)
             ))
+            .build();
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String login() throws Exception {
+        final var response = postLogin("admin", "password");
+        return OBJECT_MAPPER.readTree(response.body()).get("accessToken").asText();
+    }
+
+    private HttpResponse<String> postResetLoginRateLimit(String token) throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/auth/login-rate-limit/reset"))
+            .header("Authorization", "Bearer " + token)
+            .POST(HttpRequest.BodyPublishers.noBody())
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }
