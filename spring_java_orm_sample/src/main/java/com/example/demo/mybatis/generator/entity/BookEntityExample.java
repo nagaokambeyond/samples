@@ -502,6 +502,76 @@ public class BookEntityExample {
             return (Criteria) this;
         }
 
+        public Criteria andIsbnIsNull() {
+            addCriterion("isbn is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnIsNotNull() {
+            addCriterion("isbn is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnEqualTo(String value) {
+            addCriterion("isbn =", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnNotEqualTo(String value) {
+            addCriterion("isbn <>", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnGreaterThan(String value) {
+            addCriterion("isbn >", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnGreaterThanOrEqualTo(String value) {
+            addCriterion("isbn >=", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnLessThan(String value) {
+            addCriterion("isbn <", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnLessThanOrEqualTo(String value) {
+            addCriterion("isbn <=", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnLike(String value) {
+            addCriterion("isbn like", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnNotLike(String value) {
+            addCriterion("isbn not like", value, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnIn(List<String> values) {
+            addCriterion("isbn in", values, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnNotIn(List<String> values) {
+            addCriterion("isbn not in", values, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnBetween(String value1, String value2) {
+            addCriterion("isbn between", value1, value2, "isbn");
+            return (Criteria) this;
+        }
+
+        public Criteria andIsbnNotBetween(String value1, String value2) {
+            addCriterion("isbn not between", value1, value2, "isbn");
+            return (Criteria) this;
+        }
+
         public Criteria andCreateAtIsNull() {
             addCriterion("create_at is null");
             return (Criteria) this;

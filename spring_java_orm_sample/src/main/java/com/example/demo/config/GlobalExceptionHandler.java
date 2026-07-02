@@ -4,6 +4,7 @@ import com.example.demo.exception.CorrelationValidationFailureException;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.LoginRateLimitExceededException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import org.jspecify.annotations.NullMarked;
@@ -71,6 +72,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ForeignKeyReferenceNotFoundException.class)
     public ProblemDetail handleForeignKeyReferenceNotFoundException(ForeignKeyReferenceNotFoundException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        problem.setTitle("データバリデーション");
+        problem.setDetail(ex.getMessage());
+
+        return problem;
+    }
+
+    @ExceptionHandler(UniqueConstraintValidationException.class)
+    public ProblemDetail handleUniqueConstraintValidationException(UniqueConstraintValidationException ex) {
         final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 
         problem.setTitle("データバリデーション");

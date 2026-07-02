@@ -97,6 +97,11 @@ public class Book extends TableImpl<BookRecord> {
     public final TableField<BookRecord, Long> GENRE_ID = createField(DSL.name("genre_id"), SQLDataType.BIGINT.nullable(false), this, "ジャンルID");
 
     /**
+     * The column <code>public.book.isbn</code>. ISBN
+     */
+    public final TableField<BookRecord, String> ISBN = createField(DSL.name("isbn"), SQLDataType.VARCHAR(13).nullable(false), this, "ISBN");
+
+    /**
      * The column <code>public.book.create_at</code>. 作成日時
      */
     public final TableField<BookRecord, LocalDateTime> CREATE_AT = createField(DSL.name("create_at"), SQLDataType.LOCALDATETIME(6).nullable(false), this, "作成日時");
@@ -191,6 +196,11 @@ public class Book extends TableImpl<BookRecord> {
     @Override
     public UniqueKey<BookRecord> getPrimaryKey() {
         return Keys.CONSTRAINT_2;
+    }
+
+    @Override
+    public List<UniqueKey<BookRecord>> getUniqueKeys() {
+        return Arrays.asList(Keys.UNQ_BOOK_01);
     }
 
     @Override

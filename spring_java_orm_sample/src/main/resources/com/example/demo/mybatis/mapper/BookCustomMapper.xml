@@ -10,6 +10,7 @@
     <result column="b_publisher_name" jdbcType="VARCHAR" property="publisherName" />
     <result column="b_genre_id" jdbcType="BIGINT" property="genreId" />
     <result column="b_genre_name" jdbcType="VARCHAR" property="genreName" />
+    <result column="b_isbn" jdbcType="VARCHAR" property="isbn" />
     <result column="b_update_at" jdbcType="TIMESTAMP" property="updateAt" />
     <result column="b_version" jdbcType="BIGINT" property="version" />
     <collection property="bookStockList" ofType="com.example.demo.mybatis.entity.BookStockWithStoreName" notNullColumn="bs_id">
@@ -27,13 +28,14 @@
     <result column="release_date" jdbcType="DATE" property="releaseDate" />
     <result column="publisher_id" jdbcType="BIGINT" property="publisherId" />
     <result column="genre_id" jdbcType="BIGINT" property="genreId" />
+    <result column="isbn" jdbcType="VARCHAR" property="isbn" />
     <result column="create_at" jdbcType="TIMESTAMP" property="createAt" />
     <result column="update_at" jdbcType="TIMESTAMP" property="updateAt" />
     <result column="version" jdbcType="BIGINT" property="version" />
   </resultMap>
 
   <sql id="Book_Columns">
-    id, title, author, release_date, publisher_id, genre_id, create_at, update_at, version
+    id, title, author, release_date, publisher_id, genre_id, isbn, create_at, update_at, version
   </sql>
 
   <sql id="Book_With_Publisher_Name_Columns">
@@ -45,6 +47,7 @@
     b.publisher_name as b_publisher_name,
     b.genre_id as b_genre_id,
     b.genre_name as b_genre_name,
+    b.isbn as b_isbn,
     b.update_at as b_update_at,
     b.version as b_version,
     bs.id as bs_id,
@@ -66,6 +69,7 @@
         p.publisher_name,
         b.genre_id,
         g.genre_name,
+        b.isbn,
         b.update_at,
         b.version
       from book b
@@ -89,6 +93,7 @@
         p.publisher_name,
         b.genre_id,
         g.genre_name,
+        b.isbn,
         b.update_at,
         b.version
       from book b
@@ -140,13 +145,14 @@
   </select>
 
   <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">
-    insert into book (title, author, release_date, publisher_id, genre_id, create_at, update_at, version)
+    insert into book (title, author, release_date, publisher_id, genre_id, isbn, create_at, update_at, version)
     values (
       #{title,jdbcType=VARCHAR},
       #{author,jdbcType=VARCHAR},
       #{releaseDate,jdbcType=DATE},
       #{publisherId,jdbcType=BIGINT},
       #{genreId,jdbcType=BIGINT},
+      #{isbn,jdbcType=VARCHAR},
       #{createAt,jdbcType=TIMESTAMP},
       #{updateAt,jdbcType=TIMESTAMP},
       #{version,jdbcType=BIGINT}

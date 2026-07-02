@@ -41,6 +41,10 @@ public class BookResponse{
     @Schema(description = "ジャンル名", type = "string")
     String genreName;
 
+    @NotNull
+    @Schema(description = "ISBN", type = "string")
+    String isbn;
+
     @Schema(description = "更新日時", type = "string", format = "date-time")
     @NotNull
     LocalDateTime updateAt;

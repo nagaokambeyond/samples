@@ -106,45 +106,59 @@ public class BookRecord extends UpdatableRecordImpl<BookRecord> {
     }
 
     /**
+     * Setter for <code>public.book.isbn</code>. ISBN
+     */
+    public void setIsbn(String value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>public.book.isbn</code>. ISBN
+     */
+    public String getIsbn() {
+        return (String) get(6);
+    }
+
+    /**
      * Setter for <code>public.book.create_at</code>. 作成日時
      */
     public void setCreateAt(LocalDateTime value) {
-        set(6, value);
+        set(7, value);
     }
 
     /**
      * Getter for <code>public.book.create_at</code>. 作成日時
      */
     public LocalDateTime getCreateAt() {
-        return (LocalDateTime) get(6);
+        return (LocalDateTime) get(7);
     }
 
     /**
      * Setter for <code>public.book.update_at</code>. 更新日時
      */
     public void setUpdateAt(LocalDateTime value) {
-        set(7, value);
+        set(8, value);
     }
 
     /**
      * Getter for <code>public.book.update_at</code>. 更新日時
      */
     public LocalDateTime getUpdateAt() {
-        return (LocalDateTime) get(7);
+        return (LocalDateTime) get(8);
     }
 
     /**
      * Setter for <code>public.book.version</code>. バージョン
      */
     public void setVersion(Long value) {
-        set(8, value);
+        set(9, value);
     }
 
     /**
      * Getter for <code>public.book.version</code>. バージョン
      */
     public Long getVersion() {
-        return (Long) get(8);
+        return (Long) get(9);
     }
 
     // -------------------------------------------------------------------------
@@ -170,7 +184,7 @@ public class BookRecord extends UpdatableRecordImpl<BookRecord> {
     /**
      * Create a detached, initialised BookRecord
      */
-    public BookRecord(Long id, String title, String author, LocalDate releaseDate, Long publisherId, Long genreId, LocalDateTime createAt, LocalDateTime updateAt, Long version) {
+    public BookRecord(Long id, String title, String author, LocalDate releaseDate, Long publisherId, Long genreId, String isbn, LocalDateTime createAt, LocalDateTime updateAt, Long version) {
         super(Book.BOOK);
 
         setId(id);
@@ -179,6 +193,7 @@ public class BookRecord extends UpdatableRecordImpl<BookRecord> {
         setReleaseDate(releaseDate);
         setPublisherId(publisherId);
         setGenreId(genreId);
+        setIsbn(isbn);
         setCreateAt(createAt);
         setUpdateAt(updateAt);
         setVersion(version);

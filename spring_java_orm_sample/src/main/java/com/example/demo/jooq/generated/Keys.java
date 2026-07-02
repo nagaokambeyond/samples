@@ -41,6 +41,7 @@ public class Keys {
     // -------------------------------------------------------------------------
 
     public static final UniqueKey<BookRecord> CONSTRAINT_2 = Internal.createUniqueKey(Book.BOOK, DSL.name("CONSTRAINT_2"), new TableField[] { Book.BOOK.ID }, true);
+    public static final UniqueKey<BookRecord> UNQ_BOOK_01 = Internal.createUniqueKey(Book.BOOK, DSL.name("unq_book_01"), new TableField[] { Book.BOOK.ISBN }, true);
     public static final UniqueKey<BookGenreRecord> CONSTRAINT_9 = Internal.createUniqueKey(BookGenre.BOOK_GENRE, DSL.name("CONSTRAINT_9"), new TableField[] { BookGenre.BOOK_GENRE.ID }, true);
     public static final UniqueKey<BookStockRecord> CONSTRAINT_9D = Internal.createUniqueKey(BookStock.BOOK_STOCK, DSL.name("CONSTRAINT_9D"), new TableField[] { BookStock.BOOK_STOCK.ID }, true);
     public static final UniqueKey<BookStockRecord> UNQ_BOOK_STOCK_01 = Internal.createUniqueKey(BookStock.BOOK_STOCK, DSL.name("unq_book_stock_01"), new TableField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID, BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, true);

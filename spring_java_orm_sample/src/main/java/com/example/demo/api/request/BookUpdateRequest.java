@@ -32,6 +32,12 @@ public class BookUpdateRequest{
     @Schema(description = "ジャンルID", type = "integer", format ="int64")
     Long genreId;
 
+    @NotNull
+    @Size(min = 13, max = 13)
+    @Pattern(regexp = "\\d{13}")
+    @Schema(description = "ISBN", type = "string", example = "9784000000000")
+    String isbn;
+
     @PositiveOrZero
     @NotNull
     @Schema(description = "バージョン", type = "integer", format = "int64")

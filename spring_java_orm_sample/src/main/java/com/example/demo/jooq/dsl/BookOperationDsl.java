@@ -53,6 +53,7 @@ public class BookOperationDsl {
                 PUBLISHER.PUBLISHER_NAME,
                 BOOK.GENRE_ID,
                 BOOK_GENRE.GENRE_NAME,
+                BOOK.ISBN,
                 BOOK.UPDATE_AT,
                 BOOK.VERSION,
                 BOOK_STOCK.ID,
@@ -76,6 +77,7 @@ public class BookOperationDsl {
                 row.get(PUBLISHER.PUBLISHER_NAME),
                 row.get(BOOK.GENRE_ID),
                 row.get(BOOK_GENRE.GENRE_NAME),
+                row.get(BOOK.ISBN),
                 row.get(BOOK.UPDATE_AT),
                 row.get(BOOK.VERSION),
                 row.get(BOOK_STOCK.ID),
@@ -93,6 +95,7 @@ public class BookOperationDsl {
                 BOOK.RELEASE_DATE,
                 BOOK.PUBLISHER_ID,
                 BOOK.GENRE_ID,
+                BOOK.ISBN,
                 BOOK.UPDATE_AT,
                 BOOK.VERSION
             )
@@ -109,6 +112,7 @@ public class BookOperationDsl {
         final Field<LocalDate> releaseDate = Objects.requireNonNull(pagedBooks.field(BOOK.RELEASE_DATE));
         final Field<Long> publisherId = Objects.requireNonNull(pagedBooks.field(BOOK.PUBLISHER_ID));
         final Field<Long> genreId = Objects.requireNonNull(pagedBooks.field(BOOK.GENRE_ID));
+        final Field<String> isbn = Objects.requireNonNull(pagedBooks.field(BOOK.ISBN));
         final Field<LocalDateTime> updateAt = Objects.requireNonNull(pagedBooks.field(BOOK.UPDATE_AT));
         final Field<Long> version = Objects.requireNonNull(pagedBooks.field(BOOK.VERSION));
 
@@ -121,6 +125,7 @@ public class BookOperationDsl {
                 PUBLISHER.PUBLISHER_NAME,
                 genreId,
                 BOOK_GENRE.GENRE_NAME,
+                isbn,
                 updateAt,
                 version,
                 BOOK_STOCK.ID,
@@ -143,6 +148,7 @@ public class BookOperationDsl {
                 row.get(PUBLISHER.PUBLISHER_NAME),
                 row.get(genreId),
                 row.get(BOOK_GENRE.GENRE_NAME),
+                row.get(isbn),
                 row.get(updateAt),
                 row.get(version),
                 row.get(BOOK_STOCK.ID),
@@ -179,6 +185,7 @@ public class BookOperationDsl {
             .set(BOOK.RELEASE_DATE, request.getReleaseDate())
             .set(BOOK.PUBLISHER_ID, request.getPublisherId())
             .set(BOOK.GENRE_ID, request.getGenreId())
+            .set(BOOK.ISBN, request.getIsbn())
             .set(BOOK.CREATE_AT, now)
             .set(BOOK.UPDATE_AT, now)
             .set(BOOK.VERSION, 1L)
@@ -193,6 +200,7 @@ public class BookOperationDsl {
             .set(BOOK.RELEASE_DATE, request.getReleaseDate())
             .set(BOOK.PUBLISHER_ID, request.getPublisherId())
             .set(BOOK.GENRE_ID, request.getGenreId())
+            .set(BOOK.ISBN, request.getIsbn())
             .set(BOOK.UPDATE_AT, LocalDateTime.now())
             .set(BOOK.VERSION, currentVersion + 1)
             .where(BOOK.ID.eq(request.getId()))

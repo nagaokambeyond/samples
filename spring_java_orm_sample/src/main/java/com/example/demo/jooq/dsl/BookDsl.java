@@ -16,4 +16,11 @@ public class BookDsl {
     public boolean exists(Long bookId) {
         return dsl.fetchExists(BOOK, BOOK.ID.eq(bookId));
     }
+
+    public Long selectIdByIsbn(String isbn) {
+        return dsl.select(BOOK.ID)
+            .from(BOOK)
+            .where(BOOK.ISBN.eq(isbn))
+            .fetchOne(BOOK.ID);
+    }
 }

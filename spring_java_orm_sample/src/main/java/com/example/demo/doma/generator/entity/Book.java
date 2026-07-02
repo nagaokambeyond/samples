@@ -44,6 +44,10 @@ public class Book extends AbstractBook {
     @Column(name = "genre_id")
     Long genreId;
 
+    /** ISBN */
+    @Column(name = "isbn")
+    String isbn;
+
     /** 作成日時 */
     @Column(name = "create_at")
     LocalDateTime createAt;
@@ -163,6 +167,24 @@ public class Book extends AbstractBook {
      */
     public void setGenreId(Long genreId) {
         this.genreId = genreId;
+    }
+
+    /** 
+     * Returns the isbn.
+     * 
+     * @return the isbn
+     */
+    public String getIsbn() {
+        return isbn;
+    }
+
+    /** 
+     * Sets the isbn.
+     * 
+     * @param isbn the isbn
+     */
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     /** 

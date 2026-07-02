@@ -55,6 +55,7 @@ public class BookOperationConverterJPA {
         String publisherName;
         Long genreId;
         String genreName;
+        String isbn;
         java.time.LocalDateTime updateAt;
         Long version;
         List<BookStockResponse> bookStockList;
@@ -69,6 +70,7 @@ public class BookOperationConverterJPA {
                 row.getPublisherName(),
                 row.getGenreId(),
                 row.getGenreName(),
+                row.getIsbn(),
                 row.getUpdateAt(),
                 row.getVersion(),
                 new ArrayList<>()
@@ -84,6 +86,7 @@ public class BookOperationConverterJPA {
             String publisherName,
             Long genreId,
             String genreName,
+            String isbn,
             LocalDateTime updateAt,
             Long version,
             List<BookStockResponse> bookStockList
@@ -96,6 +99,7 @@ public class BookOperationConverterJPA {
             this.publisherName = publisherName;
             this.genreId = genreId;
             this.genreName = genreName;
+            this.isbn = isbn;
             this.updateAt = updateAt;
             this.version = version;
             this.bookStockList = bookStockList;

@@ -38,6 +38,7 @@ public class BookOperationConverterJooq {
         response.setPublisherName(row.getPublisherName());
         response.setGenreId(row.getGenreId());
         response.setGenreName(row.getGenreName());
+        response.setIsbn(row.getIsbn());
         response.setUpdateAt(row.getUpdateAt());
         response.setVersion(row.getVersion());
         response.setBookStockList(new ArrayList<>());

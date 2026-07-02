@@ -24,6 +24,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                p.publisher_name AS publisherName,
                b.genre_id AS genreId,
                g.genre_name AS genreName,
+               b.isbn AS isbn,
                b.update_at AS updateAt,
                b.version AS version,
                bs.id AS bookStockId,
@@ -50,6 +51,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                    p.publisher_name,
                    b.genre_id,
                    g.genre_name,
+                   b.isbn,
                    b.update_at,
                    b.version
             FROM book b
@@ -72,6 +74,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                b.publisher_name AS publisherName,
                b.genre_id AS genreId,
                b.genre_name AS genreName,
+               b.isbn AS isbn,
                b.update_at AS updateAt,
                b.version AS version,
                bs.id AS bookStockId,
@@ -111,6 +114,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.id = :id")
     Optional<Book> findByIdWithWriteLock(@Param("id") Long id);
 
+    Optional<Book> findByIsbn(String isbn);
+
     interface BookWithStockRowProjection {
         Long getId();
 
@@ -127,6 +132,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         Long getGenreId();
 
         String getGenreName();
+
+        String getIsbn();
 
         LocalDateTime getUpdateAt();
 

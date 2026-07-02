@@ -19,6 +19,7 @@ public class BookWithPublisherName {
     private String publisherName;
     private Long genreId;
     private String genreName;
+    private String isbn;
     private LocalDateTime updateAt;
     private Long version;
     private List<BookStockWithStoreName> bookStockList = new ArrayList<>();

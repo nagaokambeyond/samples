@@ -2,6 +2,7 @@ package com.example.demo.api.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Value;
 
@@ -29,4 +30,10 @@ public class BookCreateRequest {
     @NotNull
     @Schema(description = "ジャンルID", type = "integer", format ="int64")
     Long genreId;
+
+    @NotNull
+    @Size(min = 13, max = 13)
+    @Pattern(regexp = "\\d{13}")
+    @Schema(description = "ISBN", type = "string", example = "9784000000000")
+    String isbn;
 }

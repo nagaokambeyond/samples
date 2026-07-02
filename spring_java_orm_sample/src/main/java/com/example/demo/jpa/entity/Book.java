@@ -47,6 +47,10 @@ public class Book {
     @NotNull
     private Long genreId;
 
+    @Column(nullable = false, unique = true, length = 13, comment = "ISBN")
+    @NotNull
+    private String isbn;
+
     @Column(comment = "作成日時")
     @CreatedDate
     @NotNull
@@ -72,6 +76,6 @@ public class Book {
         LocalDateTime updateAt,
         Long version
     ) {
-        this(id, title, author, releaseDate, 1L, 5L, createAt, updateAt, version);
+        this(id, title, author, releaseDate, 1L, 5L, "0000000000000", createAt, updateAt, version);
     }
 }

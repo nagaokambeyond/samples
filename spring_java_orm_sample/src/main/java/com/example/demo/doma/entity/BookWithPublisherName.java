@@ -41,6 +41,9 @@ public class BookWithPublisherName {
     @Column(name = "genre_name")
     String genreName;
 
+    @Column(name = "isbn")
+    String isbn;
+
     @Column(name = "update_at")
     LocalDateTime updateAt;
 

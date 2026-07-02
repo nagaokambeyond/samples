@@ -4,6 +4,7 @@ import com.example.demo.api.BooksOperationApi;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.LoginRateLimitExceededException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.jpa.entity.Publisher;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.entity.BookGenreEntity;
@@ -65,11 +66,23 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleUniqueConstraintValidationExceptionReturnsBadRequest() {
+        final var ex = new UniqueConstraintValidationException("book", "isbn", "0000000000001");
+
+        final var problem = handler.handleUniqueConstraintValidationException(ex);
+
+        assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(problem.getTitle()).isEqualTo("データバリデーション");
+        assertThat(problem.getDetail()).isEqualTo("一意制約に違反しています: book(isbn=0000000000001)");
+    }
+
+    @Test
     void handleMethodArgumentNotValidExceptionReturnsFieldErrors() throws Exception {
-        final var request = new BookCreateRequest("", null, null, null, null);
+        final var request = new BookCreateRequest("", null, null, null, null, null);
         final var bindingResult = new BeanPropertyBindingResult(request, "request");
         bindingResult.addError(new FieldError("request", "title", "size must be between 1 and 100"));
         bindingResult.addError(new FieldError("request", "releaseDate", "must not be null"));
+        bindingResult.addError(new FieldError("request", "isbn", "must not be null"));
         final var methodParameter = new MethodParameter(
             BooksOperationApi.class.getDeclaredMethod("createBook", BookCreateRequest.class),
             0
@@ -80,9 +93,9 @@ class GlobalExceptionHandlerTest {
 
         assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(problem.getTitle()).isEqualTo("リクエストバリデーションエラー");
-        assertThat(getErrorFields(problem.getProperties())).containsExactly("title", "releaseDate");
+        assertThat(getErrorFields(problem.getProperties())).containsExactly("title", "releaseDate", "isbn");
         assertThat(getErrorMessages(problem.getProperties()))
-            .containsExactly("size must be between 1 and 100", "must not be null");
+            .containsExactly("size must be between 1 and 100", "must not be null", "must not be null");
     }
 
     @Test

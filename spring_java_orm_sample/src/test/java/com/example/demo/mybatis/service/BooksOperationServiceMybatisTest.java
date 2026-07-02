@@ -5,6 +5,7 @@ import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -40,6 +41,7 @@ class BooksOperationServiceMybatisTest {
         assertThat(book.getPublisherName()).isEqualTo("◯◯書房");
         assertThat(book.getGenreId()).isEqualTo(5L);
         assertThat(book.getGenreName()).isEqualTo("工学");
+        assertThat(book.getIsbn()).isEqualTo("0000000000001");
         assertThat(book.getBookStockList())
             .extracting("id", "bookStockStoreId", "storeName", "bookStockQuantity")
             .containsExactly(
@@ -182,7 +184,7 @@ class BooksOperationServiceMybatisTest {
     @Test
     void createReturnsGeneratedIdAndResponse() {
         final var releaseDate = LocalDate.of(2021, 1, 1);
-        final var book = bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", releaseDate, 2L, 5L));
+        final var book = bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", releaseDate, 2L, 5L, "9784000000201"));
 
         assertThat(book.getId()).isNotNull();
         assertThat(book.getTitle()).isEqualTo("MyBatis入門");
@@ -192,21 +194,29 @@ class BooksOperationServiceMybatisTest {
         assertThat(book.getPublisherName()).isEqualTo("△△出版");
         assertThat(book.getGenreId()).isEqualTo(5L);
         assertThat(book.getGenreName()).isEqualTo("工学");
+        assertThat(book.getIsbn()).isEqualTo("9784000000201");
         assertThat(book.getVersion()).isEqualTo(1L);
     }
 
     @Test
     void createThrowsWhenPublisherDoesNotExist() {
-        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L, 5L)))
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L, 5L, "9784000000202")))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
             .hasMessage("参照先データが存在しません: publisher(id=999)");
     }
 
     @Test
     void createThrowsWhenBookGenreDoesNotExist() {
-        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 999L)))
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 999L, "9784000000203")))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
             .hasMessage("参照先データが存在しません: book_genre(id=999)");
+    }
+
+    @Test
+    void createThrowsWhenIsbnAlreadyExists() {
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 5L, "0000000000001")))
+            .isInstanceOf(UniqueConstraintValidationException.class)
+            .hasMessage("一意制約に違反しています: book(isbn=0000000000001)");
     }
 
     @Test
@@ -214,7 +224,7 @@ class BooksOperationServiceMybatisTest {
         final var before = bookService.findById(1L);
         final var releaseDate = LocalDate.of(2021, 2, 1);
 
-        final var updated = bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", releaseDate, 2L, 5L, before.getVersion()));
+        final var updated = bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", releaseDate, 2L, 5L, "9784000000211", before.getVersion()));
 
         assertThat(updated.getTitle()).isEqualTo("MyBatis更新");
         assertThat(updated.getAuthor()).isEqualTo("Saburo");
@@ -223,6 +233,7 @@ class BooksOperationServiceMybatisTest {
         assertThat(updated.getPublisherName()).isEqualTo("△△出版");
         assertThat(updated.getGenreId()).isEqualTo(5L);
         assertThat(updated.getGenreName()).isEqualTo("工学");
+        assertThat(updated.getIsbn()).isEqualTo("9784000000211");
         assertThat(updated.getUpdateAt()).isAfter(before.getUpdateAt());
         assertThat(updated.getVersion()).isEqualTo(before.getVersion() + 1);
     }
@@ -231,7 +242,7 @@ class BooksOperationServiceMybatisTest {
     void updateThrowsWhenPublisherDoesNotExist() {
         final var before = bookService.findById(1L);
 
-        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, 5L, before.getVersion())))
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, 5L, "9784000000212", before.getVersion())))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
             .hasMessage("参照先データが存在しません: publisher(id=999)");
     }
@@ -240,14 +251,32 @@ class BooksOperationServiceMybatisTest {
     void updateThrowsWhenBookGenreDoesNotExist() {
         final var before = bookService.findById(1L);
 
-        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 999L, before.getVersion())))
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 999L, "9784000000213", before.getVersion())))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
             .hasMessage("参照先データが存在しません: book_genre(id=999)");
     }
 
     @Test
+    void updateThrowsWhenIsbnAlreadyExistsInAnotherBook() {
+        final var before = bookService.findById(1L);
+
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, "0000000000002", before.getVersion())))
+            .isInstanceOf(UniqueConstraintValidationException.class)
+            .hasMessage("一意制約に違反しています: book(isbn=0000000000002)");
+    }
+
+    @Test
+    void updateAllowsKeepingCurrentIsbn() {
+        final var before = bookService.findById(1L);
+
+        final var updated = bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, before.getIsbn(), before.getVersion()));
+
+        assertThat(updated.getIsbn()).isEqualTo(before.getIsbn());
+    }
+
+    @Test
     void updateThrowsWhenVersionIsStale() {
-        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, -1L)))
+        assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, "9784000000214", -1L)))
             .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     }
 
@@ -256,7 +285,7 @@ class BooksOperationServiceMybatisTest {
         final var before = bookService.findById(1L);
 
         try (final var ignored = BookRowLock.acquire(dataSource, 1L)) {
-            assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, before.getVersion())))
+            assertThatThrownBy(() -> bookService.update(new BookUpdateRequest(1L, "MyBatis更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, "9784000000215", before.getVersion())))
                 .isInstanceOf(PessimisticLockingFailureException.class);
         }
     }

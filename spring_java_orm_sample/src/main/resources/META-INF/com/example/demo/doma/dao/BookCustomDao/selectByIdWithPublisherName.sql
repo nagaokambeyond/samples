@@ -7,6 +7,7 @@ select
   p.publisher_name as b_publisher_name,
   b.genre_id as b_genre_id,
   g.genre_name as b_genre_name,
+  b.isbn as b_isbn,
   b.update_at as b_update_at,
   b.version as b_version,
   bs.id as bs_id,

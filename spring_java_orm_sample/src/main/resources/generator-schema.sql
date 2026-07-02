@@ -42,6 +42,7 @@ CREATE TABLE book (
     release_date DATE NOT NULL,
     publisher_id BIGINT NOT NULL,
     genre_id BIGINT NOT NULL,
+    isbn VARCHAR(13) NOT NULL,
     create_at TIMESTAMP NOT NULL,
     update_at TIMESTAMP NOT NULL,
     version BIGINT NOT NULL,
@@ -55,6 +56,8 @@ CREATE INDEX idx_book_03 ON book(genre_id);
 CREATE INDEX idx_book_04 ON book(title);
 CREATE INDEX idx_book_05 ON book(author);
 
+ALTER TABLE book ADD CONSTRAINT unq_book_01 UNIQUE (isbn);
+
 comment on table book is '本';
 comment on column book.author is '著者';
 comment on column book.release_date is '発売日付';
@@ -62,6 +65,7 @@ comment on column book.create_at is '作成日時';
 comment on column book.title is 'タイトル';
 comment on column book.publisher_id is '出版社ID';
 comment on column book.genre_id is 'ジャンルID';
+comment on column book.isbn is 'ISBN';
 comment on column book.update_at is '更新日時';
 comment on column book.version is 'バージョン';
 

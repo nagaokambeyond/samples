@@ -67,7 +67,7 @@ class LockFailureRetryTest {
         final var before = booksOperationService.findById(1L);
 
         try (final var ignored = BookRowLock.acquire(dataSource, 1L)) {
-            assertThatThrownBy(() -> booksOperationService.update(new BookUpdateRequest(1L, "ロック失敗", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, before.getVersion())))
+            assertThatThrownBy(() -> booksOperationService.update(new BookUpdateRequest(1L, "ロック失敗", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, "9784000000901", before.getVersion())))
                 .isInstanceOf(PessimisticLockingFailureException.class);
         }
 

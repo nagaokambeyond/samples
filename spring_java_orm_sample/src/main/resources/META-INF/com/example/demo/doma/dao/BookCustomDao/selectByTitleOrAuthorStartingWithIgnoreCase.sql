@@ -8,6 +8,7 @@ with paged_book as (
     p.publisher_name,
     b.genre_id,
     g.genre_name,
+    b.isbn,
     b.update_at,
     b.version
   from
@@ -42,6 +43,7 @@ select
   b.publisher_name as b_publisher_name,
   b.genre_id as b_genre_id,
   b.genre_name as b_genre_name,
+  b.isbn as b_isbn,
   b.update_at as b_update_at,
   b.version as b_version,
   bs.id as bs_id,

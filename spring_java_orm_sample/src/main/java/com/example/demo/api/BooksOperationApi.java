@@ -167,6 +167,10 @@ public interface BooksOperationApi {
                                 {
                                   "field": "releaseDate",
                                   "message": "null は許可されていません"
+                                },
+                                {
+                                  "field": "isbn",
+                                  "message": "13桁の数字にしてください"
                                 }
                               ],
                               "instance": "/api/books/create",
@@ -181,6 +185,18 @@ public interface BooksOperationApi {
                         value = """
                             {
                               "detail": "参照先データが存在しません: publisher(id=999)",
+                              "instance": "/api/books/create",
+                              "status": 400,
+                              "title": "データバリデーション"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "isbnUniqueConstraintViolation",
+                        summary = "ISBNの一意制約違反",
+                        value = """
+                            {
+                              "detail": "一意制約に違反しています: book(isbn=0000000000001)",
                               "instance": "/api/books/create",
                               "status": 400,
                               "title": "データバリデーション"
@@ -240,6 +256,10 @@ public interface BooksOperationApi {
                                 {
                                   "field": "releaseDate",
                                   "message": "null は許可されていません"
+                                },
+                                {
+                                  "field": "isbn",
+                                  "message": "13桁の数字にしてください"
                                 }
                               ],
                               "instance": "/api/books/update",
@@ -254,6 +274,18 @@ public interface BooksOperationApi {
                         value = """
                             {
                               "detail": "参照先データが存在しません: publisher(id=999)",
+                              "instance": "/api/books/update",
+                              "status": 400,
+                              "title": "データバリデーション"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "isbnUniqueConstraintViolation",
+                        summary = "ISBNの一意制約違反",
+                        value = """
+                            {
+                              "detail": "一意制約に違反しています: book(isbn=0000000000001)",
                               "instance": "/api/books/update",
                               "status": 400,
                               "title": "データバリデーション"

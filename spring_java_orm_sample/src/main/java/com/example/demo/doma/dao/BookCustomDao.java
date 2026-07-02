@@ -24,4 +24,7 @@ public interface BookCustomDao {
 
     @Select
     Book selectByIdWithWriteLock(Long id);
+
+    @Select
+    Book selectByIsbn(String isbn);
 }

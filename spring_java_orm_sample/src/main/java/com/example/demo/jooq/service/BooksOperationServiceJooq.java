@@ -61,6 +61,7 @@ public class BooksOperationServiceJooq implements BooksOperationService {
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
         dataValidator.foreignKeyValidate(request.getPublisherId(), request.getGenreId());
+        dataValidator.uniqueIsbnValidate(request.getIsbn(), null);
 
         final var id = bookOperationDsl.insert(request);
         return findById(Objects.requireNonNull(id));
@@ -79,6 +80,7 @@ public class BooksOperationServiceJooq implements BooksOperationService {
 
         final var currentVersion = book.get(BOOK.VERSION);
         dataValidator.versionValidate(request.getId(), currentVersion, request.getVersion());
+        dataValidator.uniqueIsbnValidate(request.getIsbn(), request.getId());
         bookOperationDsl.update(request, currentVersion);
 
         return findById(request.getId());

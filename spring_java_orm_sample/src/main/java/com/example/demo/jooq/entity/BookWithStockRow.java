@@ -15,6 +15,7 @@ public class BookWithStockRow {
     String publisherName;
     Long genreId;
     String genreName;
+    String isbn;
     LocalDateTime updateAt;
     Long version;
     Long bookStockId;

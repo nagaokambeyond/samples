@@ -49,6 +49,13 @@ public class BookEntity {
 
     /**
      * Database Column Remarks:
+     *   ISBN
+     */
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: book.isbn")
+    private String isbn;
+
+    /**
+     * Database Column Remarks:
      *   作成日時
      */
     @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: book.create_at")
@@ -126,6 +133,16 @@ public class BookEntity {
     @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: book.genre_id")
     public void setGenreId(Long genreId) {
         this.genreId = genreId;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: book.isbn")
+    public String getIsbn() {
+        return isbn;
+    }
+
+    @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: book.isbn")
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     @Generated(value="org.mybatis.generator.api.MyBatisGenerator", comments="Source field: book.create_at")

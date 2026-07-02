@@ -43,6 +43,7 @@ class BooksOperationApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(json.get("id").asLong()).isEqualTo(1L);
+        assertThat(json.get("isbn").asText()).isEqualTo("0000000000001");
     }
 
     @Test
@@ -78,6 +79,7 @@ class BooksOperationApiControllerTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(json.get("content").get(0).get("genreId").asLong()).isEqualTo(5L);
         assertThat(json.get("content").get(0).get("genreName").asText()).isEqualTo("工学");
+        assertThat(json.get("content").get(0).get("isbn").asText()).isEqualTo("0000000000001");
     }
 
     @Test
@@ -92,7 +94,8 @@ class BooksOperationApiControllerTest {
                   "title": "",
                   "releaseDate": null,
                   "publisherId": null,
-                  "genreId": null
+                  "genreId": null,
+                  "isbn": null
                 }
                 """
             ))
@@ -102,13 +105,76 @@ class BooksOperationApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
-        assertThat(getErrorFields(json)).contains("title", "releaseDate", "publisherId", "genreId");
+        assertThat(getErrorFields(json)).contains("title", "releaseDate", "publisherId", "genreId", "isbn");
+    }
+
+    @Test
+    void createBookReturnsBadRequestWhenIsbnIsInvalid() throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/books/create"))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + login())
+            .POST(HttpRequest.BodyPublishers.ofString(
+                """
+                {
+                  "title": "ISBN不正",
+                  "releaseDate": "2026-01-01",
+                  "publisherId": 1,
+                  "genreId": 5,
+                  "isbn": "invalid"
+                }
+                """
+            ))
+            .build();
+        final var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(getErrorFields(json)).contains("isbn");
+    }
+
+    @Test
+    void createBookReturnsIsbnWhenRequestIsValid() throws Exception {
+        final var token = login();
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/books/create"))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
+            .POST(HttpRequest.BodyPublishers.ofString(
+                """
+                {
+                  "title": "ISBN登録",
+                  "author": "Jiro",
+                  "releaseDate": "2026-01-01",
+                  "publisherId": 1,
+                  "genreId": 5,
+                  "isbn": "9784000000501"
+                }
+                """
+            ))
+            .build();
+        final var response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(json.get("isbn").asText()).isEqualTo("9784000000501");
+
+        delete("/api/books/" + json.get("id").asLong(), token);
     }
 
     private HttpResponse<String> get(String path) throws Exception {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + path))
             .GET()
+            .build();
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> delete(String path, String token) throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + path))
+            .header("Authorization", "Bearer " + token)
+            .DELETE()
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
     }

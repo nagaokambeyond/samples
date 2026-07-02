@@ -64,6 +64,7 @@ erDiagram
         DATE release_date
         BIGINT publisher_id FK
         BIGINT genre_id FK
+        VARCHAR isbn UK
         TIMESTAMP create_at
         TIMESTAMP update_at
         BIGINT version

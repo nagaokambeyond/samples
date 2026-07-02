@@ -70,7 +70,8 @@ class AuthOperationApiControllerTest {
                   "title": "認証なし登録",
                   "releaseDate": "2026-01-01",
                   "publisherId": 1,
-                  "genreId": 1
+                  "genreId": 1,
+                  "isbn": "9784000000601"
                 }
                 """
             ))

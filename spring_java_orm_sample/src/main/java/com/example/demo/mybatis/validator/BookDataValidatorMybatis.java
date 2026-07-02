@@ -1,9 +1,12 @@
 package com.example.demo.mybatis.validator;
 
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.mybatis.generator.entity.BookEntity;
+import com.example.demo.mybatis.generator.entity.BookEntityExample;
 import com.example.demo.mybatis.generator.entity.BookGenreEntity;
 import com.example.demo.mybatis.generator.entity.PublisherEntity;
+import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.generator.mapper.BookGenreMapper;
 import com.example.demo.mybatis.generator.mapper.PublisherMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import java.util.Objects;
 @Profile("mybatis")
 @RequiredArgsConstructor
 public class BookDataValidatorMybatis {
+    private final BookMapper bookMapper;
     private final PublisherMapper publisherMapper;
     private final BookGenreMapper bookGenreMapper;
 
@@ -36,5 +40,16 @@ public class BookDataValidatorMybatis {
         if (!Objects.equals(book.getVersion(), requestVersion)) {
             throw new ObjectOptimisticLockingFailureException(BookEntity.class, book.getId());
         }
+    }
+
+    public void uniqueIsbnValidate(String isbn, Long bookId) {
+        final var example = new BookEntityExample();
+        example.createCriteria().andIsbnEqualTo(isbn);
+        bookMapper.selectByExample(example).stream()
+            .filter(book -> !Objects.equals(book.getId(), bookId))
+            .findFirst()
+            .ifPresent(book -> {
+                throw new UniqueConstraintValidationException("book", "isbn", isbn);
+            });
     }
 }

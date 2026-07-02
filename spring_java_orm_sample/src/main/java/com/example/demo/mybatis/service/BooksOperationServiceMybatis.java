@@ -57,6 +57,7 @@ public class BooksOperationServiceMybatis implements BooksOperationService {
     @Override
     public BookResponse create(@NonNull BookCreateRequest request) {
         dataValidator.foreignKeyValidate(request.getPublisherId(), request.getGenreId());
+        dataValidator.uniqueIsbnValidate(request.getIsbn(), null);
 
         final var now = LocalDateTime.now();
         final var book = new BookEntity();
@@ -65,6 +66,7 @@ public class BooksOperationServiceMybatis implements BooksOperationService {
         book.setReleaseDate(request.getReleaseDate());
         book.setPublisherId(request.getPublisherId());
         book.setGenreId(request.getGenreId());
+        book.setIsbn(request.getIsbn());
         book.setCreateAt(now);
         book.setUpdateAt(now);
         book.setVersion(1L);
@@ -85,11 +87,13 @@ public class BooksOperationServiceMybatis implements BooksOperationService {
         }
 
         dataValidator.versionValidate(book, request.getVersion());
+        dataValidator.uniqueIsbnValidate(request.getIsbn(), book.getId());
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setReleaseDate(request.getReleaseDate());
         book.setPublisherId(request.getPublisherId());
         book.setGenreId(request.getGenreId());
+        book.setIsbn(request.getIsbn());
         book.setUpdateAt(LocalDateTime.now());
         book.setVersion(book.getVersion() + 1);
 
