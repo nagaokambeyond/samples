@@ -58,12 +58,13 @@ public class PurchaseOperationDsl {
     public PurchaseInvoiceDetailRow insertPurchaseInvoiceDetail(
         Long purchaseInvoiceId,
         PurchaseInvoiceDetailCreateRequest request,
+        Long bookId,
         long detailAmount,
         LocalDateTime now
     ) {
         final var id = dsl.insertInto(PURCHASE_INVOICE_DETAIL)
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_ID, purchaseInvoiceId)
-            .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_BOOK_ID, request.getPurchaseInvoiceDetailBookId())
+            .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_BOOK_ID, bookId)
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_UNIT_PRICE, request.getPurchaseInvoiceDetailUnitPrice())
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_QUANTITY, request.getPurchaseInvoiceDetailQuantity())
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_AMOUNT, detailAmount)
@@ -77,7 +78,7 @@ public class PurchaseOperationDsl {
         return new PurchaseInvoiceDetailRow(
             detailId,
             purchaseInvoiceId,
-            request.getPurchaseInvoiceDetailBookId(),
+            bookId,
             request.getPurchaseInvoiceDetailUnitPrice(),
             request.getPurchaseInvoiceDetailQuantity(),
             detailAmount,

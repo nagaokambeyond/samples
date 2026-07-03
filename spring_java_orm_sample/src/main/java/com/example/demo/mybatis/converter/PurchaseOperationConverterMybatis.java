@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Profile("mybatis")
@@ -23,10 +24,12 @@ public class PurchaseOperationConverterMybatis {
 
     public List<PurchaseOrderDetailEntity> toPurchaseInvoiceDetails(
         PurchaseInvoiceCreateRequest request,
+        Map<String, Long> bookIdsByIsbn,
         LocalDateTime now
     ) {
         return request.getDetails().stream().map(purchaseInvoiceDetail -> {
             final var row = modelMapper.map(purchaseInvoiceDetail, PurchaseOrderDetailEntity.class);
+            row.setPurchaseInvoiceDetailBookId(bookIdsByIsbn.get(purchaseInvoiceDetail.getPurchaseInvoiceDetailIsbn()));
             final var amount = (long) row.getPurchaseInvoiceDetailUnitPrice() * row.getPurchaseInvoiceDetailQuantity();
             row.setPurchaseInvoiceDetailAmount(amount);
             row.setCreateAt(now);

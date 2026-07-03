@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Profile("jpa")
@@ -23,12 +24,13 @@ public class PurchaseOperationConverterJPA {
 
     public List<PurchaseOrderDetail> toPurchaseInvoiceDetails(
         PurchaseInvoiceCreateRequest request,
+        Map<String, Long> bookIdsByIsbn,
         LocalDateTime now
     ) {
         return request.getDetails().stream().map(purchaseInvoiceDetail -> {
             final var row = new PurchaseOrderDetail();
 
-            row.setPurchaseOrderDetailBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
+            row.setPurchaseOrderDetailBookId(bookIdsByIsbn.get(purchaseInvoiceDetail.getPurchaseInvoiceDetailIsbn()));
             row.setPurchaseOrderDetailUnitPrice(purchaseInvoiceDetail.getPurchaseInvoiceDetailUnitPrice());
             row.setPurchaseOrderDetailQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
 

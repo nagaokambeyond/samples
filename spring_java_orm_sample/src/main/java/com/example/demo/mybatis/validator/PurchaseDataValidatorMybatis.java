@@ -3,7 +3,7 @@ package com.example.demo.mybatis.validator;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
-import com.example.demo.mybatis.generator.entity.BookEntity;
+import com.example.demo.mybatis.generator.entity.BookEntityExample;
 import com.example.demo.mybatis.generator.entity.StoreEntity;
 import com.example.demo.mybatis.generator.entity.SupplierEntity;
 import com.example.demo.mybatis.generator.mapper.BookMapper;
@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Component
@@ -24,7 +26,7 @@ public class PurchaseDataValidatorMybatis {
     private final SupplierMapper supplierMapper;
     private final StoreMapper storeMapper;
 
-    public void foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
+    public Map<String, Long> foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
         final var supplier = supplierMapper.selectByPrimaryKey(request.getSupplierId());
         if (Objects.isNull(supplier)) {
             throw new ForeignKeyReferenceNotFoundException(SupplierEntity.class, request.getSupplierId());
@@ -35,15 +37,21 @@ public class PurchaseDataValidatorMybatis {
             throw new ForeignKeyReferenceNotFoundException(StoreEntity.class, request.getReceivingStoreId());
         }
 
-        validateBooks(request.getDetails());
+        return validateBooks(request.getDetails());
     }
 
-    private void validateBooks(List<PurchaseInvoiceDetailCreateRequest> details) {
+    private Map<String, Long> validateBooks(List<PurchaseInvoiceDetailCreateRequest> details) {
+        final var bookIdsByIsbn = new LinkedHashMap<String, Long>();
         details.forEach(detail -> {
-            final var bookId = detail.getPurchaseInvoiceDetailBookId();
-            if (Objects.isNull(bookMapper.selectByPrimaryKey(bookId))) {
-                throw new ForeignKeyReferenceNotFoundException(BookEntity.class, bookId);
+            final var isbn = detail.getPurchaseInvoiceDetailIsbn();
+            final var example = new BookEntityExample();
+            example.createCriteria().andIsbnEqualTo(isbn);
+            final var books = bookMapper.selectByExample(example);
+            if (books.isEmpty()) {
+                throw new ForeignKeyReferenceNotFoundException("book", "isbn", isbn);
             }
+            bookIdsByIsbn.put(isbn, books.getFirst().getId());
         });
+        return bookIdsByIsbn;
     }
 }

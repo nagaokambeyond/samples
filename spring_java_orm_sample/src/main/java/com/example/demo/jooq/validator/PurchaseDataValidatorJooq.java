@@ -9,6 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+
 @Component
 @Profile("jooq")
 @RequiredArgsConstructor
@@ -17,7 +21,7 @@ public class PurchaseDataValidatorJooq {
     private final StoreDsl storeDsl;
     private final SupplierDsl supplierDsl;
 
-    public void foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
+    public Map<String, Long> foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
         if (!supplierDsl.exists(request.getSupplierId())) {
             throw new ForeignKeyReferenceNotFoundException("supplier", request.getSupplierId());
         }
@@ -26,11 +30,15 @@ public class PurchaseDataValidatorJooq {
             throw new ForeignKeyReferenceNotFoundException("store", request.getReceivingStoreId());
         }
 
+        final var bookIdsByIsbn = new LinkedHashMap<String, Long>();
         request.getDetails().forEach(detail -> {
-            final var bookId = detail.getPurchaseInvoiceDetailBookId();
-            if (!bookDsl.exists(bookId)) {
-                throw new ForeignKeyReferenceNotFoundException("book", bookId);
+            final var isbn = detail.getPurchaseInvoiceDetailIsbn();
+            final var bookId = bookDsl.selectIdByIsbn(isbn);
+            if (Objects.isNull(bookId)) {
+                throw new ForeignKeyReferenceNotFoundException("book", "isbn", isbn);
             }
+            bookIdsByIsbn.put(isbn, bookId);
         });
+        return bookIdsByIsbn;
     }
 }

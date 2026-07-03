@@ -80,12 +80,12 @@ class PurchaseOperationApiControllerTest {
               "receivingStoreId": 2,
               "details": [
                 {
-                  "purchaseInvoiceDetailBookId": 1,
+                  "purchaseInvoiceDetailIsbn": "0000000000001",
                   "purchaseInvoiceDetailUnitPrice": 1000,
                   "purchaseInvoiceDetailQuantity": 2
                 },
                 {
-                  "purchaseInvoiceDetailBookId": 2,
+                  "purchaseInvoiceDetailIsbn": "0000000000002",
                   "purchaseInvoiceDetailUnitPrice": 500,
                   "purchaseInvoiceDetailQuantity": 3
                 }
@@ -115,7 +115,7 @@ class PurchaseOperationApiControllerTest {
         assertThat(request.getSupplierId()).isEqualTo(1L);
         assertThat(request.getReceivingStoreId()).isEqualTo(2L);
         assertThat(request.getDetails()).hasSize(2);
-        assertThat(request.getDetails().getFirst().getPurchaseInvoiceDetailBookId()).isEqualTo(1L);
+        assertThat(request.getDetails().getFirst().getPurchaseInvoiceDetailIsbn()).isEqualTo("0000000000001");
         assertThat(request.getDetails().getFirst().getPurchaseInvoiceDetailUnitPrice()).isEqualTo(1000);
         assertThat(request.getDetails().getFirst().getPurchaseInvoiceDetailQuantity()).isEqualTo(2);
     }
@@ -151,7 +151,7 @@ class PurchaseOperationApiControllerTest {
               "receivingStoreId": 2,
               "details": [
                 {
-                  "purchaseInvoiceDetailBookId": null,
+                  "purchaseInvoiceDetailIsbn": null,
                   "purchaseInvoiceDetailUnitPrice": 0,
                   "purchaseInvoiceDetailQuantity": 1001
                 }
@@ -165,9 +165,45 @@ class PurchaseOperationApiControllerTest {
         assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
         assertThat(getErrorFields(json))
             .contains(
-                "details[0].purchaseInvoiceDetailBookId",
+                "details[0].purchaseInvoiceDetailIsbn",
                 "details[0].purchaseInvoiceDetailUnitPrice",
                 "details[0].purchaseInvoiceDetailQuantity"
+            );
+
+        verifyNoInteractions(purchaseOperationService);
+    }
+
+    @Test
+    void createPurchaseInvoiceReturnsBadRequestWhenDetailIsbnFormatIsInvalid() throws Exception {
+        final var response = post(
+            """
+            {
+              "purchaseInvoiceDate": "2026-02-01",
+              "supplierId": 1,
+              "receivingStoreId": 2,
+              "details": [
+                {
+                  "purchaseInvoiceDetailIsbn": "000000000001",
+                  "purchaseInvoiceDetailUnitPrice": 1000,
+                  "purchaseInvoiceDetailQuantity": 2
+                },
+                {
+                  "purchaseInvoiceDetailIsbn": "00000000000A1",
+                  "purchaseInvoiceDetailUnitPrice": 1000,
+                  "purchaseInvoiceDetailQuantity": 2
+                }
+              ]
+            }
+            """
+        );
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
+        assertThat(getErrorFields(json))
+            .contains(
+                "details[0].purchaseInvoiceDetailIsbn",
+                "details[1].purchaseInvoiceDetailIsbn"
             );
 
         verifyNoInteractions(purchaseOperationService);
@@ -186,7 +222,7 @@ class PurchaseOperationApiControllerTest {
               "receivingStoreId": 2,
               "details": [
                 {
-                  "purchaseInvoiceDetailBookId": 1,
+                  "purchaseInvoiceDetailIsbn": "0000000000001",
                   "purchaseInvoiceDetailUnitPrice": 1000,
                   "purchaseInvoiceDetailQuantity": 2
                 }

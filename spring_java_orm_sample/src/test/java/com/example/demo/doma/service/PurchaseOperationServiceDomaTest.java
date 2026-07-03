@@ -62,8 +62,8 @@ class PurchaseOperationServiceDomaTest {
             1L,
             1L,
             List.of(
-                new PurchaseInvoiceDetailCreateRequest(1L, 1000, 2),
-                new PurchaseInvoiceDetailCreateRequest(2L, 500, 3)
+                new PurchaseInvoiceDetailCreateRequest("0000000000001", 1000, 2),
+                new PurchaseInvoiceDetailCreateRequest("0000000000002", 500, 3)
             )
         );
 
@@ -111,7 +111,7 @@ class PurchaseOperationServiceDomaTest {
             LocalDate.of(2026, 2, 2),
             1L,
             1L,
-            List.of(new PurchaseInvoiceDetailCreateRequest(6L, 800, 4))
+            List.of(new PurchaseInvoiceDetailCreateRequest("0000000000006", 800, 4))
         );
 
         purchaseOperationService.create(request);
@@ -137,7 +137,7 @@ class PurchaseOperationServiceDomaTest {
             LocalDate.of(2026, 2, 1),
             999L,
             1L,
-            List.of(new PurchaseInvoiceDetailCreateRequest(1L, 1000, 2))
+            List.of(new PurchaseInvoiceDetailCreateRequest("0000000000001", 1000, 2))
         );
 
         assertThatThrownBy(() -> purchaseOperationService.create(request))
@@ -151,7 +151,7 @@ class PurchaseOperationServiceDomaTest {
             LocalDate.of(2026, 2, 1),
             1L,
             999L,
-            List.of(new PurchaseInvoiceDetailCreateRequest(1L, 1000, 2))
+            List.of(new PurchaseInvoiceDetailCreateRequest("0000000000001", 1000, 2))
         );
 
         assertThatThrownBy(() -> purchaseOperationService.create(request))
@@ -165,12 +165,12 @@ class PurchaseOperationServiceDomaTest {
             LocalDate.of(2026, 2, 1),
             1L,
             1L,
-            List.of(new PurchaseInvoiceDetailCreateRequest(999L, 1000, 2))
+            List.of(new PurchaseInvoiceDetailCreateRequest("0000000000999", 1000, 2))
         );
 
         assertThatThrownBy(() -> purchaseOperationService.create(request))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
-            .hasMessage("参照先データが存在しません: book(id=999)");
+            .hasMessage("参照先データが存在しません: book(isbn=0000000000999)");
     }
 
     @Test
@@ -179,7 +179,7 @@ class PurchaseOperationServiceDomaTest {
             LocalDate.of(2026, 2, 1),
             1L,
             1L,
-            List.of(new PurchaseInvoiceDetailCreateRequest(1L, 1000, 2))
+            List.of(new PurchaseInvoiceDetailCreateRequest("0000000000001", 1000, 2))
         );
 
         try (final var ignored = BookStockRowLock.acquire(dataSource, 1L, 1L)) {

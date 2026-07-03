@@ -41,10 +41,10 @@ public class PurchaseOperationServiceDoma implements PurchaseOperationService {
     @Transactional
     @Override
     public PurchaseInvoiceResponse create(@NonNull PurchaseInvoiceCreateRequest request) {
-        dataValidator.foreignKeyValidate(request);
+        final var bookIdsByIsbn = dataValidator.foreignKeyValidate(request);
 
         final var now = LocalDateTime.now();
-        final var details = converter.toPurchaseInvoiceDetails(request, now);
+        final var details = converter.toPurchaseInvoiceDetails(request, bookIdsByIsbn, now);
         final var amount = details.stream().mapToLong(PurchaseInvoiceDetail::getPurchaseInvoiceDetailAmount).sum();
         final var purchaseInvoice = converter.toPurchaseInvoice(request, amount, now);
 

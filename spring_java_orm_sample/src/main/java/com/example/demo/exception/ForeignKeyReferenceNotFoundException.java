@@ -8,11 +8,23 @@ import java.util.Locale;
 public class ForeignKeyReferenceNotFoundException extends RuntimeException {
     private final String tableName;
     private final Long id;
+    private final String columnName;
+    private final String value;
 
     public ForeignKeyReferenceNotFoundException(String tableName, Long id) {
         super("参照先データが存在しません: " + tableName + "(id=" + id + ")");
         this.tableName = tableName;
         this.id = id;
+        this.columnName = "id";
+        this.value = String.valueOf(id);
+    }
+
+    public ForeignKeyReferenceNotFoundException(String tableName, String columnName, String value) {
+        super("参照先データが存在しません: " + tableName + "(" + columnName + "=" + value + ")");
+        this.tableName = tableName;
+        this.id = null;
+        this.columnName = columnName;
+        this.value = value;
     }
 
     public ForeignKeyReferenceNotFoundException(Class<?> entityClass, Long id) {

@@ -29,7 +29,7 @@ public class PurchaseOperationServiceJooq implements PurchaseOperationService {
     @Transactional
     @Override
     public PurchaseInvoiceResponse create(@NonNull PurchaseInvoiceCreateRequest request) {
-        dataValidator.foreignKeyValidate(request);
+        final var bookIdsByIsbn = dataValidator.foreignKeyValidate(request);
 
         final var now = LocalDateTime.now();
         final var amount = converter.calculateAmount(request);
@@ -38,9 +38,11 @@ public class PurchaseOperationServiceJooq implements PurchaseOperationService {
 
         request.getDetails().forEach(detailRequest -> {
             final var detailAmount = converter.calculateAmount(detailRequest);
+            final var bookId = bookIdsByIsbn.get(detailRequest.getPurchaseInvoiceDetailIsbn());
             final var detail = purchaseOperationDsl.insertPurchaseInvoiceDetail(
                 purchaseInvoice.getId(),
                 detailRequest,
+                bookId,
                 detailAmount,
                 now
             );

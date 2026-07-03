@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Profile("doma")
@@ -23,10 +24,12 @@ public class PurchaseOperationConverterDoma {
 
     public List<PurchaseInvoiceDetail> toPurchaseInvoiceDetails(
         PurchaseInvoiceCreateRequest request,
+        Map<String, Long> bookIdsByIsbn,
         LocalDateTime now
     ) {
         return request.getDetails().stream().map(purchaseInvoiceDetail -> {
             final var row = modelMapper.map(purchaseInvoiceDetail, PurchaseInvoiceDetail.class);
+            row.setPurchaseInvoiceDetailBookId(bookIdsByIsbn.get(purchaseInvoiceDetail.getPurchaseInvoiceDetailIsbn()));
             final var amount = ((long) row.getPurchaseInvoiceDetailUnitPrice() * (long) row.getPurchaseInvoiceDetailQuantity());
             row.setPurchaseInvoiceDetailAmount(amount);
             row.setCreateAt(now);

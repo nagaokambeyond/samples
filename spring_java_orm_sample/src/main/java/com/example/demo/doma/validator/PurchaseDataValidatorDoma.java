@@ -3,11 +3,10 @@ package com.example.demo.doma.validator;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.data.domain.PurchaseInvoiceType;
-import com.example.demo.doma.generator.dao.BookDao;
+import com.example.demo.doma.dao.BookCustomDao;
 import com.example.demo.doma.generator.dao.PurchaseInvoiceDao;
 import com.example.demo.doma.generator.dao.StoreDao;
 import com.example.demo.doma.generator.dao.SupplierDao;
-import com.example.demo.doma.generator.entity.Book;
 import com.example.demo.doma.generator.entity.PurchaseInvoice;
 import com.example.demo.doma.generator.entity.Store;
 import com.example.demo.doma.generator.entity.Supplier;
@@ -16,19 +15,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Component
 @Profile("doma")
 @RequiredArgsConstructor
 public class PurchaseDataValidatorDoma {
-    private final BookDao bookDao;
+    private final BookCustomDao bookCustomDao;
     private final PurchaseInvoiceDao purchaseInvoiceDao;
     private final SupplierDao supplierDao;
     private final StoreDao storeDao;
 
-    public void foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
+    public Map<String, Long> foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
         final var supplier = supplierDao.selectById(request.getSupplierId());
         if (Objects.isNull(supplier)) {
             throw new ForeignKeyReferenceNotFoundException(Supplier.class, request.getSupplierId());
@@ -39,7 +40,7 @@ public class PurchaseDataValidatorDoma {
             throw new ForeignKeyReferenceNotFoundException(Store.class, request.getReceivingStoreId());
         }
 
-        validateBooks(request.getDetails());
+        return validateBooks(request.getDetails());
     }
 
     public void returnPurchaseInvoiceIdValidate(Long returnPurchaseInvoiceId) {
@@ -57,12 +58,16 @@ public class PurchaseDataValidatorDoma {
         }
     }
 
-    private void validateBooks(List<PurchaseInvoiceDetailCreateRequest> details) {
+    private Map<String, Long> validateBooks(List<PurchaseInvoiceDetailCreateRequest> details) {
+        final var bookIdsByIsbn = new LinkedHashMap<String, Long>();
         details.forEach(detail -> {
-            final var bookId = detail.getPurchaseInvoiceDetailBookId();
-            if (bookDao.selectById(bookId) == null) {
-                throw new ForeignKeyReferenceNotFoundException(Book.class, bookId);
+            final var isbn = detail.getPurchaseInvoiceDetailIsbn();
+            final var book = bookCustomDao.selectByIsbn(isbn);
+            if (Objects.isNull(book)) {
+                throw new ForeignKeyReferenceNotFoundException("book", "isbn", isbn);
             }
+            bookIdsByIsbn.put(isbn, book.getId());
         });
+        return bookIdsByIsbn;
     }
 }

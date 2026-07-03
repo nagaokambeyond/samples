@@ -3,7 +3,7 @@ package com.example.demo.doma.validator;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.data.domain.PurchaseInvoiceType;
-import com.example.demo.doma.generator.dao.BookDao;
+import com.example.demo.doma.dao.BookCustomDao;
 import com.example.demo.doma.generator.dao.PurchaseInvoiceDao;
 import com.example.demo.doma.generator.dao.StoreDao;
 import com.example.demo.doma.generator.dao.SupplierDao;
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class PurchaseDataValidatorDomaTest {
-    private BookDao bookDao;
+    private BookCustomDao bookCustomDao;
     private PurchaseInvoiceDao purchaseInvoiceDao;
     private SupplierDao supplierDao;
     private StoreDao storeDao;
@@ -33,27 +34,31 @@ class PurchaseDataValidatorDomaTest {
 
     @BeforeEach
     void setUp() {
-        bookDao = mock(BookDao.class);
+        bookCustomDao = mock(BookCustomDao.class);
         purchaseInvoiceDao = mock(PurchaseInvoiceDao.class);
         supplierDao = mock(SupplierDao.class);
         storeDao = mock(StoreDao.class);
-        validator = new PurchaseDataValidatorDoma(bookDao, purchaseInvoiceDao, supplierDao, storeDao);
+        validator = new PurchaseDataValidatorDoma(bookCustomDao, purchaseInvoiceDao, supplierDao, storeDao);
     }
 
     @Test
     void foreignKeyValidateAllowsExistingSupplierStoreAndBooks() {
-        final var request = createRequest(1L, 2L, 3L, 4L);
+        final var request = createRequest(1L, 2L, "0000000000003", "0000000000004");
         when(supplierDao.selectById(1L)).thenReturn(new Supplier());
         when(storeDao.selectById(2L)).thenReturn(new Store());
-        when(bookDao.selectById(3L)).thenReturn(new Book());
-        when(bookDao.selectById(4L)).thenReturn(new Book());
+        when(bookCustomDao.selectByIsbn("0000000000003")).thenReturn(book(3L));
+        when(bookCustomDao.selectByIsbn("0000000000004")).thenReturn(book(4L));
 
-        assertThatNoException().isThrownBy(() -> validator.foreignKeyValidate(request));
+        final var result = validator.foreignKeyValidate(request);
+
+        assertThat(result)
+            .containsEntry("0000000000003", 3L)
+            .containsEntry("0000000000004", 4L);
     }
 
     @Test
     void foreignKeyValidateThrowsWhenSupplierDoesNotExist() {
-        final var request = createRequest(999L, 2L, 3L);
+        final var request = createRequest(999L, 2L, "0000000000003");
         when(supplierDao.selectById(999L)).thenReturn(null);
 
         assertThatThrownBy(() -> validator.foreignKeyValidate(request))
@@ -63,7 +68,7 @@ class PurchaseDataValidatorDomaTest {
 
     @Test
     void foreignKeyValidateThrowsWhenStoreDoesNotExist() {
-        final var request = createRequest(1L, 999L, 3L);
+        final var request = createRequest(1L, 999L, "0000000000003");
         when(supplierDao.selectById(1L)).thenReturn(new Supplier());
         when(storeDao.selectById(999L)).thenReturn(null);
 
@@ -74,15 +79,15 @@ class PurchaseDataValidatorDomaTest {
 
     @Test
     void foreignKeyValidateThrowsWhenBookDoesNotExist() {
-        final var request = createRequest(1L, 2L, 3L, 999L);
+        final var request = createRequest(1L, 2L, "0000000000003", "0000000000999");
         when(supplierDao.selectById(1L)).thenReturn(new Supplier());
         when(storeDao.selectById(2L)).thenReturn(new Store());
-        when(bookDao.selectById(3L)).thenReturn(new Book());
-        when(bookDao.selectById(999L)).thenReturn(null);
+        when(bookCustomDao.selectByIsbn("0000000000003")).thenReturn(book(3L));
+        when(bookCustomDao.selectByIsbn("0000000000999")).thenReturn(null);
 
         assertThatThrownBy(() -> validator.foreignKeyValidate(request))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
-            .hasMessage("参照先データが存在しません: book(id=999)");
+            .hasMessage("参照先データが存在しません: book(isbn=0000000000999)");
     }
 
     @Test
@@ -120,10 +125,16 @@ class PurchaseDataValidatorDomaTest {
             .hasMessage("参照先データが存在しません: purchase_invoice(id=2)");
     }
 
-    private PurchaseInvoiceCreateRequest createRequest(Long supplierId, Long receivingStoreId, Long... bookIds) {
-        final var details = List.of(bookIds).stream()
-            .map(bookId -> new PurchaseInvoiceDetailCreateRequest(bookId, 1000, 1))
+    private PurchaseInvoiceCreateRequest createRequest(Long supplierId, Long receivingStoreId, String... isbns) {
+        final var details = List.of(isbns).stream()
+            .map(isbn -> new PurchaseInvoiceDetailCreateRequest(isbn, 1000, 1))
             .toList();
         return new PurchaseInvoiceCreateRequest(LocalDate.of(2026, 2, 1), supplierId, receivingStoreId, details);
+    }
+
+    private Book book(Long id) {
+        final var book = new Book();
+        book.setId(id);
+        return book;
     }
 }

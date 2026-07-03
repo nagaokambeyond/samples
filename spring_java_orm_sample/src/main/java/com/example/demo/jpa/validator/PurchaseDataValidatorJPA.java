@@ -3,7 +3,6 @@ package com.example.demo.jpa.validator;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
-import com.example.demo.jpa.entity.Book;
 import com.example.demo.jpa.entity.Store;
 import com.example.demo.jpa.entity.Supplier;
 import com.example.demo.jpa.repository.BookRepository;
@@ -13,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Profile("jpa")
@@ -23,7 +24,7 @@ public class PurchaseDataValidatorJPA {
     private final SupplierRepository supplierRepository;
     private final StoreRepository storeRepository;
 
-    public void foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
+    public Map<String, Long> foreignKeyValidate(PurchaseInvoiceCreateRequest request) {
         if (!supplierRepository.existsById(request.getSupplierId())) {
             throw new ForeignKeyReferenceNotFoundException(Supplier.class, request.getSupplierId());
         }
@@ -32,15 +33,17 @@ public class PurchaseDataValidatorJPA {
             throw new ForeignKeyReferenceNotFoundException(Store.class, request.getReceivingStoreId());
         }
 
-        validateBooks(request.getDetails());
+        return validateBooks(request.getDetails());
     }
 
-    private void validateBooks(List<PurchaseInvoiceDetailCreateRequest> details) {
+    private Map<String, Long> validateBooks(List<PurchaseInvoiceDetailCreateRequest> details) {
+        final var bookIdsByIsbn = new LinkedHashMap<String, Long>();
         details.forEach(detail -> {
-            final var bookId = detail.getPurchaseInvoiceDetailBookId();
-            if (!bookRepository.existsById(bookId)) {
-                throw new ForeignKeyReferenceNotFoundException(Book.class, bookId);
-            }
+            final var isbn = detail.getPurchaseInvoiceDetailIsbn();
+            final var book = bookRepository.findByIsbn(isbn)
+                .orElseThrow(() -> new ForeignKeyReferenceNotFoundException("book", "isbn", isbn));
+            bookIdsByIsbn.put(isbn, book.getId());
         });
+        return bookIdsByIsbn;
     }
 }
