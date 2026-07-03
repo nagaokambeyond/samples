@@ -1,5 +1,6 @@
 package com.example.demo.api.request;
 
+import com.example.demo.api.validator.Isbn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Value;
@@ -33,8 +34,7 @@ public class BookUpdateRequest{
     Long genreId;
 
     @NotNull
-    @Size(min = 13, max = 13)
-    @Pattern(regexp = "\\d{13}")
+    @Isbn
     @Schema(description = "ISBN", type = "string", example = "9784000000000")
     String isbn;
 
