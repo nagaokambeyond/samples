@@ -53,9 +53,20 @@ MERGE INTO book_stock (id, book_stock_store_id, book_stock_book_id, book_stock_q
 MERGE INTO book_stock (id, book_stock_store_id, book_stock_book_id, book_stock_quantity, create_at, update_at, version) VALUES (8, 5, 4, 22, '2026-01-01', '2026-01-01 23:59:59', 0);
 MERGE INTO book_stock (id, book_stock_store_id, book_stock_book_id, book_stock_quantity, create_at, update_at, version) VALUES (9, 5, 5, 32, '2026-01-01', '2026-01-01 23:59:59', 0);
 
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (1, 1, 1, 1, 10, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (2, 2, 1, 1, 20, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (3, 3, 1, 1, 30, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (4, 1, 2, 1, 11, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (5, 2, 2, 1, 21, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (6, 3, 2, 1, 31, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (7, 4, 3, 1, 12, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (8, 5, 4, 1, 22, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (9, 5, 5, 1, 32, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
+
 ALTER TABLE publisher ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE book_genre ALTER COLUMN id RESTART WITH 7;
 ALTER TABLE book ALTER COLUMN id RESTART WITH 22;
 ALTER TABLE supplier ALTER COLUMN id RESTART WITH 6;
 ALTER TABLE store ALTER COLUMN id RESTART WITH 6;
 ALTER TABLE book_stock ALTER COLUMN id RESTART WITH 10;
+ALTER TABLE book_stock_movement ALTER COLUMN id RESTART WITH 10;

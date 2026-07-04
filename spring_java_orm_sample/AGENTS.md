@@ -21,7 +21,7 @@
 
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。検索 API はページングされ、出版社名・ジャンル名・在庫リストを含む `BookPageResponse` を返します。
+現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。`book.isbn` は 13 桁の一意な ISBN として扱います。検索 API はページングされ、出版社名・ジャンル名・ISBN・在庫リストを含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -109,10 +109,12 @@ Gradle Wrapper を使用してください。
 - jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。参照存在チェックは `BookDsl` / `BookGenreDsl` / `PublisherDsl` / `StoreDsl` / `SupplierDsl` を使います。
 - 仕入登録は JPA / MyBatis / Doma / jOOQ の各 `PurchaseOperationService*` が `PurchaseInvoice` / `PurchaseInvoiceDetail` 相当のデータを登録し、在庫をロックして新規作成または数量加算します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain`、jOOQ は converter / Service 側の値変換で扱います。
+- `BookStockMovementType` と `BookStockMovementSourceType` は在庫増減履歴の共有ドメイン型です。現在は `book_stock_movement` スキーマ、初期データ、JPA の `BookStockMovement` Entity / converter が追加されています。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
 - 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login` は公開され、書籍の取得・検索以外の API は Bearer token が必要です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
+- `BookCreateRequest` / `BookUpdateRequest` / `BookResponse` には `isbn` が含まれます。ISBN は `@Isbn` で 13 桁数字として検証し、登録・更新時は各永続化方式の `BookDataValidator*` で一意性を確認します。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象です。
 
@@ -122,12 +124,12 @@ Gradle Wrapper を使用してください。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とします。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
-- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`bookStockList` が含まれます。
+- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`isbn`、`bookStockList` が含まれます。
 - 認証 API は `/api/auth/login` で、`LoginRequest` を受け取り、`LoginResponse` として `Bearer` token、ユーザー名、有効期限秒数を返します。
 - ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` で、Bearer token が必要です。
 - 仕入登録 API は `/api/purchases/create` で、`PurchaseInvoiceCreateRequest` と明細リストを受け取り、`PurchaseInvoiceResponse` を返します。
-- 仕入登録時は `supplierId`、`receivingStoreId`、明細の本 ID を参照チェックし、明細金額と伝票金額を計算します。
-- 外部キー参照先なし、相関バリデーションエラー、データなし、更新競合、認証エラー、ログイン回数制限超過は `GlobalExceptionHandler` で ProblemDetail に変換されます。
+- 仕入登録時は `supplierId`、`receivingStoreId`、明細の ISBN を参照チェックし、ISBN から本 ID を解決して明細金額と伝票金額を計算します。
+- 外部キー参照先なし、ISBN 一意制約違反、相関バリデーションエラー、データなし、更新競合、認証エラー、ログイン回数制限超過は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針
 
