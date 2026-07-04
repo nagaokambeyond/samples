@@ -87,6 +87,13 @@ class PurchaseOperationServiceJooqTest {
             .isEqualTo(3500L);
         assertThat(selectInt("select book_stock_quantity from book_stock where id = ?", 1L)).isEqualTo(12);
         assertThat(selectInt("select book_stock_quantity from book_stock where id = ?", 4L)).isEqualTo(14);
+        assertBookStockMovements(
+            response.getId(),
+            List.of(
+                tuple(1L, 1L, 2, 2, 1, response.getId(), response.getDetail().get(0).getId(), LocalDate.of(2026, 2, 1), 1L),
+                tuple(1L, 2L, 2, 3, 1, response.getId(), response.getDetail().get(1).getId(), LocalDate.of(2026, 2, 1), 1L)
+            )
+        );
     }
 
     @Test
@@ -98,7 +105,7 @@ class PurchaseOperationServiceJooqTest {
             List.of(new PurchaseInvoiceDetailCreateRequest("0000000000006", 800, 4))
         );
 
-        purchaseOperationService.create(request);
+        final var response = purchaseOperationService.create(request);
 
         final var quantity = selectInt(
             """
@@ -110,6 +117,10 @@ class PurchaseOperationServiceJooqTest {
             6L
         );
         assertThat(quantity).isEqualTo(4);
+        assertBookStockMovements(
+            response.getId(),
+            List.of(tuple(1L, 6L, 2, 4, 1, response.getId(), response.getDetail().getFirst().getId(), LocalDate.of(2026, 2, 2), 1L))
+        );
     }
 
     @Test
@@ -175,6 +186,30 @@ class PurchaseOperationServiceJooqTest {
 
     private Integer selectInt(String sql, Object... args) {
         return jdbcTemplate.queryForObject(sql, Integer.class, args);
+    }
+
+    private void assertBookStockMovements(Long sourceId, List<org.assertj.core.groups.Tuple> expected) {
+        final var movements = jdbcTemplate.query(
+            """
+                select store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, version
+                from book_stock_movement
+                where source_id = ?
+                order by source_detail_id
+                """,
+            (rs, rowNum) -> tuple(
+                rs.getLong("store_id"),
+                rs.getLong("book_id"),
+                rs.getInt("movement_type"),
+                rs.getInt("quantity_delta"),
+                rs.getInt("source_type"),
+                rs.getLong("source_id"),
+                rs.getLong("source_detail_id"),
+                rs.getObject("movement_date", LocalDate.class),
+                rs.getLong("version")
+            ),
+            sourceId
+        );
+        assertThat(movements).containsExactlyElementsOf(expected);
     }
 
     private static class BookStockRowLock implements AutoCloseable {

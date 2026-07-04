@@ -6,5 +6,7 @@
 <configuration>
     <typeHandlers>
         <typeHandler handler="com.example.demo.mybatis.typehandler.PurchaseInvoiceTypeHandler"/>
+        <typeHandler handler="com.example.demo.mybatis.typehandler.BookStockMovementTypeHandler"/>
+        <typeHandler handler="com.example.demo.mybatis.typehandler.BookStockMovementSourceTypeHandler"/>
     </typeHandlers>
 </configuration>

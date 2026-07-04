@@ -5,6 +5,7 @@ import com.example.demo.api.response.PurchaseInvoiceResponse;
 import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.mybatis.converter.PurchaseOperationConverterMybatis;
 import com.example.demo.mybatis.generator.entity.PurchaseOrderDetailEntity;
+import com.example.demo.mybatis.generator.mapper.BookStockMovementMapper;
 import com.example.demo.mybatis.generator.mapper.BookStockMapper;
 import com.example.demo.mybatis.generator.mapper.PurchaseOrderDetailMapper;
 import com.example.demo.mybatis.generator.mapper.PurchaseOrderMapper;
@@ -28,6 +29,7 @@ public class PurchaseOperationServiceMybatis implements PurchaseOperationService
     private final PurchaseOrderMapper purchaseOrderMapper;
     private final PurchaseOrderDetailMapper purchaseOrderDetailMapper;
     private final BookStockCustomMapper bookStockCustomMapper;
+    private final BookStockMovementMapper bookStockMovementMapper;
     private final BookStockMapper bookStockMapper;
     private final PurchaseOperationConverterMybatis converter;
 
@@ -47,6 +49,7 @@ public class PurchaseOperationServiceMybatis implements PurchaseOperationService
         details.forEach(purchaseInvoiceDetail -> {
             purchaseInvoiceDetail.setPurchaseInvoiceId(purchaseInvoice.getId());
             purchaseOrderDetailMapper.insert(purchaseInvoiceDetail);
+            bookStockMovementMapper.insert(converter.toBookStockMovement(purchaseInvoice, purchaseInvoiceDetail, now));
 
             final var bookStock = bookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock(
                 purchaseInvoice.getReceivingStoreId(),

@@ -9,6 +9,7 @@ import com.example.demo.jooq.generated.Keys;
 import com.example.demo.jooq.generated.Public;
 import com.example.demo.jooq.generated.tables.BookGenre.BookGenrePath;
 import com.example.demo.jooq.generated.tables.BookStock.BookStockPath;
+import com.example.demo.jooq.generated.tables.BookStockMovement.BookStockMovementPath;
 import com.example.demo.jooq.generated.tables.Publisher.PublisherPath;
 import com.example.demo.jooq.generated.tables.PurchaseInvoiceDetail.PurchaseInvoiceDetailPath;
 import com.example.demo.jooq.generated.tables.Store.StorePath;
@@ -256,6 +257,19 @@ public class Book extends TableImpl<BookRecord> {
             _purchaseInvoiceDetail = new PurchaseInvoiceDetailPath(this, null, Keys.CONSTRAINT_CDE.getInverseKey());
 
         return _purchaseInvoiceDetail;
+    }
+
+    private transient BookStockMovementPath _bookStockMovement;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.book_stock_movement</code> table
+     */
+    public BookStockMovementPath bookStockMovement() {
+        if (_bookStockMovement == null)
+            _bookStockMovement = new BookStockMovementPath(this, null, Keys.FK_BOOK_STOCK_MOVEMENT_02.getInverseKey());
+
+        return _bookStockMovement;
     }
 
     /**

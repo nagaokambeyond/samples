@@ -3,8 +3,11 @@ package com.example.demo.mybatis.converter;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.response.PurchaseInvoiceDetailResponse;
 import com.example.demo.api.response.PurchaseInvoiceResponse;
+import com.example.demo.data.domain.BookStockMovementSourceType;
+import com.example.demo.data.domain.BookStockMovementType;
 import com.example.demo.data.domain.PurchaseInvoiceType;
 import com.example.demo.mybatis.generator.entity.BookStockEntity;
+import com.example.demo.mybatis.generator.entity.BookStockMovementEntity;
 import com.example.demo.mybatis.generator.entity.PurchaseOrderDetailEntity;
 import com.example.demo.mybatis.generator.entity.PurchaseOrderEntity;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +58,23 @@ public class PurchaseOperationConverterMybatis {
         result.setBookStockStoreId(storeId);
         result.setBookStockBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
         result.setBookStockQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
+        result.setCreateAt(now);
+        result.setUpdateAt(now);
+        result.setVersion(1L);
+
+        return result;
+    }
+
+    public BookStockMovementEntity toBookStockMovement(PurchaseOrderEntity purchaseInvoice, PurchaseOrderDetailEntity purchaseInvoiceDetail, LocalDateTime now) {
+        final var result = new BookStockMovementEntity();
+        result.setStoreId(purchaseInvoice.getReceivingStoreId());
+        result.setBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
+        result.setMovementType(BookStockMovementType.PURCHASE);
+        result.setQuantityDelta(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
+        result.setSourceType(BookStockMovementSourceType.PURCHASE_INVOICE);
+        result.setSourceId(purchaseInvoice.getId());
+        result.setSourceDetailId(purchaseInvoiceDetail.getId());
+        result.setMovementDate(purchaseInvoice.getPurchaseInvoiceDate());
         result.setCreateAt(now);
         result.setUpdateAt(now);
         result.setVersion(1L);

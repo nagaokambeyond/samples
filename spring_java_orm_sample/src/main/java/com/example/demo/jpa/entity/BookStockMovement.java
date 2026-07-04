@@ -66,7 +66,7 @@ public class BookStockMovement {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Book book;
 
-    @Column(comment = "在庫増減種別")
+    @Column(comment = "在庫増減種別", columnDefinition = "INTEGER")
     @Convert(converter = BookStockMovementTypeConverter.class)
     @NotNull
     private BookStockMovementType movementType;
@@ -75,7 +75,7 @@ public class BookStockMovement {
     @NotNull
     private Integer quantityDelta;
 
-    @Column(comment = "発生元種別")
+    @Column(comment = "発生元種別", columnDefinition = "INTEGER")
     @Convert(converter = BookStockMovementSourceTypeConverter.class)
     private BookStockMovementSourceType sourceType;
 

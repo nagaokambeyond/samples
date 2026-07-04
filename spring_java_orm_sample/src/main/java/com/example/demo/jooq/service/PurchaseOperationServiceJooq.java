@@ -47,6 +47,7 @@ public class PurchaseOperationServiceJooq implements PurchaseOperationService {
                 now
             );
             details.add(detail);
+            purchaseOperationDsl.insertBookStockMovement(purchaseInvoice.getReceivingStoreId(), purchaseInvoice, detail, now);
             purchaseOperationDsl.addStockQuantity(purchaseInvoice.getReceivingStoreId(), detail, now);
         });
 

@@ -6,6 +6,7 @@ import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.doma.converter.PurchaseOperationConverterDoma;
 import com.example.demo.doma.dao.BookStockCustomDao;
 import com.example.demo.doma.generator.dao.BookStockDao;
+import com.example.demo.doma.generator.dao.BookStockMovementDao;
 import com.example.demo.doma.generator.dao.PurchaseInvoiceDao;
 import com.example.demo.doma.generator.dao.PurchaseInvoiceDetailDao;
 import com.example.demo.doma.generator.entity.BookStock;
@@ -33,6 +34,7 @@ public class PurchaseOperationServiceDoma implements PurchaseOperationService {
     private final PurchaseInvoiceDao purchaseInvoiceDao;
     private final PurchaseInvoiceDetailDao purchaseInvoiceDetailDao;
     private final BookStockCustomDao bookStockCustomDao;
+    private final BookStockMovementDao bookStockMovementDao;
     private final BookStockDao bookStockDao;
 
     private final PurchaseOperationConverterDoma converter;
@@ -53,6 +55,7 @@ public class PurchaseOperationServiceDoma implements PurchaseOperationService {
         details.forEach(purchaseInvoiceDetail -> {
             purchaseInvoiceDetail.setPurchaseInvoiceId(purchaseInvoice.getId());
             purchaseInvoiceDetailDao.insert(purchaseInvoiceDetail);
+            bookStockMovementDao.insert(converter.toBookStockMovement(purchaseInvoice, purchaseInvoiceDetail, now));
 
             final var bookStock = bookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock(
                 purchaseInvoice.getReceivingStoreId(),

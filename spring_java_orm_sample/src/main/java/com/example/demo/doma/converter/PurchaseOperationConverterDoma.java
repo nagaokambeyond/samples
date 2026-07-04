@@ -3,8 +3,11 @@ package com.example.demo.doma.converter;
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.response.PurchaseInvoiceDetailResponse;
 import com.example.demo.api.response.PurchaseInvoiceResponse;
+import com.example.demo.data.domain.BookStockMovementSourceType;
+import com.example.demo.data.domain.BookStockMovementType;
 import com.example.demo.data.domain.PurchaseInvoiceType;
 import com.example.demo.doma.generator.entity.BookStock;
+import com.example.demo.doma.generator.entity.BookStockMovement;
 import com.example.demo.doma.generator.entity.PurchaseInvoice;
 import com.example.demo.doma.generator.entity.PurchaseInvoiceDetail;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +56,22 @@ public class PurchaseOperationConverterDoma {
         result.setBookStockStoreId(storeId);
         result.setBookStockBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
         result.setBookStockQuantity(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
+        result.setCreateAt(now);
+        result.setUpdateAt(now);
+
+        return result;
+    }
+
+    public BookStockMovement toBookStockMovement(PurchaseInvoice purchaseInvoice, PurchaseInvoiceDetail purchaseInvoiceDetail, LocalDateTime now) {
+        final var result = new BookStockMovement();
+        result.setStoreId(purchaseInvoice.getReceivingStoreId());
+        result.setBookId(purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId());
+        result.setMovementType(BookStockMovementType.PURCHASE);
+        result.setQuantityDelta(purchaseInvoiceDetail.getPurchaseInvoiceDetailQuantity());
+        result.setSourceType(BookStockMovementSourceType.PURCHASE_INVOICE);
+        result.setSourceId(purchaseInvoice.getId());
+        result.setSourceDetailId(purchaseInvoiceDetail.getId());
+        result.setMovementDate(purchaseInvoice.getPurchaseInvoiceDate());
         result.setCreateAt(now);
         result.setUpdateAt(now);
 

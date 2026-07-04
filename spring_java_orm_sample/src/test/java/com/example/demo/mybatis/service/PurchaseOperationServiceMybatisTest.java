@@ -107,6 +107,13 @@ class PurchaseOperationServiceMybatisTest {
         });
         assertThat(bookStockMapper.selectByPrimaryKey(1L).getBookStockQuantity()).isEqualTo(12);
         assertThat(bookStockMapper.selectByPrimaryKey(4L).getBookStockQuantity()).isEqualTo(14);
+        assertBookStockMovements(
+            response.getId(),
+            List.of(
+                tuple(1L, 1L, 2, 2, 1, response.getId(), response.getDetail().get(0).getId(), LocalDate.of(2026, 2, 1), 1L),
+                tuple(1L, 2L, 2, 3, 1, response.getId(), response.getDetail().get(1).getId(), LocalDate.of(2026, 2, 1), 1L)
+            )
+        );
     }
 
     @Test
@@ -118,7 +125,7 @@ class PurchaseOperationServiceMybatisTest {
             List.of(new PurchaseInvoiceDetailCreateRequest("0000000000006", 800, 4))
         );
 
-        purchaseOperationServiceMybatis.create(request);
+        final var response = purchaseOperationServiceMybatis.create(request);
 
         final var stockId = jdbcTemplate.queryForObject(
             """
@@ -133,6 +140,10 @@ class PurchaseOperationServiceMybatisTest {
         final var bookStock = bookStockMapper.selectByPrimaryKey(stockId);
         assertThat(bookStock.getBookStockQuantity()).isEqualTo(4);
         assertThat(bookStock.getVersion()).isEqualTo(1L);
+        assertBookStockMovements(
+            response.getId(),
+            List.of(tuple(1L, 6L, 2, 4, 1, response.getId(), response.getDetail().getFirst().getId(), LocalDate.of(2026, 2, 2), 1L))
+        );
     }
 
     @Test
@@ -226,5 +237,29 @@ class PurchaseOperationServiceMybatisTest {
                 connection.close();
             }
         }
+    }
+
+    private void assertBookStockMovements(Long sourceId, List<org.assertj.core.groups.Tuple> expected) {
+        final var movements = jdbcTemplate.query(
+            """
+                select store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, version
+                from book_stock_movement
+                where source_id = ?
+                order by source_detail_id
+                """,
+            (rs, rowNum) -> tuple(
+                rs.getLong("store_id"),
+                rs.getLong("book_id"),
+                rs.getInt("movement_type"),
+                rs.getInt("quantity_delta"),
+                rs.getInt("source_type"),
+                rs.getLong("source_id"),
+                rs.getLong("source_detail_id"),
+                rs.getObject("movement_date", LocalDate.class),
+                rs.getLong("version")
+            ),
+            sourceId
+        );
+        assertThat(movements).containsExactlyElementsOf(expected);
     }
 }

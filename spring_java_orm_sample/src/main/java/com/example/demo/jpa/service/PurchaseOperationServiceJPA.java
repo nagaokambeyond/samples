@@ -5,6 +5,7 @@ import com.example.demo.api.response.PurchaseInvoiceResponse;
 import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.jpa.converter.PurchaseOperationConverterJPA;
 import com.example.demo.jpa.entity.PurchaseOrderDetail;
+import com.example.demo.jpa.repository.BookStockMovementRepository;
 import com.example.demo.jpa.repository.BookStockRepository;
 import com.example.demo.jpa.repository.PurchaseOrderDetailRepository;
 import com.example.demo.jpa.repository.PurchaseOrderRepository;
@@ -25,6 +26,7 @@ public class PurchaseOperationServiceJPA implements PurchaseOperationService {
     private final PurchaseDataValidatorJPA dataValidator;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PurchaseOrderDetailRepository purchaseOrderDetailRepository;
+    private final BookStockMovementRepository bookStockMovementRepository;
     private final BookStockRepository bookStockRepository;
     private final PurchaseOperationConverterJPA converter;
 
@@ -41,6 +43,7 @@ public class PurchaseOperationServiceJPA implements PurchaseOperationService {
         final var savedDetails = details.stream().map(purchaseInvoiceDetail -> {
             purchaseInvoiceDetail.setPurchaseOrderId(purchaseInvoice.getId());
             final var savedDetail = purchaseOrderDetailRepository.save(purchaseInvoiceDetail);
+            bookStockMovementRepository.save(converter.toBookStockMovement(purchaseInvoice, savedDetail, now));
 
             final var bookStock = bookStockRepository.findByStoreIdAndBookIdWithWriteLock(
                 purchaseInvoice.getReceivingStoreId(),

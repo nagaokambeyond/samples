@@ -56,5 +56,18 @@
         <table tableName="book_stock" domainObjectName="BookStockEntity" mapperName="BookStockMapper">
             <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
         </table>
+        <table tableName="book_stock_movement" domainObjectName="BookStockMovementEntity" mapperName="BookStockMovementMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <columnOverride
+                    column="movement_type"
+                    property="movementType"
+                    javaType="com.example.demo.data.domain.BookStockMovementType"
+                    typeHandler="com.example.demo.mybatis.typehandler.BookStockMovementTypeHandler"/>
+            <columnOverride
+                    column="source_type"
+                    property="sourceType"
+                    javaType="com.example.demo.data.domain.BookStockMovementSourceType"
+                    typeHandler="com.example.demo.mybatis.typehandler.BookStockMovementSourceTypeHandler"/>
+        </table>
     </context>
 </generatorConfiguration>

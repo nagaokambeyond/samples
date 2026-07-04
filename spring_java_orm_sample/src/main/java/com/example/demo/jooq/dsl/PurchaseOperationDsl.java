@@ -2,6 +2,8 @@ package com.example.demo.jooq.dsl;
 
 import com.example.demo.api.request.PurchaseInvoiceCreateRequest;
 import com.example.demo.api.request.PurchaseInvoiceDetailCreateRequest;
+import com.example.demo.data.domain.BookStockMovementSourceType;
+import com.example.demo.data.domain.BookStockMovementType;
 import com.example.demo.data.domain.PurchaseInvoiceType;
 import com.example.demo.jooq.entity.PurchaseInvoiceDetailRow;
 import com.example.demo.jooq.entity.PurchaseInvoiceRow;
@@ -18,6 +20,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import static com.example.demo.jooq.generated.Tables.BOOK_STOCK;
+import static com.example.demo.jooq.generated.Tables.BOOK_STOCK_MOVEMENT;
 import static com.example.demo.jooq.generated.Tables.PURCHASE_INVOICE;
 import static com.example.demo.jooq.generated.Tables.PURCHASE_INVOICE_DETAIL;
 
@@ -130,5 +133,21 @@ public class PurchaseOperationDsl {
         } catch (DataAccessException ex) {
             throw new PessimisticLockingFailureException("jOOQ write lock could not be acquired", ex);
         }
+    }
+
+    public void insertBookStockMovement(Long storeId, PurchaseInvoiceRow purchaseInvoice, PurchaseInvoiceDetailRow detail, LocalDateTime now) {
+        dsl.insertInto(BOOK_STOCK_MOVEMENT)
+            .set(BOOK_STOCK_MOVEMENT.STORE_ID, storeId)
+            .set(BOOK_STOCK_MOVEMENT.BOOK_ID, detail.getPurchaseInvoiceDetailBookId())
+            .set(BOOK_STOCK_MOVEMENT.MOVEMENT_TYPE, BookStockMovementType.PURCHASE.getValue())
+            .set(BOOK_STOCK_MOVEMENT.QUANTITY_DELTA, detail.getPurchaseInvoiceDetailQuantity())
+            .set(BOOK_STOCK_MOVEMENT.SOURCE_TYPE, BookStockMovementSourceType.PURCHASE_INVOICE.getValue())
+            .set(BOOK_STOCK_MOVEMENT.SOURCE_ID, purchaseInvoice.getId())
+            .set(BOOK_STOCK_MOVEMENT.SOURCE_DETAIL_ID, detail.getId())
+            .set(BOOK_STOCK_MOVEMENT.MOVEMENT_DATE, purchaseInvoice.getPurchaseInvoiceDate())
+            .set(BOOK_STOCK_MOVEMENT.CREATE_AT, now)
+            .set(BOOK_STOCK_MOVEMENT.UPDATE_AT, now)
+            .set(BOOK_STOCK_MOVEMENT.VERSION, 1L)
+            .execute();
     }
 }

@@ -6,6 +6,7 @@ package com.example.demo.jooq.generated;
 
 import com.example.demo.jooq.generated.tables.Book;
 import com.example.demo.jooq.generated.tables.BookStock;
+import com.example.demo.jooq.generated.tables.BookStockMovement;
 import com.example.demo.jooq.generated.tables.PurchaseInvoice;
 import com.example.demo.jooq.generated.tables.PurchaseInvoiceDetail;
 
@@ -33,6 +34,9 @@ public class Indexes {
     public static final Index IDX_BOOK_STOCK_01 = Internal.createIndex(DSL.name("idx_book_stock_01"), BookStock.BOOK_STOCK, new OrderField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID }, false);
     public static final Index IDX_BOOK_STOCK_02 = Internal.createIndex(DSL.name("idx_book_stock_02"), BookStock.BOOK_STOCK, new OrderField[] { BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, false);
     public static final Index IDX_BOOK_STOCK_03 = Internal.createIndex(DSL.name("idx_book_stock_03"), BookStock.BOOK_STOCK, new OrderField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID, BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, false);
+    public static final Index IDX_BOOK_STOCK_MOVEMENT_01 = Internal.createIndex(DSL.name("idx_book_stock_movement_01"), BookStockMovement.BOOK_STOCK_MOVEMENT, new OrderField[] { BookStockMovement.BOOK_STOCK_MOVEMENT.STORE_ID, BookStockMovement.BOOK_STOCK_MOVEMENT.BOOK_ID }, false);
+    public static final Index IDX_BOOK_STOCK_MOVEMENT_02 = Internal.createIndex(DSL.name("idx_book_stock_movement_02"), BookStockMovement.BOOK_STOCK_MOVEMENT, new OrderField[] { BookStockMovement.BOOK_STOCK_MOVEMENT.MOVEMENT_DATE }, false);
+    public static final Index IDX_BOOK_STOCK_MOVEMENT_03 = Internal.createIndex(DSL.name("idx_book_stock_movement_03"), BookStockMovement.BOOK_STOCK_MOVEMENT, new OrderField[] { BookStockMovement.BOOK_STOCK_MOVEMENT.MOVEMENT_TYPE }, false);
     public static final Index IDX_PURCHASE_INVOICE_01 = Internal.createIndex(DSL.name("idx_purchase_invoice_01"), PurchaseInvoice.PURCHASE_INVOICE, new OrderField[] { PurchaseInvoice.PURCHASE_INVOICE.PURCHASE_INVOICE_TYPE }, false);
     public static final Index IDX_PURCHASE_INVOICE_02 = Internal.createIndex(DSL.name("idx_purchase_invoice_02"), PurchaseInvoice.PURCHASE_INVOICE, new OrderField[] { PurchaseInvoice.PURCHASE_INVOICE.RETURN_PURCHASE_INVOICE_ID }, false);
     public static final Index IDX_PURCHASE_INVOICE_03 = Internal.createIndex(DSL.name("idx_purchase_invoice_03"), PurchaseInvoice.PURCHASE_INVOICE, new OrderField[] { PurchaseInvoice.PURCHASE_INVOICE.PURCHASE_INVOICE_DATE }, false);

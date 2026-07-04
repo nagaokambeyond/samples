@@ -40,6 +40,8 @@ erDiagram
     book ||--o{ purchase_invoice_detail : "ordered"
     store ||--o{ book_stock : "stocks"
     book ||--o{ book_stock : "stocked"
+    store ||--o{ book_stock_movement : "stock movements"
+    book ||--o{ book_stock_movement : "movement target"
 
     publisher {
         BIGINT id PK
@@ -116,6 +118,21 @@ erDiagram
         BIGINT book_stock_store_id FK
         BIGINT book_stock_book_id FK
         INTEGER book_stock_quantity
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book_stock_movement {
+        BIGINT id PK
+        BIGINT store_id FK
+        BIGINT book_id FK
+        INTEGER movement_type
+        INTEGER quantity_delta
+        INTEGER source_type
+        BIGINT source_id
+        BIGINT source_detail_id
+        DATE movement_date
         TIMESTAMP create_at
         TIMESTAMP update_at
         BIGINT version

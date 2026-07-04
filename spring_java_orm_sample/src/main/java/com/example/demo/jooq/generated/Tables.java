@@ -7,6 +7,7 @@ package com.example.demo.jooq.generated;
 import com.example.demo.jooq.generated.tables.Book;
 import com.example.demo.jooq.generated.tables.BookGenre;
 import com.example.demo.jooq.generated.tables.BookStock;
+import com.example.demo.jooq.generated.tables.BookStockMovement;
 import com.example.demo.jooq.generated.tables.Publisher;
 import com.example.demo.jooq.generated.tables.PurchaseInvoice;
 import com.example.demo.jooq.generated.tables.PurchaseInvoiceDetail;
@@ -34,6 +35,11 @@ public class Tables {
      * 本在庫
      */
     public static final BookStock BOOK_STOCK = BookStock.BOOK_STOCK;
+
+    /**
+     * 本在庫増減履歴
+     */
+    public static final BookStockMovement BOOK_STOCK_MOVEMENT = BookStockMovement.BOOK_STOCK_MOVEMENT;
 
     /**
      * 出版社
