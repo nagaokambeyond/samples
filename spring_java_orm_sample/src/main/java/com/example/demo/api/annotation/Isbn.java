@@ -1,4 +1,4 @@
-package com.example.demo.api.validator;
+package com.example.demo.api.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

@@ -1,6 +1,6 @@
 package com.example.demo.api.request;
 
-import com.example.demo.api.validator.Isbn;
+import com.example.demo.api.annotation.Isbn;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Value;
