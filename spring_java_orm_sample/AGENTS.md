@@ -21,7 +21,7 @@
 
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id` を参照します。`book.isbn` は 13 桁の一意な ISBN として扱います。検索 API はページングされ、出版社名・ジャンル名・ISBN・在庫リストを含む `BookPageResponse` を返します。
+現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id`、`book_sales_unit_price_history.book_id` は `book.id` を参照します。`book.isbn` は 13 桁の一意な ISBN として扱います。検索 API はページングされ、出版社名・ジャンル名・ISBN・現在販売単価・在庫リストを含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -61,6 +61,7 @@ Gradle Wrapper を使用してください。
 ## ディレクトリ構成
 
 - `src/main/java/com/example/demo/api`: API インターフェース
+- `src/main/java/com/example/demo/api/annotation`: API 入力用の独自 Bean Validation annotation
 - `src/main/java/com/example/demo/api/controller`: Controller
 - `src/main/java/com/example/demo/api/log`: API 横断ログ
 - `src/main/java/com/example/demo/api/request`: request DTO
@@ -101,20 +102,22 @@ Gradle Wrapper を使用してください。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースです。
 - `PageCalculator` はページ数と offset の計算を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
-- `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は本情報と `book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
+- `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は本情報、`book_sales_unit_price_history` 由来の現在販売単価、`book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookOperationConverterJPA` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
 - Doma の取得・検索は `BookWithPublisherNameAggregateStrategy` で `bookStockList` を集約します。
 - jOOQ の取得・検索は `BookWithStockRow` の在庫行を `BookOperationConverterJooq` で書籍単位に集約します。
+- 本の登録時は `BookCreateRequest.salesUnitPrice` から `book_sales_unit_price_history` の初期履歴を作成します。販売単価履歴追加 API は前後履歴の `effective_to` を調整し、現在単価は有効期間が現在日に一致する履歴から返します。
 - jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。参照存在チェックは `BookDsl` / `BookGenreDsl` / `PublisherDsl` / `StoreDsl` / `SupplierDsl` を使います。
 - 仕入登録は JPA / MyBatis / Doma / jOOQ の各 `PurchaseOperationService*` が `PurchaseInvoice` / `PurchaseInvoiceDetail` 相当のデータを登録し、在庫をロックして新規作成または数量加算し、`book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の在庫増減履歴を登録します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain`、jOOQ は converter / Service 側の値変換で扱います。
 - `BookStockMovementType` と `BookStockMovementSourceType` は在庫増減履歴の共有ドメイン型です。JPA は converter、MyBatis は TypeHandler、Doma は `@Domain`、jOOQ は Service / DSL 側の値変換で扱います。
-- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
+- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
 - 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login` は公開され、書籍の取得・検索以外の API は Bearer token が必要です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - `BookCreateRequest` / `BookUpdateRequest` / `BookResponse` には `isbn` が含まれます。ISBN は `@Isbn` で 13 桁数字として検証し、登録・更新時は各永続化方式の `BookDataValidator*` で一意性を確認します。
+- `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれます。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しません。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
 - 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象です。
 
@@ -124,12 +127,13 @@ Gradle Wrapper を使用してください。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とします。
 - `page` は 0 始まりです。
 - ページサイズは `application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込みます。
-- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`isbn`、`bookStockList` が含まれます。
+- `BookResponse` には `publisherId`、`publisherName`、`genreId`、`genreName`、`isbn`、`salesUnitPrice`、`bookStockList` が含まれます。
+- 販売単価履歴追加 API は `/api/books/{id}/sales-unit-prices` で、`BookSalesUnitPriceCreateRequest` を受け取り、成功時は空 body の 200 を返します。`effectiveFrom` は未来日として扱います。
 - 認証 API は `/api/auth/login` で、`LoginRequest` を受け取り、`LoginResponse` として `Bearer` token、ユーザー名、有効期限秒数を返します。
 - ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` で、Bearer token が必要です。
 - 仕入登録 API は `/api/purchases/create` で、`PurchaseInvoiceCreateRequest` と明細リストを受け取り、`PurchaseInvoiceResponse` を返します。
 - 仕入登録時は `supplierId`、`receivingStoreId`、明細の ISBN を参照チェックし、ISBN から本 ID を解決して明細金額と伝票金額を計算します。
-- 外部キー参照先なし、ISBN 一意制約違反、相関バリデーションエラー、データなし、更新競合、認証エラー、ログイン回数制限超過は `GlobalExceptionHandler` で ProblemDetail に変換されます。
+- 外部キー参照先なし、ISBN 一意制約違反、販売単価履歴の一意制約違反、相関バリデーションエラー、データなし、更新競合、認証エラー、ログイン回数制限超過は `GlobalExceptionHandler` で ProblemDetail に変換されます。
 
 ## テスト方針
 

@@ -15,7 +15,7 @@
 - 未使用なメソッドであれば削除する。
 - JPA / MyBatis / Doma / jOOQ で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
 - 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の値変換の対応を揃える。
-- API 関連のクラスは `api`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
+- API 関連のクラスは `api`、`api/annotation`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
 - 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
@@ -30,7 +30,9 @@
 - 書籍の取得・検索は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId`、`isbn` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - ISBN は `@Isbn` で 13 桁数字として検証する。`BookCreateRequest` / `BookUpdateRequest` / `PurchaseInvoiceDetailCreateRequest` の ISBN 制約を変更する場合は API テストと OpenAPI 例も確認する。
-- `BookResponse` には `publisherName`、`genreName`、`isbn`、`bookStockList` が含まれる。取得・検索系の SQL / query は `publisher`、`book_genre`、`book_stock`、`store` と結合し、永続化方式ごとの `BookOperationConverter*` に渡す値を揃える。
+- `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれる。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しない。
+- `BookResponse` には `publisherName`、`genreName`、`isbn`、`salesUnitPrice`、`bookStockList` が含まれる。取得・検索系の SQL / query は `publisher`、`book_genre`、`book_sales_unit_price_history`、`book_stock`、`store` と結合し、永続化方式ごとの `BookOperationConverter*` に渡す値を揃える。
+- 現在販売単価は `book_sales_unit_price_history` の `effective_from <= current_date` かつ `effective_to IS NULL OR current_date <= effective_to` の履歴から取得する。取得 query、検索 query、検索 count の条件を揃える。
 - `bookStockList` の要素は `BookStockResponse` とし、`id`、`bookStockStoreId`、`storeName`、`bookStockQuantity` を返す。
 - 検索 API は任意の `keyword`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱う。`keyword` はタイトルまたは著者の前方一致条件として扱う。
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
@@ -39,6 +41,8 @@
 - Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の役割を確認する。現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma`、JPA repository の有効化は `application-jpa.yaml` で扱う。
 - 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を4つの Service 実装で揃える。
 - ページ数と offset の計算は `PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
+- 販売単価履歴追加 API は `/api/books/{id}/sales-unit-prices` とし、`BookSalesUnitPriceCreateRequest` で `salesUnitPrice` と未来日の `effectiveFrom` を受け取り、成功時は空 body の 200 を返す。
+- 販売単価履歴追加では、同一 `book_id,effective_from` を `UniqueConstraintValidationException` として扱う。前履歴の `effective_to` を新履歴の前日に更新し、後続履歴がある場合は新履歴の `effective_to` を後続履歴の前日にする。
 - 仕入登録 API は `/api/purchases/create` とし、`PurchaseInvoiceCreateRequest` で `purchaseInvoiceDate`、`supplierId`、`receivingStoreId`、明細リストを受け取る。
 - 仕入明細は `purchaseInvoiceDetailIsbn` で本を参照する。各 `PurchaseDataValidator*` は明細 ISBN から本 ID を解決し、converter / Service は解決済みの本 ID で明細と在庫更新を行う。
 - `PurchaseInvoiceCreateRequest.details` は `@Valid`、`@NotEmpty`、`@NotNull`、`@Size(max = 10)` を維持する。明細の単価は 1〜10000、数量は 1〜1000 の制約を維持する。
@@ -52,7 +56,7 @@
 - `BookStockMovementType` / `BookStockMovementSourceType` の値を変更する場合は、DB の `check_book_stock_movement_type` / `check_book_stock_movement_source_type` 制約、初期データ、JPA converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の `getValue()` を使った値変換の整合性を確認する。
 - MyBatis TypeHandler を追加・変更する場合は、`src/main/resources/mybatis-config.xml` に登録する。
 - Doma CodeGen の型解決を変更する場合は、`src/main/resources/codegen/entityPropertyClassNames.properties` と `build.gradle` の `domaCodeGen` 設定を確認する。
-- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
+- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
 
 ## Service と例外
 
@@ -71,6 +75,8 @@
 - DB を読む・更新する Service メソッドには `@Transactional` を付ける。
 - `publisherId` は `publisher`、`genreId` は `book_genre` への外部キー。登録・更新時の参照存在チェックは各永続化方式の `BookDataValidator*` に集約する。
 - `isbn` は `book` の一意キー。登録・更新時の ISBN 一意性チェックは各永続化方式の `BookDataValidator*` に集約し、違反時は `UniqueConstraintValidationException` を使う。
+- 本の登録時は、登録した `book.id` と `BookCreateRequest.salesUnitPrice`、`BookCreateRequest.releaseDate` を使って販売単価の初期履歴を作成する。販売単価履歴の ID 採番や前後履歴更新は各永続化方式の既存方針に合わせる。
+- 販売単価履歴を更新する Service メソッドでは対象の本をロックし、`@RetryableOnLockFailure` と `@Transactional` の既存方針を維持する。
 - 仕入登録時の `supplierId`、`receivingStoreId`、明細 ISBN の参照存在チェックは各永続化方式の `PurchaseDataValidator*` に集約する。
 - 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock`、jOOQ は `PurchaseOperationDsl` の `forUpdate().noWait()` で在庫行をロックしてから新規作成または数量加算する。
 - 仕入登録では在庫更新後に `book_stock_movement` へ在庫増減履歴を登録する。種別は仕入登録では `BookStockMovementType.PURCHASE`、発生元種別は `BookStockMovementSourceType.PURCHASE_INVOICE` を使い、伝票 ID / 明細 ID / ISBN から解決した本 ID / 受入店舗 ID / 数量を揃える。
@@ -100,15 +106,15 @@
 - ログイン回数制限: `LoginRateLimitServiceTest`
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
 - ページ計算: `PageCalculatorTest`
-- JPA 実装: `BooksOperationServiceJPATest`
+- JPA 実装 / 販売単価履歴: `BooksOperationServiceJPATest`
 - JPA 仕入実装: `PurchaseOperationServiceJPATest`
-- MyBatis 実装: `BooksOperationServiceMybatisTest`
+- MyBatis 実装 / 販売単価履歴: `BooksOperationServiceMybatisTest`
 - MyBatis 仕入実装: `PurchaseOperationServiceMybatisTest`
-- Doma 実装: `BooksOperationServiceDomaTest`
+- Doma 実装 / 販売単価履歴: `BooksOperationServiceDomaTest`
 - Doma 仕入実装: `PurchaseOperationServiceDomaTest`
 - Doma 仕入データバリデーション: `PurchaseDataValidatorDomaTest`
 - 仕入 API Controller: `PurchaseOperationApiControllerTest`
-- jOOQ 実装: `BooksOperationServiceJooqTest`
+- jOOQ 実装 / 販売単価履歴: `BooksOperationServiceJooqTest`
 - jOOQ 仕入実装: `PurchaseOperationServiceJooqTest`
 - ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
 - 行ロック関連: `BookRowLock`
