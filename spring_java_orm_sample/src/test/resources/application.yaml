@@ -1,0 +1,55 @@
+spring:
+  profiles:
+    default: doma
+  application:
+    name: demo
+  datasource:
+    url: jdbc:h2:mem:demo;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=50
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  data:
+    jpa:
+      repositories:
+        enabled: false
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  mvc:
+    problemdetails:
+      enabled: true
+  lifecycle:
+    timeout-per-shutdown-phase: 100ms
+server:
+  shutdown: immediate
+mybatis:
+  mapper-locations: classpath*:com/example/demo/mybatis/**/*.xml
+search:
+  page-size: 10
+app:
+  auth:
+    username: admin
+    password: password
+    jwt-secret: spring-java-orm-sample-local-development-secret
+    expires-in-seconds: 3600
+    login-rate-limit:
+      enabled: true
+      daily-limit: 10
+      zone-id: Asia/Tokyo
+  lock-failure-retry:
+    delay: 1
+    multiplier: 1
+    max-delay: 1
+logging:
+  level:
+    org.seasar.doma.jdbc.LogKind.SQL: INFO
+    org.jooq.tools.LoggerListener: INFO

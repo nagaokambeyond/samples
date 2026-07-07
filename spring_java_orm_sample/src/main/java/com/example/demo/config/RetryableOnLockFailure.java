@@ -16,10 +16,10 @@ import java.lang.annotation.Target;
         CannotAcquireLockException.class,
         PessimisticLockingFailureException.class
     },
-    maxRetries = 3,
-    delay = 150,
-    multiplier = 2,
-    maxDelay = 1000
+    maxRetriesString = "${app.lock-failure-retry.max-retries:3}",
+    delayString = "${app.lock-failure-retry.delay:150}",
+    multiplierString = "${app.lock-failure-retry.multiplier:2}",
+    maxDelayString = "${app.lock-failure-retry.max-delay:1000}"
 )
 public @interface RetryableOnLockFailure {
 }

@@ -22,10 +22,10 @@ class RetryableOnLockFailureTest {
         assertThat(retryable).isNotNull();
         assertThat(retryable.includes())
             .containsExactly(CannotAcquireLockException.class, PessimisticLockingFailureException.class);
-        assertThat(retryable.maxRetries()).isEqualTo(3);
-        assertThat(retryable.delay()).isEqualTo(150);
-        assertThat(retryable.multiplier()).isEqualTo(2);
-        assertThat(retryable.maxDelay()).isEqualTo(1000);
+        assertThat(retryable.maxRetriesString()).isEqualTo("${app.lock-failure-retry.max-retries:3}");
+        assertThat(retryable.delayString()).isEqualTo("${app.lock-failure-retry.delay:150}");
+        assertThat(retryable.multiplierString()).isEqualTo("${app.lock-failure-retry.multiplier:2}");
+        assertThat(retryable.maxDelayString()).isEqualTo("${app.lock-failure-retry.max-delay:1000}");
     }
 
     @Test
