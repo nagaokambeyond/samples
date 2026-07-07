@@ -2,6 +2,7 @@ package com.example.demo.mybatis.service;
 
 import com.example.demo.BookRowLock;
 import com.example.demo.api.request.BookCreateRequest;
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
@@ -42,6 +43,7 @@ class BooksOperationServiceMybatisTest {
         assertThat(book.getGenreId()).isEqualTo(5L);
         assertThat(book.getGenreName()).isEqualTo("工学");
         assertThat(book.getIsbn()).isEqualTo("0000000000001");
+        assertThat(book.getSalesUnitPrice()).isEqualTo(1200);
         assertThat(book.getBookStockList())
             .extracting("id", "bookStockStoreId", "storeName", "bookStockQuantity")
             .containsExactly(
@@ -184,7 +186,7 @@ class BooksOperationServiceMybatisTest {
     @Test
     void createReturnsGeneratedIdAndResponse() {
         final var releaseDate = LocalDate.of(2021, 1, 1);
-        final var book = bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", releaseDate, 2L, 5L, "9784000000201"));
+        final var book = bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", releaseDate, 2L, 5L, "9784000000201", 1400));
 
         assertThat(book.getId()).isNotNull();
         assertThat(book.getTitle()).isEqualTo("MyBatis入門");
@@ -196,27 +198,40 @@ class BooksOperationServiceMybatisTest {
         assertThat(book.getGenreName()).isEqualTo("工学");
         assertThat(book.getIsbn()).isEqualTo("9784000000201");
         assertThat(book.getVersion()).isEqualTo(1L);
+        assertThat(book.getSalesUnitPrice()).isEqualTo(1400);
     }
 
     @Test
     void createThrowsWhenPublisherDoesNotExist() {
-        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L, 5L, "9784000000202")))
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 999L, 5L, "9784000000202", 1400)))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
             .hasMessage("参照先データが存在しません: publisher(id=999)");
     }
 
     @Test
     void createThrowsWhenBookGenreDoesNotExist() {
-        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 999L, "9784000000203")))
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 999L, "9784000000203", 1400)))
             .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
             .hasMessage("参照先データが存在しません: book_genre(id=999)");
     }
 
     @Test
     void createThrowsWhenIsbnAlreadyExists() {
-        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 5L, "0000000000001")))
+        assertThatThrownBy(() -> bookService.create(new BookCreateRequest("MyBatis入門", "Jiro", LocalDate.of(2021, 1, 1), 1L, 5L, "0000000000001", 1400)))
             .isInstanceOf(UniqueConstraintValidationException.class)
             .hasMessage("一意制約に違反しています: book(isbn=0000000000001)");
+    }
+
+    @Test
+    void createSalesUnitPriceSchedulesFuturePrice() {
+        final var effectiveFrom = LocalDate.now().plusDays(10);
+
+        bookService.createSalesUnitPrice(1L, new BookSalesUnitPriceCreateRequest(1500, effectiveFrom));
+
+        assertThat(bookService.findById(1L).getSalesUnitPrice()).isEqualTo(1200);
+        assertThatThrownBy(() -> bookService.createSalesUnitPrice(1L, new BookSalesUnitPriceCreateRequest(1600, effectiveFrom)))
+            .isInstanceOf(UniqueConstraintValidationException.class)
+            .hasMessage("一意制約に違反しています: book_sales_unit_price_history(book_id,effective_from=1," + effectiveFrom + ")");
     }
 
     @Test

@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +96,8 @@ class BooksOperationApiControllerTest {
                   "releaseDate": null,
                   "publisherId": null,
                   "genreId": null,
-                  "isbn": null
+                  "isbn": null,
+                  "salesUnitPrice": null
                 }
                 """
             ))
@@ -105,7 +107,7 @@ class BooksOperationApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
-        assertThat(getErrorFields(json)).contains("title", "releaseDate", "publisherId", "genreId", "isbn");
+        assertThat(getErrorFields(json)).contains("title", "releaseDate", "publisherId", "genreId", "isbn", "salesUnitPrice");
     }
 
     @Test
@@ -121,7 +123,8 @@ class BooksOperationApiControllerTest {
                   "releaseDate": "2026-01-01",
                   "publisherId": 1,
                   "genreId": 5,
-                  "isbn": "invalid"
+                  "isbn": "invalid",
+                  "salesUnitPrice": 1200
                 }
                 """
             ))
@@ -148,7 +151,8 @@ class BooksOperationApiControllerTest {
                   "releaseDate": "2026-01-01",
                   "publisherId": 1,
                   "genreId": 5,
-                  "isbn": "9784000000501"
+                  "isbn": "9784000000501",
+                  "salesUnitPrice": 1200
                 }
                 """
             ))
@@ -158,8 +162,58 @@ class BooksOperationApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(json.get("isbn").asText()).isEqualTo("9784000000501");
+        assertThat(json.get("salesUnitPrice").asInt()).isEqualTo(1200);
 
         delete("/api/books/" + json.get("id").asLong(), token);
+    }
+
+    @Test
+    void createSalesUnitPriceReturnsOkWithEmptyBodyWhenRequestIsValid() throws Exception {
+        final var token = login();
+        final var isbn = "978" + String.format("%010d", Math.floorMod(System.nanoTime(), 10_000_000_000L));
+        final var createBookRequest = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/books/create"))
+            .header("Content-Type", "application/json")
+            .header("Authorization", "Bearer " + token)
+            .POST(HttpRequest.BodyPublishers.ofString(
+                """
+                {
+                  "title": "本販売単価登録",
+                  "author": "Jiro",
+                  "releaseDate": "2026-01-01",
+                  "publisherId": 1,
+                  "genreId": 5,
+                  "isbn": "%s",
+                  "salesUnitPrice": 1200
+                }
+                """.formatted(isbn)
+            ))
+            .build();
+        final var createBookResponse = HTTP_CLIENT.send(createBookRequest, HttpResponse.BodyHandlers.ofString());
+        final var createdBook = OBJECT_MAPPER.readTree(createBookResponse.body());
+        final var bookId = createdBook.get("id").asLong();
+
+        try {
+            final var createSalesUnitPriceRequest = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/books/" + bookId + "/sales-unit-prices"))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer " + token)
+                .POST(HttpRequest.BodyPublishers.ofString(
+                    """
+                    {
+                      "salesUnitPrice": 1500,
+                      "effectiveFrom": "%s"
+                    }
+                    """.formatted(LocalDate.now().plusDays(30))
+                ))
+                .build();
+            final var createSalesUnitPriceResponse = HTTP_CLIENT.send(createSalesUnitPriceRequest, HttpResponse.BodyHandlers.ofString());
+
+            assertThat(createSalesUnitPriceResponse.statusCode()).isEqualTo(HttpStatus.OK.value());
+            assertThat(createSalesUnitPriceResponse.body()).isEmpty();
+        } finally {
+            delete("/api/books/" + bookId, token);
+        }
     }
 
     private HttpResponse<String> get(String path) throws Exception {

@@ -45,6 +45,10 @@ public class BookResponse{
     @Schema(description = "ISBN", type = "string")
     String isbn;
 
+    @NotNull
+    @Schema(description = "販売単価", type = "integer")
+    Integer salesUnitPrice;
+
     @Schema(description = "更新日時", type = "string", format = "date-time")
     @NotNull
     LocalDateTime updateAt;

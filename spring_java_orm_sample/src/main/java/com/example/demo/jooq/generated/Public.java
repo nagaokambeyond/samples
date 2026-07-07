@@ -6,6 +6,7 @@ package com.example.demo.jooq.generated;
 
 import com.example.demo.jooq.generated.tables.Book;
 import com.example.demo.jooq.generated.tables.BookGenre;
+import com.example.demo.jooq.generated.tables.BookSalesUnitPriceHistory;
 import com.example.demo.jooq.generated.tables.BookStock;
 import com.example.demo.jooq.generated.tables.BookStockMovement;
 import com.example.demo.jooq.generated.tables.Publisher;
@@ -45,6 +46,11 @@ public class Public extends SchemaImpl {
      * 本ジャンル
      */
     public final BookGenre BOOK_GENRE = BookGenre.BOOK_GENRE;
+
+    /**
+     * 本販売単価履歴
+     */
+    public final BookSalesUnitPriceHistory BOOK_SALES_UNIT_PRICE_HISTORY = BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY;
 
     /**
      * 本在庫
@@ -99,6 +105,7 @@ public class Public extends SchemaImpl {
         return Arrays.asList(
             Book.BOOK,
             BookGenre.BOOK_GENRE,
+            BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY,
             BookStock.BOOK_STOCK,
             BookStockMovement.BOOK_STOCK_MOVEMENT,
             Publisher.PUBLISHER,

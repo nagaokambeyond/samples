@@ -1,11 +1,13 @@
 package com.example.demo.jooq.service;
 
 import com.example.demo.api.request.BookCreateRequest;
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.jooq.converter.BookOperationConverterJooq;
 import com.example.demo.jooq.dsl.BookOperationDsl;
 import com.example.demo.jooq.validator.BookDataValidatorJooq;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 import static com.example.demo.jooq.generated.Tables.BOOK;
@@ -64,6 +67,7 @@ public class BooksOperationServiceJooq implements BooksOperationService {
         dataValidator.uniqueIsbnValidate(request.getIsbn(), null);
 
         final var id = bookOperationDsl.insert(request);
+        bookOperationDsl.insertSalesUnitPriceHistory(Objects.requireNonNull(id), request.getSalesUnitPrice(), request.getReleaseDate(), null, LocalDateTime.now());
         return findById(Objects.requireNonNull(id));
     }
 
@@ -84,6 +88,34 @@ public class BooksOperationServiceJooq implements BooksOperationService {
         bookOperationDsl.update(request, currentVersion);
 
         return findById(request.getId());
+    }
+
+    @RetryableOnLockFailure
+    @Transactional
+    @Override
+    public void createSalesUnitPrice(@NonNull Long bookId, @NonNull BookSalesUnitPriceCreateRequest request) {
+        final var book = bookOperationDsl.selectBookForUpdate(bookId);
+        if (Objects.isNull(book)) {
+            throw new RepositoryDataNotfoundException();
+        }
+
+        final var followingHistories = bookOperationDsl.selectFollowingSalesUnitPriceHistories(bookId, request.getEffectiveFrom());
+        if (!followingHistories.isEmpty() && followingHistories.getFirst().getEffectiveFrom().equals(request.getEffectiveFrom())) {
+            throw new UniqueConstraintValidationException(
+                "book_sales_unit_price_history",
+                "book_id,effective_from",
+                bookId + "," + request.getEffectiveFrom()
+            );
+        }
+
+        final var previousHistory = bookOperationDsl.selectPreviousSalesUnitPriceHistory(bookId, request.getEffectiveFrom());
+        if (Objects.isNull(previousHistory)) {
+            throw new RepositoryDataNotfoundException();
+        }
+
+        bookOperationDsl.updateSalesUnitPriceHistoryEffectiveTo(previousHistory, request.getEffectiveFrom().minusDays(1));
+        final var effectiveTo = followingHistories.isEmpty() ? null : followingHistories.getFirst().getEffectiveFrom().minusDays(1);
+        bookOperationDsl.insertSalesUnitPriceHistory(bookId, request.getSalesUnitPrice(), request.getEffectiveFrom(), effectiveTo, LocalDateTime.now());
     }
 
     @RetryableOnLockFailure

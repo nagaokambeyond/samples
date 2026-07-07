@@ -69,5 +69,8 @@
                     javaType="com.example.demo.data.domain.BookStockMovementSourceType"
                     typeHandler="com.example.demo.mybatis.typehandler.BookStockMovementSourceTypeHandler"/>
         </table>
+        <table tableName="book_sales_unit_price_history" domainObjectName="BookSalesUnitPriceHistoryEntity" mapperName="BookSalesUnitPriceHistoryMapper">
+            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+        </table>
     </context>
 </generatorConfiguration>

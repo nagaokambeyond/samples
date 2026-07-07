@@ -78,7 +78,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleMethodArgumentNotValidExceptionReturnsFieldErrors() throws Exception {
-        final var request = new BookCreateRequest("", null, null, null, null, null);
+        final var request = new BookCreateRequest("", null, null, null, null, null, null);
         final var bindingResult = new BeanPropertyBindingResult(request, "request");
         bindingResult.addError(new FieldError("request", "title", "size must be between 1 and 100"));
         bindingResult.addError(new FieldError("request", "releaseDate", "must not be null"));

@@ -6,6 +6,7 @@ package com.example.demo.jooq.generated;
 
 import com.example.demo.jooq.generated.tables.Book;
 import com.example.demo.jooq.generated.tables.BookGenre;
+import com.example.demo.jooq.generated.tables.BookSalesUnitPriceHistory;
 import com.example.demo.jooq.generated.tables.BookStock;
 import com.example.demo.jooq.generated.tables.BookStockMovement;
 import com.example.demo.jooq.generated.tables.Publisher;
@@ -15,6 +16,7 @@ import com.example.demo.jooq.generated.tables.Store;
 import com.example.demo.jooq.generated.tables.Supplier;
 import com.example.demo.jooq.generated.tables.records.BookGenreRecord;
 import com.example.demo.jooq.generated.tables.records.BookRecord;
+import com.example.demo.jooq.generated.tables.records.BookSalesUnitPriceHistoryRecord;
 import com.example.demo.jooq.generated.tables.records.BookStockMovementRecord;
 import com.example.demo.jooq.generated.tables.records.BookStockRecord;
 import com.example.demo.jooq.generated.tables.records.PublisherRecord;
@@ -45,6 +47,8 @@ public class Keys {
     public static final UniqueKey<BookRecord> CONSTRAINT_2 = Internal.createUniqueKey(Book.BOOK, DSL.name("CONSTRAINT_2"), new TableField[] { Book.BOOK.ID }, true);
     public static final UniqueKey<BookRecord> UNQ_BOOK_01 = Internal.createUniqueKey(Book.BOOK, DSL.name("unq_book_01"), new TableField[] { Book.BOOK.ISBN }, true);
     public static final UniqueKey<BookGenreRecord> CONSTRAINT_9 = Internal.createUniqueKey(BookGenre.BOOK_GENRE, DSL.name("CONSTRAINT_9"), new TableField[] { BookGenre.BOOK_GENRE.ID }, true);
+    public static final UniqueKey<BookSalesUnitPriceHistoryRecord> CONSTRAINT_7 = Internal.createUniqueKey(BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY, DSL.name("CONSTRAINT_7"), new TableField[] { BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.ID }, true);
+    public static final UniqueKey<BookSalesUnitPriceHistoryRecord> UNQ_BOOK_SALES_UNIT_PRICE_HISTORY_01 = Internal.createUniqueKey(BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY, DSL.name("unq_book_sales_unit_price_history_01"), new TableField[] { BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.BOOK_ID, BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.EFFECTIVE_FROM }, true);
     public static final UniqueKey<BookStockRecord> CONSTRAINT_9D = Internal.createUniqueKey(BookStock.BOOK_STOCK, DSL.name("CONSTRAINT_9D"), new TableField[] { BookStock.BOOK_STOCK.ID }, true);
     public static final UniqueKey<BookStockRecord> UNQ_BOOK_STOCK_01 = Internal.createUniqueKey(BookStock.BOOK_STOCK, DSL.name("unq_book_stock_01"), new TableField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID, BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, true);
     public static final UniqueKey<BookStockMovementRecord> CONSTRAINT_1 = Internal.createUniqueKey(BookStockMovement.BOOK_STOCK_MOVEMENT, DSL.name("CONSTRAINT_1"), new TableField[] { BookStockMovement.BOOK_STOCK_MOVEMENT.ID }, true);
@@ -60,6 +64,7 @@ public class Keys {
 
     public static final ForeignKey<BookRecord, PublisherRecord> CONSTRAINT_2E = Internal.createForeignKey(Book.BOOK, DSL.name("CONSTRAINT_2E"), new TableField[] { Book.BOOK.PUBLISHER_ID }, Keys.CONSTRAINT_5, new TableField[] { Publisher.PUBLISHER.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<BookRecord, BookGenreRecord> CONSTRAINT_2E3 = Internal.createForeignKey(Book.BOOK, DSL.name("CONSTRAINT_2E3"), new TableField[] { Book.BOOK.GENRE_ID }, Keys.CONSTRAINT_9, new TableField[] { BookGenre.BOOK_GENRE.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
+    public static final ForeignKey<BookSalesUnitPriceHistoryRecord, BookRecord> CONSTRAINT_73 = Internal.createForeignKey(BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY, DSL.name("CONSTRAINT_73"), new TableField[] { BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.BOOK_ID }, Keys.CONSTRAINT_2, new TableField[] { Book.BOOK.ID }, true, ForeignKeyRule.CASCADE, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<BookStockRecord, StoreRecord> CONSTRAINT_9D4 = Internal.createForeignKey(BookStock.BOOK_STOCK, DSL.name("CONSTRAINT_9D4"), new TableField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID }, Keys.CONSTRAINT_6, new TableField[] { Store.STORE.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<BookStockRecord, BookRecord> CONSTRAINT_9D4E = Internal.createForeignKey(BookStock.BOOK_STOCK, DSL.name("CONSTRAINT_9D4E"), new TableField[] { BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, Keys.CONSTRAINT_2, new TableField[] { Book.BOOK.ID }, true, ForeignKeyRule.NO_ACTION, ForeignKeyRule.NO_ACTION);
     public static final ForeignKey<BookStockMovementRecord, StoreRecord> FK_BOOK_STOCK_MOVEMENT_01 = Internal.createForeignKey(BookStockMovement.BOOK_STOCK_MOVEMENT, DSL.name("fk_book_stock_movement_01"), new TableField[] { BookStockMovement.BOOK_STOCK_MOVEMENT.STORE_ID }, Keys.CONSTRAINT_6, new TableField[] { Store.STORE.ID }, true, ForeignKeyRule.CASCADE, ForeignKeyRule.NO_ACTION);

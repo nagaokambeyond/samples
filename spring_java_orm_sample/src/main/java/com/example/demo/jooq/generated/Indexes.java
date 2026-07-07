@@ -5,6 +5,7 @@ package com.example.demo.jooq.generated;
 
 
 import com.example.demo.jooq.generated.tables.Book;
+import com.example.demo.jooq.generated.tables.BookSalesUnitPriceHistory;
 import com.example.demo.jooq.generated.tables.BookStock;
 import com.example.demo.jooq.generated.tables.BookStockMovement;
 import com.example.demo.jooq.generated.tables.PurchaseInvoice;
@@ -31,6 +32,9 @@ public class Indexes {
     public static final Index IDX_BOOK_03 = Internal.createIndex(DSL.name("idx_book_03"), Book.BOOK, new OrderField[] { Book.BOOK.GENRE_ID }, false);
     public static final Index IDX_BOOK_04 = Internal.createIndex(DSL.name("idx_book_04"), Book.BOOK, new OrderField[] { Book.BOOK.TITLE }, false);
     public static final Index IDX_BOOK_05 = Internal.createIndex(DSL.name("idx_book_05"), Book.BOOK, new OrderField[] { Book.BOOK.AUTHOR }, false);
+    public static final Index IDX_BOOK_SALES_UNIT_PRICE_HISTORY_01 = Internal.createIndex(DSL.name("idx_book_sales_unit_price_history_01"), BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY, new OrderField[] { BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.BOOK_ID }, false);
+    public static final Index IDX_BOOK_SALES_UNIT_PRICE_HISTORY_02 = Internal.createIndex(DSL.name("idx_book_sales_unit_price_history_02"), BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY, new OrderField[] { BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.EFFECTIVE_FROM }, false);
+    public static final Index IDX_BOOK_SALES_UNIT_PRICE_HISTORY_03 = Internal.createIndex(DSL.name("idx_book_sales_unit_price_history_03"), BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY, new OrderField[] { BookSalesUnitPriceHistory.BOOK_SALES_UNIT_PRICE_HISTORY.EFFECTIVE_TO }, false);
     public static final Index IDX_BOOK_STOCK_01 = Internal.createIndex(DSL.name("idx_book_stock_01"), BookStock.BOOK_STOCK, new OrderField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID }, false);
     public static final Index IDX_BOOK_STOCK_02 = Internal.createIndex(DSL.name("idx_book_stock_02"), BookStock.BOOK_STOCK, new OrderField[] { BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, false);
     public static final Index IDX_BOOK_STOCK_03 = Internal.createIndex(DSL.name("idx_book_stock_03"), BookStock.BOOK_STOCK, new OrderField[] { BookStock.BOOK_STOCK.BOOK_STOCK_STORE_ID, BookStock.BOOK_STOCK.BOOK_STOCK_BOOK_ID }, false);

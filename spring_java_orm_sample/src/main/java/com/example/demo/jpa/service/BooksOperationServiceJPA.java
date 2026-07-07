@@ -1,14 +1,17 @@
 package com.example.demo.jpa.service;
 
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.jpa.converter.BookOperationConverterJPA;
 import com.example.demo.jpa.entity.Book;
 import com.example.demo.jpa.repository.BookRepository;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookResponse;
+import com.example.demo.jpa.repository.BookSalesUnitPriceHistoryRepository;
 import com.example.demo.jpa.validator.BookDataValidatorJPA;
 import com.example.demo.service.BooksOperationService;
 import com.example.demo.service.PageCalculator;
@@ -19,12 +22,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @Profile("jpa")
 @RequiredArgsConstructor
 public class BooksOperationServiceJPA implements BooksOperationService {
     private final BookRepository bookRepository;
+    private final BookSalesUnitPriceHistoryRepository bookSalesUnitPriceHistoryRepository;
     private final BookOperationConverterJPA converter;
     private final BookDataValidatorJPA dataValidator;
 
@@ -60,6 +65,7 @@ public class BooksOperationServiceJPA implements BooksOperationService {
         dataValidator.uniqueIsbnValidate(request.getIsbn(), null);
 
         final var book = bookRepository.save(new Book(null, request.getTitle(), request.getAuthor(), request.getReleaseDate(), request.getPublisherId(), request.getGenreId(), request.getIsbn(), null, null, 1L));
+        insertSalesUnitPriceHistory(book.getId(), request.getSalesUnitPrice(), request.getReleaseDate(), null);
         return findById(book.getId());
     }
 
@@ -88,10 +94,44 @@ public class BooksOperationServiceJPA implements BooksOperationService {
     @RetryableOnLockFailure
     @Transactional
     @Override
+    public void createSalesUnitPrice(@NonNull Long bookId, @NonNull BookSalesUnitPriceCreateRequest request) {
+        final var book = bookRepository.findByIdWithWriteLock(bookId)
+            .orElseThrow(RepositoryDataNotfoundException::new);
+        final var followingHistories = bookSalesUnitPriceHistoryRepository
+            .findByBookIdAndEffectiveFromGreaterThanEqualOrderByEffectiveFrom(book.getId(), request.getEffectiveFrom());
+        if (!followingHistories.isEmpty() && followingHistories.getFirst().getEffectiveFrom().equals(request.getEffectiveFrom())) {
+            throw new UniqueConstraintValidationException(
+                "book_sales_unit_price_history",
+                "book_id,effective_from",
+                book.getId() + "," + request.getEffectiveFrom()
+            );
+        }
+
+        final var previousHistory = bookSalesUnitPriceHistoryRepository.findPreviousHistory(book.getId(), request.getEffectiveFrom())
+            .orElseThrow(RepositoryDataNotfoundException::new);
+        previousHistory.setEffectiveTo(request.getEffectiveFrom().minusDays(1));
+        final var effectiveTo = followingHistories.isEmpty() ? null : followingHistories.getFirst().getEffectiveFrom().minusDays(1);
+        insertSalesUnitPriceHistory(book.getId(), request.getSalesUnitPrice(), request.getEffectiveFrom(), effectiveTo);
+    }
+
+    @RetryableOnLockFailure
+    @Transactional
+    @Override
     public void delete(@NonNull Long id) {
         final var book = bookRepository.findByIdWithWriteLock(id)
             .orElseThrow(RepositoryDataNotfoundException::new);
 
         bookRepository.deleteById(book.getId());
+    }
+
+    private void insertSalesUnitPriceHistory(Long bookId, Integer salesUnitPrice, LocalDate effectiveFrom, LocalDate effectiveTo) {
+        bookSalesUnitPriceHistoryRepository.insertWithId(
+            bookSalesUnitPriceHistoryRepository.nextId(),
+            bookId,
+            salesUnitPrice,
+            effectiveFrom,
+            effectiveTo,
+            LocalDateTime.now()
+        );
     }
 }

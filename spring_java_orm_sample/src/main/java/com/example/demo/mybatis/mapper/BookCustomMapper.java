@@ -1,6 +1,7 @@
 package com.example.demo.mybatis.mapper;
 
 import com.example.demo.mybatis.entity.BookWithPublisherName;
+import com.example.demo.mybatis.generator.entity.BookSalesUnitPriceHistoryEntity;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -29,4 +30,8 @@ public interface BookCustomMapper {
     BookEntity selectByPrimaryKeyWithWriteLock(@Param("id") Long id);
 
     void insertWithGeneratedKey(BookEntity row);
+
+    Long selectNextSalesUnitPriceHistoryId();
+
+    void insertSalesUnitPriceHistoryWithId(BookSalesUnitPriceHistoryEntity row);
 }

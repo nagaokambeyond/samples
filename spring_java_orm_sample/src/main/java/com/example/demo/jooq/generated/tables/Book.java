@@ -8,6 +8,7 @@ import com.example.demo.jooq.generated.Indexes;
 import com.example.demo.jooq.generated.Keys;
 import com.example.demo.jooq.generated.Public;
 import com.example.demo.jooq.generated.tables.BookGenre.BookGenrePath;
+import com.example.demo.jooq.generated.tables.BookSalesUnitPriceHistory.BookSalesUnitPriceHistoryPath;
 import com.example.demo.jooq.generated.tables.BookStock.BookStockPath;
 import com.example.demo.jooq.generated.tables.BookStockMovement.BookStockMovementPath;
 import com.example.demo.jooq.generated.tables.Publisher.PublisherPath;
@@ -231,6 +232,19 @@ public class Book extends TableImpl<BookRecord> {
             _bookGenre = new BookGenrePath(this, Keys.CONSTRAINT_2E3, null);
 
         return _bookGenre;
+    }
+
+    private transient BookSalesUnitPriceHistoryPath _bookSalesUnitPriceHistory;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>public.book_sales_unit_price_history</code> table
+     */
+    public BookSalesUnitPriceHistoryPath bookSalesUnitPriceHistory() {
+        if (_bookSalesUnitPriceHistory == null)
+            _bookSalesUnitPriceHistory = new BookSalesUnitPriceHistoryPath(this, null, Keys.CONSTRAINT_73.getInverseKey());
+
+        return _bookSalesUnitPriceHistory;
     }
 
     private transient BookStockPath _bookStock;

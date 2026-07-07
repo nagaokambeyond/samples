@@ -32,7 +32,7 @@ ext {
     // Code generation
     codeGenSchema = 'src/main/resources/generator-schema.sql'
     codeGenJdbcUrl = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM '${codeGenSchema}'"
-    generatedTablePattern = 'book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock|book_stock_movement'
+    generatedTablePattern = 'book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock|book_stock_movement|book_sales_unit_price_history'
 
     // Generated packages and directories
     domaDaoPackage = 'com.example.demo.doma.generator.dao'

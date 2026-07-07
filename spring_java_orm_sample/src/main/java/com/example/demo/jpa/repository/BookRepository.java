@@ -25,6 +25,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                b.genre_id AS genreId,
                g.genre_name AS genreName,
                b.isbn AS isbn,
+               h.sales_unit_price AS salesUnitPrice,
                b.update_at AS updateAt,
                b.version AS version,
                bs.id AS bookStockId,
@@ -34,6 +35,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         FROM book b
         JOIN publisher p ON b.publisher_id = p.id
         JOIN book_genre g ON b.genre_id = g.id
+        JOIN book_sales_unit_price_history h
+          ON h.book_id = b.id
+         AND h.effective_from <= current_date
+         AND (h.effective_to IS NULL OR current_date <= h.effective_to)
         LEFT JOIN book_stock bs ON bs.book_stock_book_id = b.id
         LEFT JOIN store s ON s.id = bs.book_stock_store_id
         WHERE b.id = :id
@@ -52,11 +57,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                    b.genre_id,
                    g.genre_name,
                    b.isbn,
+                   h.sales_unit_price,
                    b.update_at,
                    b.version
             FROM book b
             JOIN publisher p ON b.publisher_id = p.id
             JOIN book_genre g ON b.genre_id = g.id
+            JOIN book_sales_unit_price_history h
+              ON h.book_id = b.id
+             AND h.effective_from <= current_date
+             AND (h.effective_to IS NULL OR current_date <= h.effective_to)
             WHERE (:keyword IS NULL OR trim(:keyword) = ''
                    OR lower(b.title) LIKE lower(concat(:keyword, '%'))
                    OR lower(b.author) LIKE lower(concat(:keyword, '%')))
@@ -75,6 +85,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                b.genre_id AS genreId,
                b.genre_name AS genreName,
                b.isbn AS isbn,
+               b.sales_unit_price AS salesUnitPrice,
                b.update_at AS updateAt,
                b.version AS version,
                bs.id AS bookStockId,
@@ -97,6 +108,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query(value = """
         SELECT count(*)
         FROM book b
+        JOIN book_sales_unit_price_history h
+          ON h.book_id = b.id
+         AND h.effective_from <= current_date
+         AND (h.effective_to IS NULL OR current_date <= h.effective_to)
         WHERE (:keyword IS NULL OR trim(:keyword) = ''
                OR lower(b.title) LIKE lower(concat(:keyword, '%'))
                OR lower(b.author) LIKE lower(concat(:keyword, '%')))
@@ -134,6 +149,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         String getGenreName();
 
         String getIsbn();
+
+        Integer getSalesUnitPrice();
 
         LocalDateTime getUpdateAt();
 

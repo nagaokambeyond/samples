@@ -3,6 +3,7 @@ package com.example.demo.api.controller;
 
 import com.example.demo.api.BooksOperationApi;
 import com.example.demo.config.SearchProperties;
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.validator.BooksOperationApiControllerValidator;
 import com.example.demo.service.BooksOperationService;
@@ -57,6 +58,15 @@ public class BooksOperationApiController implements BooksOperationApi {
         @RequestBody @Valid @NotNull BookUpdateRequest request
     ) {
         return booksOperationService.update(request);
+    }
+
+    @Override
+    public ResponseEntity<Void> createSalesUnitPrice(
+        @PathVariable Long id,
+        @RequestBody @Valid @NotNull BookSalesUnitPriceCreateRequest request
+    ) {
+        booksOperationService.createSalesUnitPrice(id, request);
+        return ResponseEntity.ok().build();
     }
 
     @Override

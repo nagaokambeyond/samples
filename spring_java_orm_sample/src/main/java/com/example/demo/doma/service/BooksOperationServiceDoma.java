@@ -1,16 +1,21 @@
 package com.example.demo.doma.service;
 
 import com.example.demo.api.request.BookCreateRequest;
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
 import com.example.demo.config.RetryableOnLockFailure;
 import com.example.demo.doma.converter.BookOperationConverterDoma;
 import com.example.demo.doma.dao.BookCustomDao;
+import com.example.demo.doma.dao.BookSalesUnitPriceHistoryCustomDao;
 import com.example.demo.doma.generator.dao.BookDao;
+import com.example.demo.doma.generator.dao.BookSalesUnitPriceHistoryDao;
 import com.example.demo.doma.generator.entity.Book;
+import com.example.demo.doma.generator.entity.BookSalesUnitPriceHistory;
 import com.example.demo.doma.validator.BookDataValidatorDoma;
 import com.example.demo.exception.RepositoryDataNotfoundException;
+import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.service.BooksOperationService;
 import com.example.demo.service.PageCalculator;
 import lombok.NonNull;
@@ -32,6 +37,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class BooksOperationServiceDoma implements BooksOperationService {
     private final BookDao bookDao;
+    private final BookSalesUnitPriceHistoryDao bookSalesUnitPriceHistoryDao;
+    private final BookSalesUnitPriceHistoryCustomDao bookSalesUnitPriceHistoryCustomDao;
     private final BookCustomDao bookCustomDao;
     private final BookOperationConverterDoma converter;
     private final BookDataValidatorDoma dataValidator;
@@ -76,6 +83,7 @@ public class BooksOperationServiceDoma implements BooksOperationService {
         book.setVersion(1L);
 
         bookDao.insert(book);
+        bookSalesUnitPriceHistoryCustomDao.insertWithId(toSalesUnitPriceHistory(book.getId(), request.getSalesUnitPrice(), request.getReleaseDate(), null, now));
         return findById(book.getId());
     }
 
@@ -111,6 +119,47 @@ public class BooksOperationServiceDoma implements BooksOperationService {
     @RetryableOnLockFailure
     @Transactional
     @Override
+    public void createSalesUnitPrice(@NonNull Long bookId, @NonNull BookSalesUnitPriceCreateRequest request) {
+        final var book = bookCustomDao.selectByIdWithWriteLock(bookId);
+        if (Objects.isNull(book)) {
+            throw new RepositoryDataNotfoundException();
+        }
+
+        final var followingHistories = bookSalesUnitPriceHistoryCustomDao.selectFollowingHistories(book.getId(), request.getEffectiveFrom());
+        if (!followingHistories.isEmpty() && followingHistories.getFirst().getEffectiveFrom().equals(request.getEffectiveFrom())) {
+            throw new UniqueConstraintValidationException(
+                "book_sales_unit_price_history",
+                "book_id,effective_from",
+                book.getId() + "," + request.getEffectiveFrom()
+            );
+        }
+
+        final var previousHistory = bookSalesUnitPriceHistoryCustomDao.selectPreviousHistory(book.getId(), request.getEffectiveFrom());
+        if (Objects.isNull(previousHistory)) {
+            throw new RepositoryDataNotfoundException();
+        }
+
+        previousHistory.setEffectiveTo(request.getEffectiveFrom().minusDays(1));
+        previousHistory.setUpdateAt(LocalDateTime.now());
+        try {
+            bookSalesUnitPriceHistoryDao.update(previousHistory);
+        } catch (OptimisticLockException ex) {
+            throw new ObjectOptimisticLockingFailureException(BookSalesUnitPriceHistory.class, previousHistory.getId(), ex);
+        }
+
+        final var effectiveTo = followingHistories.isEmpty() ? null : followingHistories.getFirst().getEffectiveFrom().minusDays(1);
+        bookSalesUnitPriceHistoryCustomDao.insertWithId(toSalesUnitPriceHistory(
+            book.getId(),
+            request.getSalesUnitPrice(),
+            request.getEffectiveFrom(),
+            effectiveTo,
+            LocalDateTime.now()
+        ));
+    }
+
+    @RetryableOnLockFailure
+    @Transactional
+    @Override
     public void delete(@NonNull Long id) {
         final var book = bookCustomDao.selectByIdWithWriteLock(id);
         if (Objects.isNull(book)) {
@@ -130,5 +179,18 @@ public class BooksOperationServiceDoma implements BooksOperationService {
             throw new RepositoryDataNotfoundException();
         }
         return book;
+    }
+
+    private BookSalesUnitPriceHistory toSalesUnitPriceHistory(Long bookId, Integer salesUnitPrice, LocalDate effectiveFrom, LocalDate effectiveTo, LocalDateTime now) {
+        final var history = new BookSalesUnitPriceHistory();
+        history.setId(bookSalesUnitPriceHistoryCustomDao.selectNextId());
+        history.setBookId(bookId);
+        history.setSalesUnitPrice(salesUnitPrice);
+        history.setEffectiveFrom(effectiveFrom);
+        history.setEffectiveTo(effectiveTo);
+        history.setCreateAt(now);
+        history.setUpdateAt(now);
+        history.setVersion(1L);
+        return history;
     }
 }

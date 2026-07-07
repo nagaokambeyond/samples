@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.api.request.BookCreateRequest;
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
@@ -16,6 +17,8 @@ public interface BooksOperationService {
     BookResponse create(@NonNull BookCreateRequest request) ;
 
     BookResponse update(@NonNull BookUpdateRequest request);
+
+    void createSalesUnitPrice(@NonNull Long bookId, @NonNull BookSalesUnitPriceCreateRequest request);
 
     void delete(@NonNull Long id) ;
 }

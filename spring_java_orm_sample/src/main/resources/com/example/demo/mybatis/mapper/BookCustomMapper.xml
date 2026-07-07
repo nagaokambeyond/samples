@@ -11,6 +11,7 @@
     <result column="b_genre_id" jdbcType="BIGINT" property="genreId" />
     <result column="b_genre_name" jdbcType="VARCHAR" property="genreName" />
     <result column="b_isbn" jdbcType="VARCHAR" property="isbn" />
+    <result column="b_sales_unit_price" jdbcType="INTEGER" property="salesUnitPrice" />
     <result column="b_update_at" jdbcType="TIMESTAMP" property="updateAt" />
     <result column="b_version" jdbcType="BIGINT" property="version" />
     <collection property="bookStockList" ofType="com.example.demo.mybatis.entity.BookStockWithStoreName" notNullColumn="bs_id">
@@ -48,6 +49,7 @@
     b.genre_id as b_genre_id,
     b.genre_name as b_genre_name,
     b.isbn as b_isbn,
+    b.sales_unit_price as b_sales_unit_price,
     b.update_at as b_update_at,
     b.version as b_version,
     bs.id as bs_id,
@@ -70,11 +72,16 @@
         b.genre_id,
         g.genre_name,
         b.isbn,
+        h.sales_unit_price,
         b.update_at,
         b.version
       from book b
       inner join publisher p on b.publisher_id = p.id
       inner join book_genre g on b.genre_id = g.id
+      inner join book_sales_unit_price_history h
+        on h.book_id = b.id
+       and h.effective_from &lt;= current_date
+       and (h.effective_to is null or current_date &lt;= h.effective_to)
       where b.id = #{id,jdbcType=BIGINT}
     ) b
     left join book_stock bs on bs.book_stock_book_id = b.id
@@ -94,11 +101,16 @@
         b.genre_id,
         g.genre_name,
         b.isbn,
+        h.sales_unit_price,
         b.update_at,
         b.version
       from book b
       inner join publisher p on b.publisher_id = p.id
       inner join book_genre g on b.genre_id = g.id
+      inner join book_sales_unit_price_history h
+        on h.book_id = b.id
+       and h.effective_from &lt;= current_date
+       and (h.effective_to is null or current_date &lt;= h.effective_to)
       where 1 = 1
       <if test="keyword != null and keyword.trim() != ''">
         and (
@@ -123,16 +135,20 @@
 
   <select id="countByTitleOrAuthorStartingWithIgnoreCase" resultType="long">
     select count(*)
-    from book
+    from book b
+    inner join book_sales_unit_price_history h
+      on h.book_id = b.id
+     and h.effective_from &lt;= current_date
+     and (h.effective_to is null or current_date &lt;= h.effective_to)
     where 1 = 1
     <if test="keyword != null and keyword.trim() != ''">
       and (
-        lower(title) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
-        or lower(author) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
+        lower(b.title) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
+        or lower(b.author) like concat(lower(#{keyword,jdbcType=VARCHAR}), '%')
       )
     </if>
     <if test="releaseDateFrom != null and releaseDateTo != null">
-      and release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
+      and b.release_date between #{releaseDateFrom,jdbcType=DATE} and #{releaseDateTo,jdbcType=DATE}
     </if>
   </select>
 
@@ -153,6 +169,33 @@
       #{publisherId,jdbcType=BIGINT},
       #{genreId,jdbcType=BIGINT},
       #{isbn,jdbcType=VARCHAR},
+      #{createAt,jdbcType=TIMESTAMP},
+      #{updateAt,jdbcType=TIMESTAMP},
+      #{version,jdbcType=BIGINT}
+    )
+  </insert>
+
+  <select id="selectNextSalesUnitPriceHistoryId" resultType="long">
+    select coalesce(max(id), 0) + 1 from book_sales_unit_price_history
+  </select>
+
+  <insert id="insertSalesUnitPriceHistoryWithId" parameterType="com.example.demo.mybatis.generator.entity.BookSalesUnitPriceHistoryEntity">
+    insert into book_sales_unit_price_history (
+      id,
+      book_id,
+      sales_unit_price,
+      effective_from,
+      effective_to,
+      create_at,
+      update_at,
+      version
+    )
+    values (
+      #{id,jdbcType=BIGINT},
+      #{bookId,jdbcType=BIGINT},
+      #{salesUnitPrice,jdbcType=INTEGER},
+      #{effectiveFrom,jdbcType=DATE},
+      #{effectiveTo,jdbcType=DATE},
       #{createAt,jdbcType=TIMESTAMP},
       #{updateAt,jdbcType=TIMESTAMP},
       #{version,jdbcType=BIGINT}

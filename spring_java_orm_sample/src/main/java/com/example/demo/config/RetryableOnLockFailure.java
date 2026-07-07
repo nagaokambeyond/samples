@@ -17,9 +17,9 @@ import java.lang.annotation.Target;
         PessimisticLockingFailureException.class
     },
     maxRetries = 3,
-    delay = 180,
+    delay = 150,
     multiplier = 2,
-    maxDelay = 1500
+    maxDelay = 1000
 )
 public @interface RetryableOnLockFailure {
 }

@@ -38,6 +38,7 @@ erDiagram
     purchase_invoice ||--o{ purchase_invoice : "return source"
     purchase_invoice ||--o{ purchase_invoice_detail : "has"
     book ||--o{ purchase_invoice_detail : "ordered"
+    book ||--o{ book_sales_unit_price_history : "sales unit prices"
     store ||--o{ book_stock : "stocks"
     book ||--o{ book_stock : "stocked"
     store ||--o{ book_stock_movement : "stock movements"
@@ -108,6 +109,17 @@ erDiagram
         INTEGER purchase_invoice_detail_unit_price
         INTEGER purchase_invoice_detail_quantity
         BIGINT purchase_invoice_detail_amount
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book_sales_unit_price_history {
+        BIGINT id PK
+        BIGINT book_id FK
+        INTEGER sales_unit_price
+        DATE effective_from
+        DATE effective_to
         TIMESTAMP create_at
         TIMESTAMP update_at
         BIGINT version

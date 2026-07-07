@@ -23,9 +23,9 @@ class RetryableOnLockFailureTest {
         assertThat(retryable.includes())
             .containsExactly(CannotAcquireLockException.class, PessimisticLockingFailureException.class);
         assertThat(retryable.maxRetries()).isEqualTo(3);
-        assertThat(retryable.delay()).isEqualTo(180);
+        assertThat(retryable.delay()).isEqualTo(150);
         assertThat(retryable.multiplier()).isEqualTo(2);
-        assertThat(retryable.maxDelay()).isEqualTo(1500);
+        assertThat(retryable.maxDelay()).isEqualTo(1000);
     }
 
     @Test

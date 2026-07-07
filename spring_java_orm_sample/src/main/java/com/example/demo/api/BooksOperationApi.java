@@ -1,6 +1,7 @@
 package com.example.demo.api;
 
 import com.example.demo.api.request.BookCreateRequest;
+import com.example.demo.api.request.BookSalesUnitPriceCreateRequest;
 import com.example.demo.api.request.BookUpdateRequest;
 import com.example.demo.api.response.BookPageResponse;
 import com.example.demo.api.response.BookResponse;
@@ -357,6 +358,124 @@ public interface BooksOperationApi {
     })
     BookResponse updateBook(
         @RequestBody @Valid @NotNull BookUpdateRequest request
+    );
+
+    @PostMapping("/{id}/sales-unit-prices")
+    @Operation(summary = "本販売単価登録")
+    @SecurityRequirement(name = "bearerAuth")
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "リクエストエラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = {
+                    @ExampleObject(
+                        name = "invalidRequestBody",
+                        summary = "リクエストボディのバリデーションエラー",
+                        value = """
+                            {
+                              "errors": [
+                                {
+                                  "field": "salesUnitPrice",
+                                  "message": "1 以上の値にしてください"
+                                },
+                                {
+                                  "field": "effectiveFrom",
+                                  "message": "未来の日付にしてください"
+                                }
+                              ],
+                              "instance": "/api/books/1/sales-unit-prices",
+                              "status": 400,
+                              "title": "リクエストバリデーションエラー"
+                            }
+                            """
+                    ),
+                    @ExampleObject(
+                        name = "salesUnitPriceEffectiveFromUniqueConstraintViolation",
+                        summary = "同一書籍・同一有効開始日の一意制約違反",
+                        value = """
+                            {
+                              "detail": "一意制約に違反しています: book_sales_unit_price_history(book_id,effective_from=1,2026-08-01)",
+                              "instance": "/api/books/1/sales-unit-prices",
+                              "status": 400,
+                              "title": "データバリデーション"
+                            }
+                            """
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "認証エラー",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "unauthorized",
+                    summary = "認証トークンなし",
+                    value = """
+                        {
+                          "detail": "Unauthorized",
+                          "instance": "/api/books/1/sales-unit-prices",
+                          "status": 401,
+                          "title": "Unauthorized"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "データなし",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "bookNotFound",
+                    summary = "本販売単価登録対象の本が存在しない",
+                    value = """
+                        {
+                          "instance": "/api/books/999/sales-unit-prices",
+                          "status": 404,
+                          "title": "該当データなし"
+                        }
+                        """
+                )
+            )
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = "更新競合",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "updateConflict",
+                    summary = "他ユーザーによる更新競合",
+                    value = """
+                        {
+                          "detail": "他ユーザーによって更新されています",
+                          "instance": "/api/books/1/sales-unit-prices",
+                          "status": 409,
+                          "title": "更新競合"
+                        }
+                        """
+                )
+            )
+        )
+    })
+    ResponseEntity<Void> createSalesUnitPrice(
+        @Parameter(description = "本ID")
+        @PathVariable Long id,
+        @RequestBody @Valid @NotNull BookSalesUnitPriceCreateRequest request
     );
 
     @DeleteMapping("/{id}")

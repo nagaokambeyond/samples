@@ -44,6 +44,9 @@ public class BookWithPublisherName {
     @Column(name = "isbn")
     String isbn;
 
+    @Column(name = "sales_unit_price")
+    Integer salesUnitPrice;
+
     @Column(name = "update_at")
     LocalDateTime updateAt;
 

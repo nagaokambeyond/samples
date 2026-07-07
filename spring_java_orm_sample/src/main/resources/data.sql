@@ -31,6 +31,28 @@ MERGE INTO book (id, title, author, release_date, publisher_id, genre_id, isbn, 
 MERGE INTO book (id, title, author, release_date, publisher_id, genre_id, isbn, create_at, update_at, version) VALUES (20, 'はじめてのH20', 'Hanako', '2020-02-01', 2, 5, '0000000000020', '2026-01-01', '2026-01-01 23:59:59', 0);
 MERGE INTO book (id, title, author, release_date, publisher_id, genre_id, isbn, create_at, update_at, version) VALUES (21, 'はじめてのH21', 'Hanako', '2020-02-01', 2, 5, '0000000000021', '2026-01-01', '2026-01-01 23:59:59', 0);
 
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (1, 1, 1200, '2020-01-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (2, 2, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (3, 3, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (4, 4, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (5, 5, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (6, 6, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (7, 7, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (8, 8, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (9, 9, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (10, 10, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (11, 11, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (12, 12, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (13, 13, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (14, 14, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (15, 15, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (16, 16, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (17, 17, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (18, 18, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (19, 19, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (20, 20, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+MERGE INTO book_sales_unit_price_history (id, book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version) VALUES (21, 21, 1300, '2020-02-01', NULL, '2026-01-01', '2026-01-01 23:59:59', 0);
+
 MERGE INTO supplier (id, supplier_name, create_at, update_at, version) VALUES (1, 'A取次', '2026-01-01', '2026-01-01 23:59:59', 0);
 MERGE INTO supplier (id, supplier_name, create_at, update_at, version) VALUES (2, 'B取次', '2026-01-01', '2026-01-01 23:59:59', 0);
 MERGE INTO supplier (id, supplier_name, create_at, update_at, version) VALUES (3, 'C取次', '2026-01-01', '2026-01-01 23:59:59', 0);
@@ -66,6 +88,7 @@ MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_d
 ALTER TABLE publisher ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE book_genre ALTER COLUMN id RESTART WITH 7;
 ALTER TABLE book ALTER COLUMN id RESTART WITH 22;
+ALTER TABLE book_sales_unit_price_history ALTER COLUMN id RESTART WITH 22;
 ALTER TABLE supplier ALTER COLUMN id RESTART WITH 6;
 ALTER TABLE store ALTER COLUMN id RESTART WITH 6;
 ALTER TABLE book_stock ALTER COLUMN id RESTART WITH 10;
