@@ -190,13 +190,12 @@ public class BookOperationDsl {
     }
 
     public int totalElements(Condition condition) {
-        return dsl.selectCount()
+        return dsl.fetchCount(dsl.selectOne()
             .from(BOOK)
             .join(BOOK_SALES_UNIT_PRICE_HISTORY)
             .on(BOOK_SALES_UNIT_PRICE_HISTORY.BOOK_ID.eq(BOOK.ID)
                 .and(currentSalesUnitPriceCondition()))
-            .where(condition)
-            .fetchOne(0, int.class);
+            .where(condition));
     }
 
     public Long insert(@NonNull BookCreateRequest request){
