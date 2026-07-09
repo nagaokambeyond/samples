@@ -17,7 +17,7 @@ import com.example.demo.mybatis.generator.mapper.BookMapper;
 import com.example.demo.mybatis.mapper.BookCustomMapper;
 import com.example.demo.mybatis.validator.BookDataValidatorMybatis;
 import com.example.demo.service.BooksOperationService;
-import com.example.demo.service.PageCalculator;
+import com.example.demo.util.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;

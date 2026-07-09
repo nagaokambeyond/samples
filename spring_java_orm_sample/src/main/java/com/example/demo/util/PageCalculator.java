@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.util;
 
 public final class PageCalculator {
     private PageCalculator() {

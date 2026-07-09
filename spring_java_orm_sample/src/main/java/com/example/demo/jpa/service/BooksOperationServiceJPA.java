@@ -14,7 +14,7 @@ import com.example.demo.api.response.BookResponse;
 import com.example.demo.jpa.repository.BookSalesUnitPriceHistoryRepository;
 import com.example.demo.jpa.validator.BookDataValidatorJPA;
 import com.example.demo.service.BooksOperationService;
-import com.example.demo.service.PageCalculator;
+import com.example.demo.util.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;

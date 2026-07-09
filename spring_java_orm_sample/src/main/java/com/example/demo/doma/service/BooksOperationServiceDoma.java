@@ -17,7 +17,7 @@ import com.example.demo.doma.validator.BookDataValidatorDoma;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.service.BooksOperationService;
-import com.example.demo.service.PageCalculator;
+import com.example.demo.util.PageCalculator;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.seasar.doma.jdbc.OptimisticLockException;
