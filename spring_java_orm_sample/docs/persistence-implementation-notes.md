@@ -20,6 +20,7 @@
 - Service 内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに `@RetryableOnLockFailure` を付けてリトライします。
 - ページング検索の offset と totalPages は `PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
 - JPA / MyBatis / Doma / jOOQ のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
+- 各永続化方式の `BookDataValidator*` / `PurchaseDataValidator*` を変更する場合は、対応する validator テストで参照存在チェック、ISBN 一意性チェック、仕入明細 ISBN から本 ID への解決を確認してください。
 
 ## jOOQ
 
@@ -40,6 +41,7 @@
 - jOOQ の行ロック取得は `BookOperationDsl` / `PurchaseOperationDsl` で `forUpdate().noWait()` を使い、ロック失敗は `PessimisticLockingFailureException` に変換して既存の `RetryableOnLockFailure` / `GlobalExceptionHandler` に乗せます。
 - jOOQ 生成コードには `book_stock_movement` と `book_sales_unit_price_history` も含まれます。jOOQ 側では在庫増減種別を DB 上の `Integer` として扱い、保存時は `BookStockMovementType#getValue()` / `BookStockMovementSourceType#getValue()` を使います。
 - 仕入登録では `PurchaseOperationDsl.insertBookStockMovement` で `book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の履歴を登録します。
+- jOOQ 側のデータバリデーションを変更する場合は `BookDataValidatorJooqTest` / `PurchaseDataValidatorJooqTest` を確認してください。
 - jOOQ 実装は `jooq` profile で有効になります。既定の永続化方式を変更する場合は、`application.yaml` の `spring.profiles.default`、各実装の `@Profile`、Doma の `@Primary` を合わせて確認してください。
 
 ## Doma
@@ -65,6 +67,7 @@
 - Doma CodeGen の対象テーブルは `build.gradle` の `generatedTablePattern` 経由で管理しています。テーブル追加・削除時は MyBatis / jOOQ と合わせて更新してください。
 - Doma CodeGen の型解決は `src/main/resources/codegen/entityPropertyClassNames.properties` も参照します。`PurchaseInvoiceType`、`BookStockMovementType`、`BookStockMovementSourceType` などのドメイン型を追加・変更する場合はこのファイルも確認してください。
 - Doma 仕入登録では `BookStockMovementDao` で `book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の履歴を登録します。
+- Doma 側の仕入データバリデーションを変更する場合は `PurchaseDataValidatorDomaTest` を確認してください。
 - Doma 側の更新・削除では、Doma の楽観ロック例外を `ObjectOptimisticLockingFailureException` に変換する既存方針を維持してください。
 
 ## MyBatis
@@ -89,6 +92,7 @@
 - `application.yaml` の `mybatis.mapper-locations` は、MyBatis の XML 読み込みに必要です。不用意に変更しないでください。
 - MyBatis TypeHandler は `src/main/resources/mybatis-config.xml` に登録します。`PurchaseInvoiceTypeHandler`、`BookStockMovementTypeHandler`、`BookStockMovementSourceTypeHandler` を変更する場合は `generatorConfig.xml` の `columnOverride` と合わせて確認してください。
 - MyBatis 仕入登録では `BookStockMovementMapper` で `book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の履歴を登録します。
+- MyBatis 側のデータバリデーションを変更する場合は `BookDataValidatorMybatisTest` / `PurchaseDataValidatorMybatisTest` を確認してください。
 
 ## JPA
 
@@ -108,6 +112,7 @@
 - JPA 側の仕入登録では `BookStockRepository.findByStoreIdAndBookIdWithWriteLock` による在庫行ロックを維持してください。
 - JPA 側の `publisherId` / `genreId` 参照存在チェックは `PublisherRepository` / `BookGenreRepository` を使う `BookDataValidatorJPA` に集約してください。
 - JPA 側の ISBN 一意性チェックと仕入明細 ISBN 参照チェックは `BookRepository.findByIsbn` を使います。
+- JPA 側のデータバリデーションを変更する場合は `BookDataValidatorJPATest` / `PurchaseDataValidatorJPATest` を確認してください。
 - `PurchaseInvoiceType` は `PurchaseInvoiceTypeConverter` で DB の整数値に変換します。値を変更する場合は DB の CHECK 制約と MyBatis / Doma / jOOQ 側の変換設定も確認してください。
 - `BookStockMovementType` / `BookStockMovementSourceType` は JPA の各 converter で DB の整数値に変換します。値を変更する場合は DB の CHECK 制約と MyBatis / Doma / jOOQ 側の変換設定も確認してください。
 
@@ -170,6 +175,7 @@
 - `generator-schema.sql` は MyBatis Generator、Doma CodeGen、jOOQ CodeGen で使われます。片方だけを想定した変更にしないでください。
 - `release_date` は検索条件と DTO に関係します。変更時は API バリデーションと4つの Service 実装を確認してください。
 - `isbn` は `book` の一意制約、`@Isbn`、request / response DTO、仕入明細の本参照、各 `BookDataValidator*` / `PurchaseDataValidator*` に関係します。変更時は4つの Service 実装と `GlobalExceptionHandler` の `UniqueConstraintValidationException` も確認してください。
+- 永続化方式ごとのデータバリデーションを変更する場合は、JPA の `BookDataValidatorJPATest` / `PurchaseDataValidatorJPATest`、MyBatis の `BookDataValidatorMybatisTest` / `PurchaseDataValidatorMybatisTest`、Doma の `PurchaseDataValidatorDomaTest`、jOOQ の `BookDataValidatorJooqTest` / `PurchaseDataValidatorJooqTest` を確認してください。
 - `publisher_id` は `publisher`、`genre_id` は `book_genre` への外部キーです。変更時は初期データ、生成 Mapper/DAO、外部キー参照チェックを確認してください。
 - `publisher_name` / `genre_name` はレスポンス表示項目です。変更時は projection / 表示向け Entity / row / SQL / query / `BookOperationConverter*` を確認してください。
 - `salesUnitPrice` は `BookResponse` のレスポンス表示項目で、`book_sales_unit_price_history` の現在有効な履歴から取得します。変更時は request / response DTO、JPA projection、MyBatis / Doma の `BookWithPublisherName`、jOOQ `BookWithStockRow`、取得・検索 SQL / query、検索 count、`BookOperationConverter*` を確認してください。

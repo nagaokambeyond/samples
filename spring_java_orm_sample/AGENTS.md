@@ -88,6 +88,10 @@ Gradle Wrapper を使用してください。
 - `src/main/resources/data.sql`: 起動時の初期データ
 - `src/main/resources/generator-schema.sql`: MyBatis Generator / Doma CodeGen / jOOQ CodeGen 用スキーマ
 - `src/test/java/com/example/demo`: アプリケーション、API、永続化実装、例外ハンドリングのテスト
+- `src/test/java/com/example/demo/jpa/validator`: JPA データバリデーションのテスト
+- `src/test/java/com/example/demo/mybatis/validator`: MyBatis データバリデーションのテスト
+- `src/test/java/com/example/demo/doma/validator`: Doma データバリデーションのテスト
+- `src/test/java/com/example/demo/jooq/validator`: jOOQ データバリデーションのテスト
 
 ## 重要な設計方針
 
@@ -146,6 +150,8 @@ Gradle Wrapper を使用してください。
 実装・修正タスクは、エラーが出ているテストを解消し、必要なテストが成功したことを確認してから完了としてください。`./gradlew test` が `UP-TO-DATE` で実テストを再実行しない場合は、必要に応じて `./gradlew test --rerun-tasks` を実行し、実際にテストが成功することを確認してください。
 
 テストが失敗している状態、または実行できていない状態では実装完了として扱わず、失敗内容・未実行理由・残っている対応をユーザーへ明示してください。
+
+永続化方式ごとの参照存在チェックや ISBN 一意性チェックを変更した場合は、`BookDataValidatorJPATest`、`BookDataValidatorMybatisTest`、`BookDataValidatorJooqTest` と、`PurchaseDataValidatorJPATest`、`PurchaseDataValidatorMybatisTest`、`PurchaseDataValidatorDomaTest`、`PurchaseDataValidatorJooqTest` を確認してください。
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認してください。
 

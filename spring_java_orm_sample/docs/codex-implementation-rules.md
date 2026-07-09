@@ -78,6 +78,8 @@
 - 本の登録時は、登録した `book.id` と `BookCreateRequest.salesUnitPrice`、`BookCreateRequest.releaseDate` を使って販売単価の初期履歴を作成する。販売単価履歴の ID 採番や前後履歴更新は各永続化方式の既存方針に合わせる。
 - 販売単価履歴を更新する Service メソッドでは対象の本をロックし、`@RetryableOnLockFailure` と `@Transactional` の既存方針を維持する。
 - 仕入登録時の `supplierId`、`receivingStoreId`、明細 ISBN の参照存在チェックは各永続化方式の `PurchaseDataValidator*` に集約する。
+- `BookDataValidator*` を変更する場合は、出版社・ジャンルの参照存在チェック、未使用 ISBN の許可、同一 book の ISBN 維持、他 book の ISBN 利用時の一意制約違反をテストする。
+- `PurchaseDataValidator*` を変更する場合は、仕入先・受入店舗・明細 ISBN の参照存在チェックと、ISBN から解決した本 ID map を返すことをテストする。
 - 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock`、jOOQ は `PurchaseOperationDsl` の `forUpdate().noWait()` で在庫行をロックしてから新規作成または数量加算する。
 - 仕入登録では在庫更新後に `book_stock_movement` へ在庫増減履歴を登録する。種別は仕入登録では `BookStockMovementType.PURCHASE`、発生元種別は `BookStockMovementSourceType.PURCHASE_INVOICE` を使い、伝票 ID / 明細 ID / ISBN から解決した本 ID / 受入店舗 ID / 数量を揃える。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しない。
@@ -107,14 +109,20 @@
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
 - ページ計算: `PageCalculatorTest`
 - JPA 実装 / 販売単価履歴: `BooksOperationServiceJPATest`
+- JPA 本データバリデーション: `BookDataValidatorJPATest`
+- JPA 仕入データバリデーション: `PurchaseDataValidatorJPATest`
 - JPA 仕入実装: `PurchaseOperationServiceJPATest`
 - MyBatis 実装 / 販売単価履歴: `BooksOperationServiceMybatisTest`
+- MyBatis 本データバリデーション: `BookDataValidatorMybatisTest`
+- MyBatis 仕入データバリデーション: `PurchaseDataValidatorMybatisTest`
 - MyBatis 仕入実装: `PurchaseOperationServiceMybatisTest`
 - Doma 実装 / 販売単価履歴: `BooksOperationServiceDomaTest`
 - Doma 仕入実装: `PurchaseOperationServiceDomaTest`
 - Doma 仕入データバリデーション: `PurchaseDataValidatorDomaTest`
 - 仕入 API Controller: `PurchaseOperationApiControllerTest`
 - jOOQ 実装 / 販売単価履歴: `BooksOperationServiceJooqTest`
+- jOOQ 本データバリデーション: `BookDataValidatorJooqTest`
+- jOOQ 仕入データバリデーション: `PurchaseDataValidatorJooqTest`
 - jOOQ 仕入実装: `PurchaseOperationServiceJooqTest`
 - ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
 - 行ロック関連: `BookRowLock`
