@@ -1,7 +1,16 @@
-# spec
-http://localhost:8080/swagger-ui/index.html#/
+# 概要→詳細は[AGENTS.md](https://github.com/nagaokambeyond/samples/blob/main/spring_java_orm_sample/AGENTS.md)で
 
-http://localhost:8080/scalar
+- framework→spring boot 4
+- database→H2
+- ORM
+  - JPA
+  - MyBatis
+  - Doma3
+  - jOOQ
+- entityの自動生成あり
+- api仕様
+  - swagger-ui→http://localhost:8080/swagger-ui/index.html#/
+  - scalar→http://localhost:8080/scalar
 
 # gradleのタスク
 
