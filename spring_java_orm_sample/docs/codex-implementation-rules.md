@@ -16,7 +16,9 @@
 - JPA / MyBatis / Doma / jOOQ で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
 - 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の値変換の対応を揃える。
 - API 関連のクラスは `api`、`api/annotation`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
+- OpenBD API クライアント関連の手書き設定は `openbd/config` に置き、OpenAPI Generator 生成コードは `openbd/generated` に置く。
 - 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
+- ページ計算などの共通ユーティリティは `util` package に置く。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
 ## API 実装
@@ -40,7 +42,7 @@
 - `page` は 0 始まりとする。ページサイズはリクエストパラメータではなく、`application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込む。
 - Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の役割を確認する。現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma`、JPA repository の有効化は `application-jpa.yaml` で扱う。
 - 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を4つの Service 実装で揃える。
-- ページ数と offset の計算は `PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
+- ページ数と offset の計算は `com.example.demo.util.PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
 - 販売単価履歴追加 API は `/api/books/{id}/sales-unit-prices` とし、`BookSalesUnitPriceCreateRequest` で `salesUnitPrice` と未来日の `effectiveFrom` を受け取り、成功時は空 body の 200 を返す。
 - 販売単価履歴追加では、同一 `book_id,effective_from` を `UniqueConstraintValidationException` として扱う。前履歴の `effective_to` を新履歴の前日に更新し、後続履歴がある場合は新履歴の `effective_to` を後続履歴の前日にする。
 - 仕入登録 API は `/api/purchases/create` とし、`PurchaseInvoiceCreateRequest` で `purchaseInvoiceDate`、`supplierId`、`receivingStoreId`、明細リストを受け取る。
@@ -57,6 +59,15 @@
 - MyBatis TypeHandler を追加・変更する場合は、`src/main/resources/mybatis-config.xml` に登録する。
 - Doma CodeGen の型解決を変更する場合は、`src/main/resources/codegen/entityPropertyClassNames.properties` と `build.gradle` の `domaCodeGen` 設定を確認する。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
+- `src/main/java/com/example/demo/openbd/generated` 配下は OpenAPI Generator 生成コードなので直接編集しない。OpenBD API 仕様や生成設定を変更する場合は `src/main/resources/openapi/openbd_api_spec.yaml`、`build.gradle` の `openApiGenerate` / `syncOpenBdGeneratedSources`、`OpenBdClientConfig`、`OpenBdProperties`、`OpenBdClientConfigTest` を確認する。
+- `compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存する。通常のビルドでも jOOQ 生成コードと OpenBD 生成コードが更新される可能性があるため、生成差分を確認する。
+
+## OpenBD 連携
+
+- OpenBD API の接続先は `application.yaml` の `openbd.base-url` と `OpenBdProperties` で管理する。
+- `OpenBdClientConfig` は OpenAPI Generator 生成の `ApiClient`、`BooksApi`、`MetadataApi` を Bean として公開する。
+- OpenBD API クライアント設定を変更する場合は `OpenBdClientConfigTest` で、生成 API Bean と `ApiClient` の base URI が意図どおりになることを確認する。
+- OpenBD 生成コードを更新する場合は `./gradlew syncOpenBdGeneratedSources` を使い、`src/main/java/com/example/demo/openbd/generated` の差分を確認する。
 
 ## Service と例外
 
@@ -108,6 +119,7 @@
 - ログイン回数制限: `LoginRateLimitServiceTest`
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
 - ページ計算: `PageCalculatorTest`
+- OpenBD API クライアント設定: `OpenBdClientConfigTest`
 - JPA 実装 / 販売単価履歴: `BooksOperationServiceJPATest`
 - JPA 本データバリデーション: `BookDataValidatorJPATest`
 - JPA 仕入データバリデーション: `PurchaseDataValidatorJPATest`

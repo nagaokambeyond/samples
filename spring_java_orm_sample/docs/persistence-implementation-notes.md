@@ -18,7 +18,7 @@
 - `book_stock_movement.movement_type` は `BookStockMovementType`、`book_stock_movement.source_type` は `BookStockMovementSourceType` で扱います。JPA / MyBatis / Doma / jOOQ の型変換または値変換の設定を揃えてください。
 - profile や Spring Data JPA repository の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の両方を確認してください。
 - Service 内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに `@RetryableOnLockFailure` を付けてリトライします。
-- ページング検索の offset と totalPages は `PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
+- ページング検索の offset と totalPages は `com.example.demo.util.PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
 - JPA / MyBatis / Doma / jOOQ のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
 - 各永続化方式の `BookDataValidator*` / `PurchaseDataValidator*` を変更する場合は、対応する validator テストで参照存在チェック、ISBN 一意性チェック、仕入明細 ISBN から本 ID への解決を確認してください。
 
@@ -28,7 +28,7 @@
 - jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に生成します。
 - 生成元スキーマは MyBatis Generator / Doma CodeGen と同じ `src/main/resources/generator-schema.sql` です。
 - jOOQ CodeGen のテンプレートは `src/main/resources/codegen/jooq-codegen-config.xml` です。`build.gradle` の `generateJooq` タスクでテンプレート変数を置換して生成します。
-- `compileJava` は `generateJooq` に依存しています。通常のビルドでも jOOQ 生成コードが更新される可能性があるため、生成差分を確認してください。
+- `compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存しています。通常のビルドでも jOOQ 生成コードや OpenBD 生成コードが更新される可能性があるため、生成差分を確認してください。
 - jOOQ の生成対象テーブルは `build.gradle` の `generatedTablePattern` で管理しています。テーブル追加・削除時は MyBatis / Doma と合わせて更新してください。
 - jOOQ の手書き SQL / DSL 組み立ては `BookOperationDsl` / `PurchaseOperationDsl` に集約します。Service 実装は DSL component、validator、converter を組み合わせ、API には既存の request / response DTO を返します。
 - jOOQ の DSL component は `DSLContext` と `com.example.demo.jooq.generated.Tables` を使います。Service に新しい jOOQ クエリを直接増やす前に、既存 DSL component の責務として追加できるか確認してください。
@@ -195,7 +195,8 @@
 ./gradlew runMyBatisGenerator
 ./gradlew domaCodeGenLocalAll
 ./gradlew generateJooq
+./gradlew syncOpenBdGeneratedSources
 ```
 
 MyBatis Generator と Doma CodeGen はファイルを上書きする可能性があります。実行前後で差分を確認してください。
-jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力されます。`compileJava` は `generateJooq` に依存しているため、通常のビルド後にも差分を確認してください。
+jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力されます。OpenBD API クライアント生成コードは `src/main/java/com/example/demo/openbd/generated` 配下に同期されます。`compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存しているため、通常のビルド後にも差分を確認してください。

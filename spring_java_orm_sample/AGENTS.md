@@ -18,6 +18,7 @@
 - Spring Security
 - springdoc-openapi
 - ModelMapper
+- OpenAPI Generator
 
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。初期データは `src/main/resources/data.sql` で投入されます。
 
@@ -54,9 +55,10 @@ Gradle Wrapper を使用してください。
 ./gradlew runMyBatisGenerator
 ./gradlew domaCodeGenLocalAll
 ./gradlew generateJooq
+./gradlew syncOpenBdGeneratedSources
 ```
 
-`compileJava` は `generateJooq` に依存しているため、通常のビルド時にも jOOQ 生成コードが更新される可能性があります。
+`compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存しているため、通常のビルド時にも jOOQ 生成コードや OpenBD 生成コードが更新される可能性があります。
 
 ## ディレクトリ構成
 
@@ -68,9 +70,13 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/api/response`: response DTO
 - `src/main/java/com/example/demo/api/validator`: API 入力の相関バリデーション
 - `src/main/java/com/example/demo/data/domain`: JPA / MyBatis / Doma / jOOQ で共有するドメイン型
-- `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース、ページ計算
+- `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース
+- `src/main/java/com/example/demo/util`: 共通ユーティリティ。ページ計算を含みます。
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
 - `src/main/java/com/example/demo/config`: Spring 設定、Security / JWT、ログイン回数制限、例外ハンドリング、検索設定、ロック失敗リトライ設定
+- `src/main/java/com/example/demo/openbd`: OpenBD API クライアント設定と OpenAPI Generator 生成コード
+- `src/main/java/com/example/demo/openbd/config`: OpenBD API クライアントの Spring 設定、接続先設定
+- `src/main/java/com/example/demo/openbd/generated`: OpenAPI Generator で生成した OpenBD API クライアントコード
 - `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / converter / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
 - `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / converter / データバリデーションと、CodeGen 生成コードを含みます。
@@ -81,6 +87,7 @@ Gradle Wrapper を使用してください。
 - `src/main/resources/application-jpa.yaml`: JPA profile 用の Spring Data JPA Repository 有効化設定
 - `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
 - `src/main/resources/codegen`: Doma CodeGen / jOOQ CodeGen 補助設定
+- `src/main/resources/openapi/openbd_api_spec.yaml`: OpenBD API クライアント生成用 OpenAPI 仕様
 - `src/main/resources/com/example/demo/mybatis/mapper`: 手書き MyBatis SQL
 - `src/main/resources/com/example/demo/mybatis/generator/mapper`: MyBatis Generator 生成 SQL
 - `src/main/resources/META-INF/com/example/demo/doma/dao`: 手書き Doma SQL
@@ -92,6 +99,8 @@ Gradle Wrapper を使用してください。
 - `src/test/java/com/example/demo/mybatis/validator`: MyBatis データバリデーションのテスト
 - `src/test/java/com/example/demo/doma/validator`: Doma データバリデーションのテスト
 - `src/test/java/com/example/demo/jooq/validator`: jOOQ データバリデーションのテスト
+- `src/test/java/com/example/demo/openbd/config`: OpenBD API クライアント設定のテスト
+- `src/test/java/com/example/demo/util`: 共通ユーティリティのテスト
 
 ## 重要な設計方針
 
@@ -104,8 +113,9 @@ Gradle Wrapper を使用してください。
 - `BooksOperationApiControllerValidator` は API 入力の相関バリデーションを扱います。
 - `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースです。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースです。
-- `PageCalculator` はページ数と offset の計算を扱います。
+- `PageCalculator` は `src/main/java/com/example/demo/util` 配下でページ数と offset の計算を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
+- `OpenBdClientConfig` は OpenAPI Generator 生成の `ApiClient`、`BooksApi`、`MetadataApi` Bean を構成します。接続先は `OpenBdProperties` と `application.yaml` の `openbd.base-url` で管理します。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は本情報、`book_sales_unit_price_history` 由来の現在販売単価、`book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookOperationConverterJPA` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
@@ -123,7 +133,7 @@ Gradle Wrapper を使用してください。
 - `BookCreateRequest` / `BookUpdateRequest` / `BookResponse` には `isbn` が含まれます。ISBN は `@Isbn` で 13 桁数字として検証し、登録・更新時は各永続化方式の `BookDataValidator*` で一意性を確認します。
 - `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれます。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しません。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しないでください。
-- 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象です。
+- 生成コードは直接編集せず、必要な場合だけ MyBatis Generator / Doma CodeGen / jOOQ CodeGen / OpenAPI Generator を実行してください。特に `src/main/java/com/example/demo/jooq/generated` は jOOQ 生成対象、`src/main/java/com/example/demo/openbd/generated` は OpenBD API クライアント生成対象です。
 
 ## 現在の API 仕様メモ
 
@@ -152,6 +162,8 @@ Gradle Wrapper を使用してください。
 テストが失敗している状態、または実行できていない状態では実装完了として扱わず、失敗内容・未実行理由・残っている対応をユーザーへ明示してください。
 
 永続化方式ごとの参照存在チェックや ISBN 一意性チェックを変更した場合は、`BookDataValidatorJPATest`、`BookDataValidatorMybatisTest`、`BookDataValidatorJooqTest` と、`PurchaseDataValidatorJPATest`、`PurchaseDataValidatorMybatisTest`、`PurchaseDataValidatorDomaTest`、`PurchaseDataValidatorJooqTest` を確認してください。
+
+OpenBD API クライアント設定を変更した場合は `OpenBdClientConfigTest` を確認してください。ページ計算を変更した場合は `PageCalculatorTest` を確認してください。
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認してください。
 
