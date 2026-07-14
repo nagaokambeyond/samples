@@ -16,6 +16,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.domaframework.doma.codegen' version '3.2.2'
     id 'org.domaframework.doma.compile' version '4.0.3'
+    id 'org.openapi.generator' version '7.23.0'
 }
 
 group = 'com.example'
@@ -28,10 +29,11 @@ ext {
     myBatisGeneratorVersion = '2.0.0'
     myBatisSpringBootVersion = '4.0.1'
     springDocVersion = '3.0.3'
+    jacksonDatabindNullableVersion = '0.2.6'
 
     // Code generation
     codeGenSchema = 'src/main/resources/generator-schema.sql'
-    codeGenJdbcUrl = "jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM '${codeGenSchema}'"
+    codeGenJdbcUrl = 'jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM \'' + codeGenSchema + '\''
     generatedTablePattern = 'book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock|book_stock_movement|book_sales_unit_price_history'
 
     // Generated packages and directories
@@ -39,7 +41,13 @@ ext {
     domaEntityPackage = 'com.example.demo.doma.generator.entity'
     jooqGeneratedPackage = 'com.example.demo.jooq.generated'
     jooqGeneratedDirectory = 'src/main/java'
-    jooqGeneratedOutputDirectory = "${jooqGeneratedDirectory}/com/example/demo/jooq/generated"
+    jooqGeneratedOutputDirectory = jooqGeneratedDirectory + '/com/example/demo/jooq/generated'
+    openBdOpenApiSpec = 'src/main/resources/openapi/openbd_api_spec.yaml'
+    openBdGeneratorSpec = layout.buildDirectory.get().asFile.toString() + '/tmp/openapi/openbd_api_spec_generator.yaml'
+    openBdGeneratedDirectory = layout.buildDirectory.get().asFile.toString() + '/generated/openapi/openbd'
+    openBdGeneratedSourceDirectory = openBdGeneratedDirectory + '/src/main/java'
+    openBdGeneratedPackageSourceDirectory = openBdGeneratedSourceDirectory + '/com/example/demo/openbd/generated'
+    openBdCommittedGeneratedSourceDirectory = projectDir.toString() + '/src/main/java/com/example/demo/openbd/generated'
 }
 
 java {
@@ -91,6 +99,7 @@ dependencies {
     runtimeOnly "com.h2database:h2:${h2Version}"
 
     implementation 'org.modelmapper:modelmapper:3.2.6'
+    implementation "org.openapitools:jackson-databind-nullable:${jacksonDatabindNullableVersion}"
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
@@ -141,7 +150,64 @@ tasks.register('generateJooq', JavaExec) {
 }
 
 tasks.named('compileJava') {
-    dependsOn tasks.named('generateJooq')
+    dependsOn tasks.named('generateJooq'), tasks.named('syncOpenBdGeneratedSources')
+}
+
+tasks.register('prepareOpenBdOpenApiSpec') {
+    group = 'openapi tools'
+    description = 'Prepares openBD OpenAPI spec for OpenAPI Generator.'
+
+    inputs.file(openBdOpenApiSpec)
+    outputs.file(openBdGeneratorSpec)
+
+    doLast {
+        final var source = file(openBdOpenApiSpec)
+        final var target = file(openBdGeneratorSpec)
+        target.parentFile.mkdirs()
+        target.text = source.text.replaceFirst('openapi: 3\\.2\\.0', 'openapi: 3.1.0')
+    }
+}
+
+openApiGenerate {
+    generatorName = 'java'
+    library = 'native'
+    inputSpec = openBdGeneratorSpec
+    outputDir = openBdGeneratedDirectory
+    apiPackage = 'com.example.demo.openbd.generated.api'
+    modelPackage = 'com.example.demo.openbd.generated.model'
+    invokerPackage = 'com.example.demo.openbd.generated.invoker'
+    modelNameSuffix = 'Dto'
+    validateSpec = false
+    cleanupOutput = true
+    nameMappings = [
+            additionalProperties: 'additionalPropertiesSchema'
+    ]
+    globalProperties = [
+            apiTests: 'false',
+            modelTests: 'false',
+            apiDocs: 'false',
+            modelDocs: 'false'
+    ]
+    configOptions = [
+            dateLibrary: 'java8',
+            documentationProvider: 'none',
+            hideGenerationTimestamp: 'true',
+            openApiNullable: 'false',
+            useJakartaEe: 'true'
+    ]
+}
+
+tasks.named('openApiGenerate') {
+    dependsOn tasks.named('prepareOpenBdOpenApiSpec')
+}
+
+tasks.register('syncOpenBdGeneratedSources', Sync) {
+    group = 'openapi tools'
+    description = 'Copies generated openBD Java sources into a git-managed source directory.'
+
+    dependsOn tasks.named('openApiGenerate')
+    from openBdGeneratedPackageSourceDirectory
+    into openBdCommittedGeneratedSourceDirectory
 }
 
 def domaCodeGenJdbcUrl = codeGenJdbcUrl as String

@@ -31,6 +31,8 @@ mybatis:
   mapper-locations: classpath*:com/example/demo/mybatis/**/*.xml
 search:
   page-size: 10
+openbd:
+  base-url: https://api.openbd.jp
 app:
   auth:
     username: admin
