@@ -22,8 +22,11 @@ plugins {
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
+def buildDirectoryPath = layout.buildDirectory.get().asFile.toString()
+def projectDirectoryPath = projectDir.toString()
+
 ext {
-    // Versions
+    // Dependency versions
     domaVersion = '3.14.0'
     domaSpringBootVersion = '3.0.0'
     myBatisGeneratorVersion = '2.0.0'
@@ -31,23 +34,27 @@ ext {
     springDocVersion = '3.0.3'
     jacksonDatabindNullableVersion = '0.2.6'
 
-    // Code generation
+    // Shared code generation
     codeGenSchema = 'src/main/resources/generator-schema.sql'
     codeGenJdbcUrl = 'jdbc:h2:mem:doma_codegen;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM \'' + codeGenSchema + '\''
     generatedTablePattern = 'book|publisher|book_genre|supplier|store|purchase_invoice|purchase_invoice_detail|book_stock|book_stock_movement|book_sales_unit_price_history'
 
-    // Generated packages and directories
+    // Doma code generation
     domaDaoPackage = 'com.example.demo.doma.generator.dao'
     domaEntityPackage = 'com.example.demo.doma.generator.entity'
+
+    // jOOQ code generation
     jooqGeneratedPackage = 'com.example.demo.jooq.generated'
     jooqGeneratedDirectory = 'src/main/java'
     jooqGeneratedOutputDirectory = jooqGeneratedDirectory + '/com/example/demo/jooq/generated'
+
+    // openBD OpenAPI generation
     openBdOpenApiSpec = 'src/main/resources/openapi/openbd_api_spec.yaml'
-    openBdGeneratorSpec = layout.buildDirectory.get().asFile.toString() + '/tmp/openapi/openbd_api_spec_generator.yaml'
-    openBdGeneratedDirectory = layout.buildDirectory.get().asFile.toString() + '/generated/openapi/openbd'
+    openBdGeneratorSpec = buildDirectoryPath + '/tmp/openapi/openbd_api_spec_generator.yaml'
+    openBdGeneratedDirectory = buildDirectoryPath + '/generated/openapi/openbd'
     openBdGeneratedSourceDirectory = openBdGeneratedDirectory + '/src/main/java'
     openBdGeneratedPackageSourceDirectory = openBdGeneratedSourceDirectory + '/com/example/demo/openbd/generated'
-    openBdCommittedGeneratedSourceDirectory = projectDir.toString() + '/src/main/java/com/example/demo/openbd/generated'
+    openBdCommittedGeneratedSourceDirectory = projectDirectoryPath + '/src/main/java/com/example/demo/openbd/generated'
 }
 
 java {
@@ -112,37 +119,33 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-def jooqCodeGenJdbcUrl = codeGenJdbcUrl as String
-def jooqGeneratedTablePattern = generatedTablePattern as String
-def jooqCodeGenPackage = jooqGeneratedPackage as String
-def jooqCodeGenDirectory = jooqGeneratedDirectory as String
-
 tasks.register('generateJooq', JavaExec) {
     group = 'jooq'
     description = 'Generates jOOQ classes from the local H2 generator schema.'
 
     def configFile = layout.buildDirectory.file("tmp/jooq-codegen-config.xml")
     def configTemplateFile = file("src/main/resources/codegen/jooq-codegen-config.xml")
+    def jooqCodeGenProperties = [
+            codeGenJdbcUrl       : codeGenJdbcUrl as String,
+            generatedTablePattern: generatedTablePattern as String,
+            jooqGeneratedPackage : jooqGeneratedPackage as String,
+            jooqGeneratedDirectory: jooqGeneratedDirectory as String
+    ]
 
     classpath = configurations.jooqCodegen
     mainClass = 'org.jooq.codegen.GenerationTool'
     inputs.files(codeGenSchema, configTemplateFile)
-    inputs.properties(
-            codeGenJdbcUrl: jooqCodeGenJdbcUrl,
-            generatedTablePattern: jooqGeneratedTablePattern,
-            jooqGeneratedPackage: jooqCodeGenPackage,
-            jooqGeneratedDirectory: jooqCodeGenDirectory
-    )
+    inputs.properties(jooqCodeGenProperties)
     outputs.dir(jooqGeneratedOutputDirectory)
     args = [configFile.get().asFile.absolutePath]
 
     doFirst {
         final var jooqConfigFile = configFile.get().asFile
         final var jooqConfigText = configTemplateFile.text
-                .replace('${codeGenJdbcUrl}', jooqCodeGenJdbcUrl)
-                .replace('${generatedTablePattern}', jooqGeneratedTablePattern)
-                .replace('${jooqGeneratedPackage}', jooqCodeGenPackage)
-                .replace('${jooqGeneratedDirectory}', jooqCodeGenDirectory)
+                .replace('${codeGenJdbcUrl}', jooqCodeGenProperties.codeGenJdbcUrl)
+                .replace('${generatedTablePattern}', jooqCodeGenProperties.generatedTablePattern)
+                .replace('${jooqGeneratedPackage}', jooqCodeGenProperties.jooqGeneratedPackage)
+                .replace('${jooqGeneratedDirectory}', jooqCodeGenProperties.jooqGeneratedDirectory)
 
         jooqConfigFile.parentFile.mkdirs()
         jooqConfigFile.text = jooqConfigText
@@ -210,26 +213,21 @@ tasks.register('syncOpenBdGeneratedSources', Sync) {
     into openBdCommittedGeneratedSourceDirectory
 }
 
-def domaCodeGenJdbcUrl = codeGenJdbcUrl as String
-def domaGeneratedTablePattern = generatedTablePattern as String
-def domaGeneratedEntityPackage = domaEntityPackage as String
-def domaGeneratedDaoPackage = domaDaoPackage as String
-
 domaCodeGen {
     register('local') {
-        url.set(domaCodeGenJdbcUrl)
+        url.set(codeGenJdbcUrl as String)
         user.set('sa')
         password.set('')
-        tableNamePattern.set(domaGeneratedTablePattern)
+        tableNamePattern.set(generatedTablePattern as String)
 
         entity {
-            packageName.set(domaGeneratedEntityPackage)
+            packageName.set(domaEntityPackage as String)
             entityPropertyClassNamesFile.set(
                 file("src/main/resources/codegen/entityPropertyClassNames.properties")
             )
         }
         dao {
-            packageName.set(domaGeneratedDaoPackage)
+            packageName.set(domaDaoPackage as String)
         }
     }
 }
