@@ -5,6 +5,7 @@ import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.LoginRateLimitExceededException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.exception.UniqueConstraintValidationException;
+import com.example.demo.openbd.generated.invoker.ApiException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
 import org.jspecify.annotations.NullMarked;
@@ -106,6 +107,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
         problem.setTitle("リクエスト回数制限");
         problem.setDetail("ログインリクエスト回数が日次上限を超えました");
+
+        return problem;
+    }
+
+    @ExceptionHandler(ApiException.class)
+    public ProblemDetail handleApiException(ApiException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.BAD_GATEWAY);
+
+        problem.setTitle("外部API呼び出しエラー");
+        problem.setDetail("OpenBD APIの呼び出しに失敗しました");
 
         return problem;
     }

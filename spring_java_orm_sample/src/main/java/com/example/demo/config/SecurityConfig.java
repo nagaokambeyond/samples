@@ -59,7 +59,7 @@ public class SecurityConfig {
             // 認可設定
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/books/{id}", "/api/books/search").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/books/{id}", "/api/books/search", "/api/books/openbd").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .anyRequest().authenticated()
             )
@@ -89,8 +89,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-        throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
