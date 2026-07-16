@@ -1,6 +1,6 @@
 package com.example.demo.api;
 
-import com.example.demo.openbd.generated.model.BookDto;
+import com.example.demo.api.response.OpenBdBookResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -60,7 +60,7 @@ public interface OpenBdBooksApi {
             )
         )
     })
-    List<BookDto> getBooksByIsbn(
+    List<OpenBdBookResponse> getBooksByIsbn(
         @Parameter(description = "取得対象のISBN。複数指定する場合はカンマ区切り")
         @RequestParam
         @NotBlank
