@@ -24,7 +24,14 @@ public interface PurchaseOperationApi {
     @Operation(summary = "仕入伝票登録")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = PurchaseInvoiceResponse.class)
+            )
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",

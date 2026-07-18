@@ -3,6 +3,7 @@ package com.example.demo.api;
 import com.example.demo.api.response.OpenBdBookResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -24,7 +25,14 @@ public interface OpenBdBooksApi {
     @GetMapping
     @Operation(summary = "OpenBD ISBN書誌取得")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                array = @ArraySchema(schema = @Schema(implementation = OpenBdBookResponse.class))
+            )
+        ),
         @ApiResponse(
             responseCode = "404",
             description = "OpenBD書誌なし",

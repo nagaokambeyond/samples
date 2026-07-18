@@ -25,7 +25,14 @@ public interface AuthOperationApi {
     @PostMapping("/login")
     @Operation(summary = "ログイン")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = LoginResponse.class)
+            )
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",

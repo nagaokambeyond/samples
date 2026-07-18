@@ -29,7 +29,14 @@ public interface BooksOperationApi {
     @GetMapping("/{id}")
     @Operation(summary = "本取得")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BookResponse.class)
+            )
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",
@@ -78,7 +85,14 @@ public interface BooksOperationApi {
     @GetMapping("/search")
     @Operation(summary = "本検索")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BookPageResponse.class)
+            )
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",
@@ -147,7 +161,14 @@ public interface BooksOperationApi {
     @Operation(summary = "本登録")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BookResponse.class)
+            )
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",
@@ -236,7 +257,14 @@ public interface BooksOperationApi {
     @Operation(summary = "本更新")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BookResponse.class)
+            )
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",
@@ -482,7 +510,11 @@ public interface BooksOperationApi {
     @Operation(summary = "本削除")
     @SecurityRequirement(name = "bearerAuth")
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "成功"),
+        @ApiResponse(
+            responseCode = "200",
+            description = "成功",
+            content = @Content
+        ),
         @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",
