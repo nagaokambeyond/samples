@@ -26,6 +26,14 @@ public interface OpenBdBooksApi {
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "成功"),
         @ApiResponse(
+            responseCode = "404",
+            description = "OpenBD書誌なし",
+            content = @Content(
+                mediaType = "application/problem+json",
+                schema = @Schema(implementation = ProblemDetail.class)
+            )
+        ),
+        @ApiResponse(
             responseCode = "400",
             description = "リクエストエラー",
             content = @Content(

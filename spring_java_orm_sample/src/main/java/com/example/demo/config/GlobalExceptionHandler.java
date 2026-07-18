@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.example.demo.exception.CorrelationValidationFailureException;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.LoginRateLimitExceededException;
+import com.example.demo.exception.OpenBdBookNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.openbd.generated.invoker.ApiException;
@@ -38,6 +39,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         final var problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
 
         problem.setTitle("該当データなし");
+
+        return problem;
+    }
+
+    @ExceptionHandler(OpenBdBookNotFoundException.class)
+    public ProblemDetail handleOpenBdBookNotFoundException(OpenBdBookNotFoundException ex) {
+        final var problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+
+        problem.setTitle("OpenBD書誌なし");
 
         return problem;
     }

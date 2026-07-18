@@ -2,6 +2,7 @@ package com.example.demo.api.controller;
 
 import com.example.demo.api.OpenBdBooksApi;
 import com.example.demo.api.response.OpenBdBookResponse;
+import com.example.demo.exception.OpenBdBookNotFoundException;
 import com.example.demo.openbd.generated.api.BooksApi;
 import com.example.demo.openbd.generated.invoker.ApiException;
 import com.example.demo.openbd.generated.model.BookDto;
@@ -33,7 +34,7 @@ public class OpenBdBooksApiController implements OpenBdBooksApi {
     private OpenBdBookResponse toResponse(BookDto book) {
         if (Objects.isNull(book)) {
             // 存在しない場合はnullである
-            return null;
+            throw new OpenBdBookNotFoundException();
         }
         return modelMapper.map(book, OpenBdBookResponse.class);
     }

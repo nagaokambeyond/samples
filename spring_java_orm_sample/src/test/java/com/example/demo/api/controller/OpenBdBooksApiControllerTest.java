@@ -87,7 +87,7 @@ class OpenBdBooksApiControllerTest {
     }
 
     @Test
-    void getBooksByIsbnReturnsNullElementWhenOpenBdBookIsNotFound() throws Exception {
+    void getBooksByIsbnReturnsNotFoundWhenOpenBdBookIsNotFound() throws Exception {
         final var isbn = "9784780802047,9784003101018";
         when(openBdBooksApi.getBooksByIsbn(isbn, null))
             .thenReturn(Arrays.asList(
@@ -98,9 +98,8 @@ class OpenBdBooksApiControllerTest {
         final var response = get("/api/books/openbd?isbn=" + isbn);
         final var json = OBJECT_MAPPER.readTree(response.body());
 
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(json.get(0).isNull()).isTrue();
-        assertThat(json.get(1).get("summary").get("isbn").asText()).isEqualTo("9784003101018");
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(json.get("title").asText()).isEqualTo("OpenBD書誌なし");
         verify(openBdBooksApi).getBooksByIsbn(isbn, null);
     }
 
