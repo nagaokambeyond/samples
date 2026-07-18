@@ -1,6 +1,7 @@
 package com.example.demo.api;
 
 import com.example.demo.api.response.OpenBdBookResponse;
+import com.example.demo.openbd.generated.invoker.ApiException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -105,5 +106,5 @@ public interface OpenBdBooksApi {
         @NotBlank
         @Pattern(regexp = "\\d{13}(,\\d{13})*", message = "13桁ISBNまたはカンマ区切りの13桁ISBNを指定してください")
         String isbn
-    ) throws com.example.demo.openbd.generated.invoker.ApiException;
+    ) throws ApiException;
 }
