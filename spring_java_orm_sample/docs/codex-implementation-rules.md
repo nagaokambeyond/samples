@@ -18,18 +18,18 @@
 - API 関連のクラスは `api`、`api/annotation`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
 - OpenBD API クライアント関連の手書き設定は `openbd/config` に置き、OpenAPI Generator 生成コードは `openbd/generated` に置く。
 - 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
-- ページ計算などの共通ユーティリティは `util` package に置く。
+- ページ計算や例外ハンドリング補助などの共通ユーティリティは `util` package に置く。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
 ## API 実装
 
-- API 仕様を変更する場合は、`AuthOperationApi` / `BooksOperationApi` / `PurchaseOperationApi`、各 Controller、request / response DTO、API validator、`GlobalExceptionHandler`、`readme.md` の整合性を確認する。
-- OpenAPI 注釈は `AuthOperationApi` / `BooksOperationApi` / `PurchaseOperationApi` に集約する。Controller 側へ重複して追加しない。
+- API 仕様を変更する場合は、`AuthOperationApi` / `BooksOperationApi` / `OpenBdBooksApi` / `PurchaseOperationApi`、各 Controller、request / response DTO、API validator、`GlobalExceptionHandler`、`readme.md` の整合性を確認する。
+- OpenAPI 注釈は `AuthOperationApi` / `BooksOperationApi` / `OpenBdBooksApi` / `PurchaseOperationApi` に集約する。Controller 側へ重複して追加しない。
 - API の入出力には Entity ではなく request / response DTO を使う。
 - 認証 API は `/api/auth/login` とし、`LoginRequest` でユーザー名とパスワードを受け取り、`LoginResponse` で `Bearer` token、ユーザー名、有効期限秒数を返す。
 - ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` とし、Bearer token 必須で 204 を返す。
 - Security / JWT / ログイン回数制限の設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml` の `app.auth` / `app.auth.login-rate-limit`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。
-- 書籍の取得・検索は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
+- 書籍の取得・検索と OpenBD 書誌取得は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId`、`isbn` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - ISBN は `@Isbn` で 13 桁数字として検証する。`BookCreateRequest` / `BookUpdateRequest` / `PurchaseInvoiceDetailCreateRequest` の ISBN 制約を変更する場合は API テストと OpenAPI 例も確認する。
 - `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれる。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しない。
@@ -45,6 +45,9 @@
 - ページ数と offset の計算は `com.example.demo.util.PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
 - 販売単価履歴追加 API は `/api/books/{id}/sales-unit-prices` とし、`BookSalesUnitPriceCreateRequest` で `salesUnitPrice` と未来日の `effectiveFrom` を受け取り、成功時は空 body の 200 を返す。
 - 販売単価履歴追加では、同一 `book_id,effective_from` を `UniqueConstraintValidationException` として扱う。前履歴の `effective_to` を新履歴の前日に更新し、後続履歴がある場合は新履歴の `effective_to` を後続履歴の前日にする。
+- OpenBD 書誌取得 API は `/api/books/openbd` とし、必須の `isbn` query parameter で 13 桁 ISBN またはカンマ区切りの 13 桁 ISBN を受け取る。入力制約は `OpenBdBooksApi` の Bean Validation と OpenAPI 注釈に集約する。
+- `OpenBdBooksApiController` は OpenAPI Generator 生成の `BooksApi#getBooksByIsbn(isbn, null)` を呼び、結果を `OpenBdBookResponse` のリストへ変換する。OpenBD のレスポンスに `null` の書誌が含まれる場合は `OpenBdBookNotFoundException` として扱う。
+- OpenBD 由来の生成 DTO を API レスポンスとして直接返さず、`OpenBdBookResponse` に変換して返す。
 - 仕入登録 API は `/api/purchases/create` とし、`PurchaseInvoiceCreateRequest` で `purchaseInvoiceDate`、`supplierId`、`receivingStoreId`、明細リストを受け取る。
 - 仕入明細は `purchaseInvoiceDetailIsbn` で本を参照する。各 `PurchaseDataValidator*` は明細 ISBN から本 ID を解決し、converter / Service は解決済みの本 ID で明細と在庫更新を行う。
 - `PurchaseInvoiceCreateRequest.details` は `@Valid`、`@NotEmpty`、`@NotNull`、`@Size(max = 10)` を維持する。明細の単価は 1〜10000、数量は 1〜1000 の制約を維持する。
@@ -67,6 +70,7 @@
 - OpenBD API の接続先は `application.yaml` の `openbd.base-url` と `OpenBdProperties` で管理する。
 - `OpenBdClientConfig` は OpenAPI Generator 生成の `ApiClient`、`BooksApi`、`MetadataApi` を Bean として公開する。
 - OpenBD API クライアント設定を変更する場合は `OpenBdClientConfigTest` で、生成 API Bean と `ApiClient` の base URI が意図どおりになることを確認する。
+- OpenBD 書誌取得 API を変更する場合は `OpenBdBooksApiControllerTest` で、単一 ISBN、カンマ区切り ISBN、書誌なし 404、入力不正 400、OpenBD API 失敗 502 を確認する。
 - OpenBD 生成コードを更新する場合は `./gradlew syncOpenBdGeneratedSources` を使い、`src/main/java/com/example/demo/openbd/generated` の差分を確認する。
 
 ## Service と例外
@@ -97,11 +101,14 @@
 - 排他ロックを取得して更新・削除する Service メソッドには、必要に応じて `@RetryableOnLockFailure` を付ける。
 - 更新競合は `ObjectOptimisticLockingFailureException` / `PessimisticLockingFailureException` と `GlobalExceptionHandler` により HTTP 409 として扱う。
 - データなしは `RepositoryDataNotfoundException` と `GlobalExceptionHandler` により HTTP 404 として扱う。
+- OpenBD 書誌なしは `OpenBdBookNotFoundException` と `GlobalExceptionHandler` により HTTP 404 として扱う。
+- OpenBD API 呼び出しエラーは生成クライアントの `ApiException` と `GlobalExceptionHandler` により HTTP 502 として扱う。
 - 相関バリデーションエラーは `CorrelationValidationFailureException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
 - 外部キー参照先なしは `ForeignKeyReferenceNotFoundException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
 - 一意制約違反は `UniqueConstraintValidationException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
 - ログイン回数制限超過は `LoginRateLimitExceededException` と `GlobalExceptionHandler` により HTTP 429 として扱う。
 - Bean Validation のパラメータ違反は `ConstraintViolationException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
+- validation error の `field` / `message` 形式は `ExceptionHandlerUtil` を使って組み立てる。
 
 ## テスト
 
@@ -115,6 +122,7 @@
 
 - API 相関バリデーション: `BooksOperationApiControllerValidatorTest`
 - API Controller: `BooksOperationApiControllerTest`
+- OpenBD API Controller: `OpenBdBooksApiControllerTest`
 - 認証 API / Security: `AuthOperationApiControllerTest`、`AuthOperationApiLoginRateLimitTest`
 - ログイン回数制限: `LoginRateLimitServiceTest`
 - 例外ハンドリング: `GlobalExceptionHandlerTest`
