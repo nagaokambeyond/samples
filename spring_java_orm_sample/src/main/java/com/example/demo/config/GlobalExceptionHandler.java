@@ -149,7 +149,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
-    public ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    ProblemDetail handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
 
         problem.setTitle("リクエストバリデーションエラー");
@@ -163,7 +163,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problem;
     }
 
-    public ProblemDetail handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+    ProblemDetail handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
         final var problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         final var errors = new ArrayList<Map<String, String>>();
 
