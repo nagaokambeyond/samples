@@ -7,8 +7,8 @@ import com.example.demo.exception.OpenBdBookNotFoundException;
 import com.example.demo.exception.RepositoryDataNotfoundException;
 import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.openbd.generated.invoker.ApiException;
+import com.example.demo.util.ExceptionHandlerUtil;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Path;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -29,7 +29,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Objects;
 
 @RestControllerAdvice
 @NullMarked
@@ -140,8 +139,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         problem.setProperty(
             "errors",
             ex.getConstraintViolations().stream()
-                .map(violation -> createValidationError(
-                    getLastPropertyName(violation.getPropertyPath()),
+                .map(violation -> ExceptionHandlerUtil.createValidationError(
+                    ExceptionHandlerUtil.getLastPropertyName(violation.getPropertyPath()),
                     violation.getMessage()
                 ))
                 .toList()
@@ -157,7 +156,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         problem.setProperty(
             "errors",
             ex.getBindingResult().getFieldErrors().stream()
-                .map(error -> createValidationError(error.getField(), error.getDefaultMessage()))
+                .map(error -> ExceptionHandlerUtil.createValidationError(error.getField(), error.getDefaultMessage()))
                 .toList()
         );
 
@@ -172,12 +171,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         for (final var validationResult : ex.getParameterValidationResults()) {
             if (validationResult instanceof ParameterErrors parameterErrors) {
                 parameterErrors.getFieldErrors().stream()
-                    .map(error -> createValidationError(error.getField(), error.getDefaultMessage()))
+                    .map(error -> ExceptionHandlerUtil.createValidationError(error.getField(), error.getDefaultMessage()))
                     .forEach(errors::add);
             } else {
                 final var parameterName = validationResult.getMethodParameter().getParameterName();
                 validationResult.getResolvableErrors().stream()
-                    .map(error -> createValidationError(parameterName, error.getDefaultMessage()))
+                    .map(error -> ExceptionHandlerUtil.createValidationError(parameterName, error.getDefaultMessage()))
                     .forEach(errors::add);
             }
         }
@@ -205,22 +204,4 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ) {
         return handleExceptionInternal(ex, handleHandlerMethodValidationException(ex), headers, status, request);
     }
-
-    private Map<String, String> createValidationError(@Nullable String field, @Nullable String message) {
-        return Map.of(
-            "field", Objects.toString(field, ""),
-            "message", Objects.toString(message, "")
-        );
-    }
-
-    private String getLastPropertyName(Path propertyPath) {
-        String propertyName = "";
-        for (final var node : propertyPath) {
-            if (node.getName() != null) {
-                propertyName = node.getName();
-            }
-        }
-        return propertyName;
-    }
-
 }
