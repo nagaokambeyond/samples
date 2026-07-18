@@ -30,7 +30,18 @@ public interface OpenBdBooksApi {
             description = "OpenBD書誌なし",
             content = @Content(
                 mediaType = "application/problem+json",
-                schema = @Schema(implementation = ProblemDetail.class)
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "openBdBookNotFound",
+                    summary = "OpenBD書誌が存在しない",
+                    value = """
+                        {
+                          "instance": "/api/books/openbd",
+                          "status": 404,
+                          "title": "OpenBD書誌なし"
+                        }
+                        """
+                )
             )
         ),
         @ApiResponse(
@@ -64,7 +75,19 @@ public interface OpenBdBooksApi {
             description = "OpenBD API呼び出しエラー",
             content = @Content(
                 mediaType = "application/problem+json",
-                schema = @Schema(implementation = ProblemDetail.class)
+                schema = @Schema(implementation = ProblemDetail.class),
+                examples = @ExampleObject(
+                    name = "openBdApiCallFailed",
+                    summary = "OpenBD APIの呼び出しに失敗",
+                    value = """
+                        {
+                          "detail": "OpenBD APIの呼び出しに失敗しました",
+                          "instance": "/api/books/openbd",
+                          "status": 502,
+                          "title": "外部API呼び出しエラー"
+                        }
+                        """
+                )
             )
         )
     })
