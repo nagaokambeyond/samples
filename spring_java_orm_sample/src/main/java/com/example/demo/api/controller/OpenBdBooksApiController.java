@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,18 +23,17 @@ public class OpenBdBooksApiController implements OpenBdBooksApi {
 
     @Override
     public List<OpenBdBookResponse> getBooksByIsbn(String isbn) throws ApiException {
-        return Optional.ofNullable(openBdBooksApi.getBooksByIsbn(isbn, null))
-            .orElseGet(List::of)
-            .stream()
+        final var books = openBdBooksApi.getBooksByIsbn(isbn, null);
+        if (Objects.isNull(books) || books.isEmpty() || books.stream().anyMatch(Objects::isNull)) {
+            throw new OpenBdBookNotFoundException();
+        }
+
+        return books.stream()
             .map(this::toResponse)
             .toList();
     }
 
     private OpenBdBookResponse toResponse(BookDto book) {
-        if (Objects.isNull(book)) {
-            // 存在しない場合はnullである
-            throw new OpenBdBookNotFoundException();
-        }
         return modelMapper.map(book, OpenBdBookResponse.class);
     }
 }

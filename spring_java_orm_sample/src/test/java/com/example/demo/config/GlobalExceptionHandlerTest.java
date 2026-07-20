@@ -4,17 +4,19 @@ import com.example.demo.api.BooksOperationApi;
 import com.example.demo.api.request.BookCreateRequest;
 import com.example.demo.exception.ForeignKeyReferenceNotFoundException;
 import com.example.demo.exception.LoginRateLimitExceededException;
+import com.example.demo.exception.OpenBdBookNotFoundException;
 import com.example.demo.exception.UniqueConstraintValidationException;
 import com.example.demo.jpa.entity.Publisher;
 import com.example.demo.mybatis.generator.entity.BookEntity;
 import com.example.demo.mybatis.generator.entity.BookGenreEntity;
+import com.example.demo.openbd.generated.invoker.ApiException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.constraints.Min;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.CannotAcquireLockException;
-import org.springframework.http.HttpStatus;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -77,6 +79,23 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleOpenBdBookNotFoundExceptionReturnsNotFound() {
+        final var problem = handler.handleOpenBdBookNotFoundException(new OpenBdBookNotFoundException());
+
+        assertThat(problem.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(problem.getTitle()).isEqualTo("OpenBD書誌なし");
+    }
+
+    @Test
+    void handleApiExceptionReturnsBadGateway() {
+        final var problem = handler.handleApiException(new ApiException(500, "OpenBD error"));
+
+        assertThat(problem.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY.value());
+        assertThat(problem.getTitle()).isEqualTo("外部API呼び出しエラー");
+        assertThat(problem.getDetail()).isEqualTo("OpenBD APIの呼び出しに失敗しました");
+    }
+
+    @Test
     void handleMethodArgumentNotValidExceptionReturnsFieldErrors() throws Exception {
         final var request = new BookCreateRequest("", null, null, null, null, null, null);
         final var bindingResult = new BeanPropertyBindingResult(request, "request");
@@ -98,6 +117,7 @@ class GlobalExceptionHandlerTest {
             .containsExactly("size must be between 1 and 100", "must not be null", "must not be null");
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void handleConstraintViolationExceptionReturnsFieldErrors() {
         try (final var validatorFactory = Validation.buildDefaultValidatorFactory()) {
