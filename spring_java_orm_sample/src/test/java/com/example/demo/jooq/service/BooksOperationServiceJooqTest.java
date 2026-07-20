@@ -181,6 +181,24 @@ class BooksOperationServiceJooqTest {
     }
 
     @Test
+    void updateThrowsWhenPublisherDoesNotExist() {
+        final var before = booksOperationService.findById(1L);
+
+        assertThatThrownBy(() -> booksOperationService.update(new BookUpdateRequest(1L, "jOOQ更新", "Saburo", LocalDate.of(2021, 2, 1), 999L, 5L, "9784000000412", before.getVersion())))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
+            .hasMessage("参照先データが存在しません: publisher(id=999)");
+    }
+
+    @Test
+    void updateThrowsWhenBookGenreDoesNotExist() {
+        final var before = booksOperationService.findById(1L);
+
+        assertThatThrownBy(() -> booksOperationService.update(new BookUpdateRequest(1L, "jOOQ更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 999L, "9784000000412", before.getVersion())))
+            .isInstanceOf(ForeignKeyReferenceNotFoundException.class)
+            .hasMessage("参照先データが存在しません: book_genre(id=999)");
+    }
+
+    @Test
     void updateThrowsWhenVersionIsStale() {
         assertThatThrownBy(() -> booksOperationService.update(new BookUpdateRequest(1L, "jOOQ更新", "Saburo", LocalDate.of(2021, 2, 1), 1L, 5L, "9784000000412", -1L)))
             .isInstanceOf(ObjectOptimisticLockingFailureException.class);

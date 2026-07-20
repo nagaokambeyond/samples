@@ -24,6 +24,7 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -237,11 +238,72 @@ class PurchaseOperationApiControllerTest {
         assertThat(json.get("detail").asText()).isEqualTo("参照先データが存在しません: supplier(id=999)");
     }
 
+    @Test
+    void createPurchaseInvoiceReturnsUnauthorizedWhenTokenIsMissing() throws Exception {
+        final var response = postWithoutAuthorization(
+            """
+            {
+              "purchaseInvoiceDate": "2026-02-01",
+              "supplierId": 1,
+              "receivingStoreId": 2,
+              "details": [
+                {
+                  "purchaseInvoiceDetailIsbn": "0000000000001",
+                  "purchaseInvoiceDetailUnitPrice": 1000,
+                  "purchaseInvoiceDetailQuantity": 2
+                }
+              ]
+            }
+            """
+        );
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        verifyNoInteractions(purchaseOperationService);
+    }
+
+    @Test
+    void createPurchaseInvoiceReturnsBadRequestWhenDetailsSizeExceedsMax() throws Exception {
+        final var detail = """
+            {
+              "purchaseInvoiceDetailIsbn": "0000000000001",
+              "purchaseInvoiceDetailUnitPrice": 1000,
+              "purchaseInvoiceDetailQuantity": 2
+            }
+            """;
+        final var response = post(
+            """
+            {
+              "purchaseInvoiceDate": "2026-02-01",
+              "supplierId": 1,
+              "receivingStoreId": 2,
+              "details": [
+                %s
+              ]
+            }
+            """.formatted(String.join(",", Collections.nCopies(11, detail)))
+        );
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
+        assertThat(getErrorFields(json)).contains("details");
+        verifyNoInteractions(purchaseOperationService);
+    }
+
     private HttpResponse<String> post(String requestBody) throws Exception {
         final var request = HttpRequest.newBuilder()
             .uri(URI.create("http://localhost:" + port + "/api/purchases/create"))
             .header("Content-Type", "application/json")
             .header("Authorization", "Bearer " + login())
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .build();
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> postWithoutAuthorization(String requestBody) throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/purchases/create"))
+            .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(requestBody))
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());

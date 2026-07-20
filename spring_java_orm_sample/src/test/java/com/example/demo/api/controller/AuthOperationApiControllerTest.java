@@ -11,6 +11,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,6 +48,23 @@ class AuthOperationApiControllerTest {
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(json.get("title").asText()).isEqualTo("認証エラー");
+    }
+
+    @Test
+    void loginReturnsBadRequestWhenRequestBodyIsInvalid() throws Exception {
+        final var response = postLoginRequest(
+            """
+            {
+              "username": " ",
+              "password": ""
+            }
+            """
+        );
+        final var json = OBJECT_MAPPER.readTree(response.body());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(json.get("title").asText()).isEqualTo("リクエストバリデーションエラー");
+        assertThat(getErrorFields(json)).contains("username", "password");
     }
 
     @Test
@@ -95,5 +114,20 @@ class AuthOperationApiControllerTest {
             ))
             .build();
         return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> postLoginRequest(String requestBody) throws Exception {
+        final var request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:" + port + "/api/auth/login"))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+            .build();
+        return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private List<String> getErrorFields(com.fasterxml.jackson.databind.JsonNode json) {
+        final var fields = new ArrayList<String>();
+        json.get("errors").forEach(error -> fields.add(error.get("field").asText()));
+        return fields;
     }
 }
