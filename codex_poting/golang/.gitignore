@@ -1,0 +1,32 @@
+# Go build outputs
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go workspace and vendored dependencies
+go.work
+vendor/
+
+# Coverage and profiling
+coverage.out
+coverage.html
+*.coverprofile
+*.prof
+
+# Local runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
