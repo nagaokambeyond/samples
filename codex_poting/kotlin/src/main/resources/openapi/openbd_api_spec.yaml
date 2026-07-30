@@ -1,0 +1,343 @@
+openapi: 3.2.0
+info:
+    title: openBD API
+    version: "1.0.0-oas3.2"
+    description: |
+        非公式のOpenAPI定義です。openBD公式サイトで公開されているAPI仕様、
+        APIデータ仕様書、JSON Schema取得APIをもとに作成しています。
+        
+        公式サイト上ではOpenAPI/Swagger形式の仕様書は確認できなかったため、
+        このファイルはクライアント実装・検証補助用の暫定定義として扱ってください。
+        
+        openBD APIが提供するデータは、本の販促・紹介目的に限って利用できます。
+        キャッシュする場合は変更・削除要請へ追従できる設計にしてください。
+    termsOfService: https://openbd.jp/terms/
+    contact:
+        name: openBD
+        url: https://openbd.jp/
+servers:
+    - url: https://api.openbd.jp
+      description: openBD API server
+tags:
+    - name: Books
+      description: 書誌情報
+    - name: Metadata
+      description: 収録範囲・スキーマ
+paths:
+    /v1/get:
+        get:
+            tags:
+                - Books
+            operationId: getBooksByIsbn
+            summary: ISBNから書誌情報を取得する
+            description: |
+                `isbn` クエリパラメータで指定したISBNの書誌情報を取得します。
+                複数ISBNをカンマ区切りで指定できます。
+                
+                返却値は指定したISBNの順序に対応する配列です。
+                該当する書誌が存在しない場合、該当位置の要素は `null` になる可能性があります。
+            parameters:
+                - name: isbn
+                  in: query
+                  required: true
+                  description: |
+                      取得対象のISBN。13桁ISBNを指定します。
+                      複数指定する場合はカンマ区切りにします。
+                  schema:
+                      type: string
+                      example: "9784780802047,9784003101018"
+                  examples:
+                      single:
+                          summary: 1件取得
+                          value: "9784780802047"
+                      multiple:
+                          summary: 複数件取得
+                          value: "9784780802047,9784003101018"
+                - name: pretty
+                  in: query
+                  required: false
+                  description: JSONを整形して返すためのオプション。公式リンク例で利用されています。
+                  schema:
+                      type:
+                          - string
+                          - "null"
+                      example: ""
+            responses:
+                "200":
+                    description: 書誌情報の配列
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    oneOf:
+                                        - $ref: "#/components/schemas/Book"
+                                        - type: "null"
+                            examples:
+                                found:
+                                    summary: 取得成功
+                                    value:
+                                        - onix:
+                                              RecordReference: "9784780802047"
+                                              NotificationType: "03"
+                                              ProductIdentifier:
+                                                  ProductIDType: "15"
+                                                  IDValue: "9784780802047"
+                                          hanmoto:
+                                              datemodified: "2025-12-26 11:32:36"
+                                              datecreated: "2014-02-25 11:29:44"
+                                          summary:
+                                              isbn: "9784780802047"
+                                              title: "おにぎりレシピ101"
+                                              volume: ""
+                                              series: ""
+                                              publisher: "ポット出版"
+                                              pubdate: "20140408"
+                                              cover: "https://cover.openbd.jp/9784780802047.jpg"
+                                              author: "山田玲子／著 水野菜生／英訳"
+                                notFound:
+                                    summary: 該当書誌なし
+                                    value:
+                                        - null
+                "400":
+                    description: 不正なリクエスト
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+                "500":
+                    description: サーバーエラー
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+    /v1/coverage:
+        get:
+            tags:
+                - Metadata
+            operationId: getCoverage
+            summary: 収録範囲を取得する
+            description: |
+                openBDに収録されているISBNの一覧を取得します。
+                公式サイトでは「収録範囲の取得」として案内されています。
+            responses:
+                "200":
+                    description: 収録されているISBNの配列
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: string
+                                    pattern: "^[0-9]{13}$"
+                            example:
+                                - "9784780802047"
+                                - "9784003101018"
+                "500":
+                    description: サーバーエラー
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+    /v1/schema:
+        get:
+            tags:
+                - Metadata
+            operationId: getJsonSchema
+            summary: 書誌レスポンスのJSON Schemaを取得する
+            description: |
+                書誌データのJSON Schemaを取得します。
+                公式APIではJSON Schema Draft 04形式で提供されています。
+            parameters:
+                - name: pretty
+                  in: query
+                  required: false
+                  description: JSONを整形して返すためのオプション。
+                  schema:
+                      type:
+                          - string
+                          - "null"
+                      example: ""
+            responses:
+                "200":
+                    description: 書誌データのJSON Schema
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/JsonSchemaDraft04"
+                "500":
+                    description: サーバーエラー
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/ErrorResponse"
+components:
+    schemas:
+        Book:
+            type: object
+            description: |
+                openBDの書誌情報。詳細な項目定義は `/v1/schema` および
+                公式のAPIデータ仕様書を参照してください。
+            additionalProperties: false
+            properties:
+                onix:
+                    $ref: "#/components/schemas/Onix"
+                hanmoto:
+                    $ref: "#/components/schemas/Hanmoto"
+                summary:
+                    $ref: "#/components/schemas/Summary"
+            required:
+                - summary
+        Summary:
+            type: object
+            description: 書誌の概要
+            additionalProperties: false
+            properties:
+                isbn:
+                    type: string
+                    description: ISBN
+                    pattern: "^[0-9]{13}$"
+                    example: "9784780802047"
+                title:
+                    type: string
+                    description: 書名
+                    example: "おにぎりレシピ101"
+                volume:
+                    type: string
+                    description: 巻号
+                    example: ""
+                series:
+                    type: string
+                    description: シリーズ名
+                    example: ""
+                publisher:
+                    type: string
+                    description: 出版者
+                    example: "ポット出版"
+                pubdate:
+                    type: string
+                    description: 出版年月日または出版年月
+                    example: "20140408"
+                cover:
+                    type: string
+                    description: 書影URL
+                    format: uri
+                    example: "https://cover.openbd.jp/9784780802047.jpg"
+                author:
+                    type: string
+                    description: 著者名
+                    example: "山田玲子／著 水野菜生／英訳"
+            required:
+                - isbn
+                - title
+                - volume
+                - series
+                - author
+                - publisher
+                - pubdate
+                - cover
+        Onix:
+            type: object
+            description: JPRO-onix準拠項目
+            additionalProperties: true
+            properties:
+                RecordReference:
+                    type: string
+                    description: ISBNコード
+                    example: "9784780802047"
+                NotificationType:
+                    type: string
+                    description: 通知種別・削除フラグ等
+                    example: "03"
+                ProductIdentifier:
+                    type: object
+                    additionalProperties: true
+                    properties:
+                        ProductIDType:
+                            type: string
+                            description: IDの種類。ISBNの場合は15。
+                            example: "15"
+                        IDValue:
+                            type: string
+                            description: ISBN
+                            example: "9784780802047"
+                DescriptiveDetail:
+                    type: object
+                    description: 商品情報
+                    additionalProperties: true
+                CollateralDetail:
+                    type: object
+                    description: 商品付帯項目。内容紹介、目次、書影等。
+                    additionalProperties: true
+                PublishingDetail:
+                    type: object
+                    description: 出版社情報
+                    additionalProperties: true
+                ProductSupply:
+                    type: object
+                    description: 出版状況、販売条件、価格等。
+                    additionalProperties: true
+        Hanmoto:
+            type: object
+            description: 版元ドットコム独自書誌項目
+            additionalProperties: true
+            properties:
+                datekoukai:
+                    type: string
+                    description: 公開日
+                    example: "2014-02-25 11:29:44"
+                datemodified:
+                    type: string
+                    description: 情報更新日時
+                    example: "2025-12-26 11:32:36"
+                datecreated:
+                    type: string
+                    description: 情報作成日時
+                    example: "2014-02-25 11:29:44"
+                dateshuppan:
+                    type: string
+                    description: 出版年月日。年のみ、年月のみの場合あり。
+                    example: "2014-04"
+                reviews:
+                    type: array
+                    description: 書評情報
+                    items:
+                        type: object
+                        additionalProperties: true
+                hanmotoinfo:
+                    type: object
+                    description: 版元情報
+                    additionalProperties: true
+        JsonSchemaDraft04:
+            type: object
+            description: JSON Schema Draft 04のスキーマオブジェクト
+            additionalProperties: true
+            properties:
+                $schema:
+                    type: string
+                    example: "http://json-schema.org/draft-04/schema#"
+                type:
+                    type: string
+                    example: "object"
+                properties:
+                    type: object
+                    additionalProperties: true
+                required:
+                    type: array
+                    items:
+                        type: string
+                additionalProperties:
+                    oneOf:
+                        - type: boolean
+                        - type: object
+        ErrorResponse:
+            type: object
+            description: エラー時のレスポンス。公式サイトでは詳細形式が明示されていないため暫定定義です。
+            additionalProperties: true
+            properties:
+                error:
+                    type: string
+                    example: "Bad Request"
+                message:
+                    type: string
+                    example: "Invalid isbn parameter"

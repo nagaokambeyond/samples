@@ -1,0 +1,146 @@
+# 概要→詳細は[AGENTS.md](https://github.com/nagaokambeyond/samples/blob/main/spring_java_orm_sample/AGENTS.md)で
+
+- framework→spring boot 4
+- database→H2
+- ORM
+  - ~~JPA~~
+  - MyBatis
+  - Doma3
+  - jOOQ
+- entityの自動生成あり
+- api仕様
+  - swagger-ui→http://localhost:8080/swagger-ui/index.html#/
+  - scalar→http://localhost:8080/scalar
+
+# gradleのタスク
+
+```shell
+./gradlew domaCodeGenAll
+./gradlew runMyBatisGenerator
+./gradlew generateJooq
+./gradlew test
+```
+
+# ER図
+
+```mermaid
+erDiagram
+    publisher ||--o{ book : "publishes"
+    book_genre ||--o{ book : "categorizes"
+    supplier ||--o{ purchase_invoice : "supplies"
+    store ||--o{ purchase_invoice : "receives"
+    purchase_invoice ||--o{ purchase_invoice : "return source"
+    purchase_invoice ||--o{ purchase_invoice_detail : "has"
+    book ||--o{ purchase_invoice_detail : "ordered"
+    book ||--o{ book_sales_unit_price_history : "sales unit prices"
+    store ||--o{ book_stock : "stocks"
+    book ||--o{ book_stock : "stocked"
+    store ||--o{ book_stock_movement : "stock movements"
+    book ||--o{ book_stock_movement : "movement target"
+
+    publisher {
+        BIGINT id PK
+        VARCHAR publisher_name
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book_genre {
+        BIGINT id PK
+        VARCHAR genre_name
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book {
+        BIGINT id PK
+        VARCHAR title
+        VARCHAR author
+        DATE release_date
+        BIGINT publisher_id FK
+        BIGINT genre_id FK
+        VARCHAR isbn UK
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    supplier {
+        BIGINT id PK
+        VARCHAR supplier_name
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    store {
+        BIGINT id PK
+        VARCHAR store_name
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    purchase_invoice {
+        BIGINT id PK
+        INTEGER purchase_invoice_type
+        BIGINT return_purchase_invoice_id FK
+        DATE purchase_invoice_date
+        BIGINT supplier_id FK
+        BIGINT receiving_store_id FK
+        BIGINT purchase_invoice_amount
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    purchase_invoice_detail {
+        BIGINT id PK
+        BIGINT purchase_invoice_id FK
+        BIGINT purchase_invoice_detail_book_id FK
+        INTEGER purchase_invoice_detail_unit_price
+        INTEGER purchase_invoice_detail_quantity
+        BIGINT purchase_invoice_detail_amount
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book_sales_unit_price_history {
+        BIGINT id PK
+        BIGINT book_id FK
+        INTEGER sales_unit_price
+        DATE effective_from
+        DATE effective_to
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book_stock {
+        BIGINT id PK
+        BIGINT book_stock_store_id FK
+        BIGINT book_stock_book_id FK
+        INTEGER book_stock_quantity
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+
+    book_stock_movement {
+        BIGINT id PK
+        BIGINT store_id FK
+        BIGINT book_id FK
+        INTEGER movement_type
+        INTEGER quantity_delta
+        INTEGER source_type
+        BIGINT source_id
+        BIGINT source_detail_id
+        DATE movement_date
+        TIMESTAMP create_at
+        TIMESTAMP update_at
+        BIGINT version
+    }
+```

@@ -1,0 +1,1260 @@
+openapi: 3.1.0
+info:
+  title: 書籍管理システム
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: Books
+  description: 本API
+- name: Purchase
+  description: 仕入API
+- name: Auth
+  description: 認証API
+- name: OpenBD Books
+  description: OpenBD本API
+paths:
+  "/api/purchases/create":
+    post:
+      tags:
+      - Purchase
+      summary: 仕入伝票登録
+      operationId: createPurchaseInvoice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PurchaseInvoiceCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PurchaseInvoiceResponse"
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidRequestBody:
+                  summary: リクエストボディのバリデーションエラー
+                  description: invalidRequestBody
+                  value:
+                    errors:
+                    - field: purchaseInvoiceDate
+                      message: null は許可されていません
+                    - field: details
+                      message: 空要素は許可されていません
+                    instance: "/api/purchases/create"
+                    status: 400
+                    title: リクエストバリデーションエラー
+                supplierReferenceNotFound:
+                  summary: 仕入先の参照先なし
+                  description: supplierReferenceNotFound
+                  value:
+                    detail: '参照先データが存在しません: supplier(id=999)'
+                    instance: "/api/purchases/create"
+                    status: 400
+                    title: データバリデーション
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                unauthorized:
+                  summary: 認証トークンなし
+                  description: unauthorized
+                  value:
+                    detail: Unauthorized
+                    instance: "/api/purchases/create"
+                    status: 401
+                    title: Unauthorized
+        '409':
+          description: 更新競合
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                updateConflict:
+                  summary: 在庫更新時の更新競合
+                  description: updateConflict
+                  value:
+                    detail: 他ユーザーによって更新されています
+                    instance: "/api/purchases/create"
+                    status: 409
+                    title: 更新競合
+      security:
+      - bearerAuth: []
+  "/api/books/{id}/sales-unit-prices":
+    post:
+      tags:
+      - Books
+      summary: 本販売単価登録
+      operationId: createSalesUnitPrice
+      parameters:
+      - name: id
+        in: path
+        description: 本ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BookSalesUnitPriceCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: 成功
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidRequestBody:
+                  summary: リクエストボディのバリデーションエラー
+                  description: invalidRequestBody
+                  value:
+                    errors:
+                    - field: salesUnitPrice
+                      message: 1 以上の値にしてください
+                    - field: effectiveFrom
+                      message: 未来の日付にしてください
+                    instance: "/api/books/1/sales-unit-prices"
+                    status: 400
+                    title: リクエストバリデーションエラー
+                salesUnitPriceEffectiveFromUniqueConstraintViolation:
+                  summary: 同一書籍・同一有効開始日の一意制約違反
+                  description: salesUnitPriceEffectiveFromUniqueConstraintViolation
+                  value:
+                    detail: '一意制約に違反しています: book_sales_unit_price_history(book_id,effective_from=1,2026-08-01)'
+                    instance: "/api/books/1/sales-unit-prices"
+                    status: 400
+                    title: データバリデーション
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                unauthorized:
+                  summary: 認証トークンなし
+                  description: unauthorized
+                  value:
+                    detail: Unauthorized
+                    instance: "/api/books/1/sales-unit-prices"
+                    status: 401
+                    title: Unauthorized
+        '404':
+          description: データなし
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                bookNotFound:
+                  summary: 本販売単価登録対象の本が存在しない
+                  description: bookNotFound
+                  value:
+                    instance: "/api/books/999/sales-unit-prices"
+                    status: 404
+                    title: 該当データなし
+        '409':
+          description: 更新競合
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                updateConflict:
+                  summary: 他ユーザーによる更新競合
+                  description: updateConflict
+                  value:
+                    detail: 他ユーザーによって更新されています
+                    instance: "/api/books/1/sales-unit-prices"
+                    status: 409
+                    title: 更新競合
+      security:
+      - bearerAuth: []
+  "/api/books/update":
+    post:
+      tags:
+      - Books
+      summary: 本更新
+      operationId: updateBook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BookUpdateRequest"
+        required: true
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BookResponse"
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidRequestBody:
+                  summary: リクエストボディのバリデーションエラー
+                  description: invalidRequestBody
+                  value:
+                    errors:
+                    - field: title
+                      message: 1 から 100 の間のサイズにしてください
+                    - field: releaseDate
+                      message: null は許可されていません
+                    - field: isbn
+                      message: 13桁の数字にしてください
+                    instance: "/api/books/update"
+                    status: 400
+                    title: リクエストバリデーションエラー
+                publisherReferenceNotFound:
+                  summary: 出版社の参照先なし
+                  description: publisherReferenceNotFound
+                  value:
+                    detail: '参照先データが存在しません: publisher(id=999)'
+                    instance: "/api/books/update"
+                    status: 400
+                    title: データバリデーション
+                isbnUniqueConstraintViolation:
+                  summary: ISBNの一意制約違反
+                  description: isbnUniqueConstraintViolation
+                  value:
+                    detail: '一意制約に違反しています: book(isbn=0000000000001)'
+                    instance: "/api/books/update"
+                    status: 400
+                    title: データバリデーション
+        '404':
+          description: データなし
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                bookNotFound:
+                  summary: 更新対象の本が存在しない
+                  description: bookNotFound
+                  value:
+                    instance: "/api/books/update"
+                    status: 404
+                    title: 該当データなし
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                unauthorized:
+                  summary: 認証トークンなし
+                  description: unauthorized
+                  value:
+                    detail: Unauthorized
+                    instance: "/api/books/update"
+                    status: 401
+                    title: Unauthorized
+        '409':
+          description: 更新競合
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                updateConflict:
+                  summary: 他ユーザーによる更新競合
+                  description: updateConflict
+                  value:
+                    detail: 他ユーザーによって更新されています
+                    instance: "/api/books/update"
+                    status: 409
+                    title: 更新競合
+      security:
+      - bearerAuth: []
+  "/api/books/create":
+    post:
+      tags:
+      - Books
+      summary: 本登録
+      operationId: createBook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/BookCreateRequest"
+        required: true
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BookResponse"
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidRequestBody:
+                  summary: リクエストボディのバリデーションエラー
+                  description: invalidRequestBody
+                  value:
+                    errors:
+                    - field: title
+                      message: 1 から 100 の間のサイズにしてください
+                    - field: releaseDate
+                      message: null は許可されていません
+                    - field: isbn
+                      message: 13桁の数字にしてください
+                    instance: "/api/books/create"
+                    status: 400
+                    title: リクエストバリデーションエラー
+                publisherReferenceNotFound:
+                  summary: 出版社の参照先なし
+                  description: publisherReferenceNotFound
+                  value:
+                    detail: '参照先データが存在しません: publisher(id=999)'
+                    instance: "/api/books/create"
+                    status: 400
+                    title: データバリデーション
+                isbnUniqueConstraintViolation:
+                  summary: ISBNの一意制約違反
+                  description: isbnUniqueConstraintViolation
+                  value:
+                    detail: '一意制約に違反しています: book(isbn=0000000000001)'
+                    instance: "/api/books/create"
+                    status: 400
+                    title: データバリデーション
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                unauthorized:
+                  summary: 認証トークンなし
+                  description: unauthorized
+                  value:
+                    detail: Unauthorized
+                    instance: "/api/books/create"
+                    status: 401
+                    title: Unauthorized
+      security:
+      - bearerAuth: []
+  "/api/auth/login":
+    post:
+      tags:
+      - Auth
+      summary: ログイン
+      operationId: login
+      requestBody:
+        description: ログインリクエスト
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+            examples:
+              loginRequest:
+                summary: ログインリクエスト
+                description: loginRequest
+                value:
+                  username: admin
+                  password: password
+        required: true
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/LoginResponse"
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidRequestBody:
+                  summary: リクエストボディのバリデーションエラー
+                  description: invalidRequestBody
+                  value:
+                    errors:
+                    - field: username
+                      message: 空白は許可されていません
+                    instance: "/api/auth/login"
+                    status: 400
+                    title: リクエストバリデーションエラー
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                badCredentials:
+                  summary: ユーザー名またはパスワードが不正
+                  description: badCredentials
+                  value:
+                    detail: ユーザー名またはパスワードが不正です
+                    instance: "/api/auth/login"
+                    status: 401
+                    title: 認証エラー
+        '429':
+          description: リクエスト回数制限
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                loginRateLimitExceeded:
+                  summary: ログインリクエスト回数の日次上限超過
+                  description: loginRateLimitExceeded
+                  value:
+                    detail: ログインリクエスト回数が日次上限を超えました
+                    instance: "/api/auth/login"
+                    status: 429
+                    title: リクエスト回数制限
+  "/api/auth/login-rate-limit/reset":
+    post:
+      tags:
+      - Auth
+      summary: ログインリクエスト回数制限のリセット
+      operationId: resetLoginRateLimit
+      responses:
+        '204':
+          description: リセット成功
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+      security:
+      - bearerAuth: []
+  "/api/books/{id}":
+    get:
+      tags:
+      - Books
+      summary: 本取得
+      operationId: getBook
+      parameters:
+      - name: id
+        in: path
+        description: 本ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BookResponse"
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidBookId:
+                  summary: 本IDの形式不正
+                  description: invalidBookId
+                  value:
+                    detail: 'Failed to convert ''id'' with value: ''abc'''
+                    instance: "/api/books/abc"
+                    status: 400
+                    title: Bad Request
+        '404':
+          description: データなし
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                bookNotFound:
+                  summary: 取得対象の本が存在しない
+                  description: bookNotFound
+                  value:
+                    instance: "/api/books/999"
+                    status: 404
+                    title: 該当データなし
+    delete:
+      tags:
+      - Books
+      summary: 本削除
+      operationId: deleteBook
+      parameters:
+      - name: id
+        in: path
+        description: 本ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: 成功
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidBookId:
+                  summary: 本IDの形式不正
+                  description: invalidBookId
+                  value:
+                    detail: 'Failed to convert ''id'' with value: ''abc'''
+                    instance: "/api/books/abc"
+                    status: 400
+                    title: Bad Request
+        '404':
+          description: データなし
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                bookNotFound:
+                  summary: 削除対象の本が存在しない
+                  description: bookNotFound
+                  value:
+                    instance: "/api/books/999"
+                    status: 404
+                    title: 該当データなし
+        '401':
+          description: 認証エラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                unauthorized:
+                  summary: 認証トークンなし
+                  description: unauthorized
+                  value:
+                    detail: Unauthorized
+                    instance: "/api/books/1"
+                    status: 401
+                    title: Unauthorized
+        '409':
+          description: 更新競合
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                updateConflict:
+                  summary: 削除対象が他ユーザーにより更新中
+                  description: updateConflict
+                  value:
+                    detail: 他ユーザーによって更新されています
+                    instance: "/api/books/1"
+                    status: 409
+                    title: 更新競合
+      security:
+      - bearerAuth: []
+  "/api/books/search":
+    get:
+      tags:
+      - Books
+      summary: 本検索
+      operationId: getBookSearch
+      parameters:
+      - name: keyword
+        in: query
+        description: タイトルまたは著者の検索キーワード
+        required: false
+        schema:
+          type: string
+      - name: releaseDateFrom
+        in: query
+        description: 発売日付From
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: releaseDateTo
+        in: query
+        description: 発売日付To
+        required: false
+        schema:
+          type: string
+          format: date
+      - name: page
+        in: query
+        description: ページ番号（0始まり）
+        required: true
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/BookPageResponse"
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidPage:
+                  summary: ページ番号が負の値
+                  description: invalidPage
+                  value:
+                    detail: 'getBookSearch.page: 0 以上の値にしてください'
+                    errors:
+                    - field: page
+                      message: 0 以上の値にしてください
+                    instance: "/api/books/search"
+                    status: 400
+                    title: リクエストエラー
+                missingReleaseDatePair:
+                  summary: 発売日付の片方のみ指定
+                  description: missingReleaseDatePair
+                  value:
+                    detail: 発売日付From、発売日付To両方設定してください。
+                    instance: "/api/books/search"
+                    status: 400
+                    title: 相関バリデーション
+                invalidReleaseDateRange:
+                  summary: 発売日付Fromが発売日付Toより後
+                  description: invalidReleaseDateRange
+                  value:
+                    detail: 発売日付From＜＝発売日付Toにしてください。
+                    instance: "/api/books/search"
+                    status: 400
+                    title: 相関バリデーション
+  "/api/books/openbd":
+    get:
+      tags:
+      - OpenBD Books
+      summary: OpenBD ISBN書誌取得
+      operationId: getBooksByIsbn
+      parameters:
+      - name: isbn
+        in: query
+        description: 取得対象のISBN。複数指定する場合はカンマ区切り
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          pattern: "\\d{13}(,\\d{13})*"
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/OpenBdBookResponse"
+        '404':
+          description: OpenBD書誌なし
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                openBdBookNotFound:
+                  summary: OpenBD書誌が存在しない
+                  description: openBdBookNotFound
+                  value:
+                    instance: "/api/books/openbd"
+                    status: 404
+                    title: OpenBD書誌なし
+        '400':
+          description: リクエストエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                invalidIsbn:
+                  summary: ISBN形式不正
+                  description: invalidIsbn
+                  value:
+                    detail: 'getBooksByIsbn.isbn: 13桁ISBNまたはカンマ区切りの13桁ISBNを指定してください'
+                    errors:
+                    - field: isbn
+                      message: 13桁ISBNまたはカンマ区切りの13桁ISBNを指定してください
+                    instance: "/api/books/openbd"
+                    status: 400
+                    title: リクエストエラー
+        '502':
+          description: OpenBD API呼び出しエラー
+          content:
+            application/problem+json:
+              schema:
+                "$ref": "#/components/schemas/ProblemDetail"
+              examples:
+                openBdApiCallFailed:
+                  summary: OpenBD APIの呼び出しに失敗
+                  description: openBdApiCallFailed
+                  value:
+                    detail: OpenBD APIの呼び出しに失敗しました
+                    instance: "/api/books/openbd"
+                    status: 502
+                    title: 外部API呼び出しエラー
+components:
+  schemas:
+    PurchaseInvoiceCreateRequest:
+      type: object
+      properties:
+        purchaseInvoiceDate:
+          type: string
+          format: date
+          description: 仕入伝票日付
+        supplierId:
+          type: string
+          format: int64
+          description: 仕入先ID
+        receivingStoreId:
+          type: string
+          format: int64
+          description: 入庫店舗ID
+        details:
+          type: array
+          description: 仕入伝票明細
+          items:
+            "$ref": "#/components/schemas/PurchaseInvoiceDetailCreateRequest"
+          maxItems: 10
+          minItems: 0
+      required:
+      - details
+      - purchaseInvoiceDate
+      - receivingStoreId
+      - supplierId
+    PurchaseInvoiceDetailCreateRequest:
+      type: object
+      properties:
+        purchaseInvoiceDetailIsbn:
+          type: string
+          description: 仕入伝票明細ISBN
+          example: '0000000000001'
+        purchaseInvoiceDetailUnitPrice:
+          type: integer
+          format: int32
+          description: 仕入伝票明細単価
+          maximum: 10000
+          minimum: 1
+        purchaseInvoiceDetailQuantity:
+          type: integer
+          format: int32
+          description: 仕入伝票明細数量
+          maximum: 1000
+          minimum: 1
+      required:
+      - purchaseInvoiceDetailIsbn
+      - purchaseInvoiceDetailQuantity
+      - purchaseInvoiceDetailUnitPrice
+    PurchaseInvoiceDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+          description: 仕入伝票明細ID
+        purchaseInvoiceId:
+          type: string
+          format: int64
+          description: 仕入伝票ID
+        purchaseInvoiceDetailBookId:
+          type: string
+          format: int64
+          description: 仕入伝票明細本ID
+        purchaseInvoiceDetailUnitPrice:
+          type: integer
+          format: int32
+          description: 仕入伝票明細単価
+        purchaseInvoiceDetailQuantity:
+          type: integer
+          format: int32
+          description: 仕入伝票明細数量
+        purchaseInvoiceDetailAmount:
+          type: string
+          format: int64
+          description: 仕入伝票明細金額
+        updateAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        version:
+          type: string
+          format: int64
+          description: バージョン
+      required:
+      - id
+      - purchaseInvoiceDetailAmount
+      - purchaseInvoiceDetailBookId
+      - purchaseInvoiceDetailQuantity
+      - purchaseInvoiceDetailUnitPrice
+      - purchaseInvoiceId
+      - updateAt
+      - version
+    PurchaseInvoiceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+          description: 仕入伝票ID
+        purchaseInvoiceType:
+          type: string
+          description: 仕入伝票種別
+          enum:
+          - PURCHASE
+          - RETURN_PURCHASE
+        returnPurchaseInvoiceId:
+          type: string
+          format: int64
+          description: 返品元仕入伝票ID
+        purchaseInvoiceDate:
+          type: string
+          format: date
+          description: 仕入伝票日付
+        supplierId:
+          type: string
+          format: int64
+          description: 仕入先ID
+        receivingStoreId:
+          type: string
+          format: int64
+          description: 入庫店舗ID
+        purchaseInvoiceAmount:
+          type: string
+          format: int64
+          description: 仕入伝票金額
+        updateAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        version:
+          type: string
+          format: int64
+          description: バージョン
+        detail:
+          type: array
+          description: 仕入伝票明細
+          items:
+            "$ref": "#/components/schemas/PurchaseInvoiceDetailResponse"
+          minItems: 1
+      required:
+      - detail
+      - id
+      - purchaseInvoiceAmount
+      - purchaseInvoiceDate
+      - purchaseInvoiceType
+      - receivingStoreId
+      - supplierId
+      - updateAt
+      - version
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        properties:
+          type: object
+          additionalProperties: {}
+    BookSalesUnitPriceCreateRequest:
+      type: object
+      properties:
+        salesUnitPrice:
+          type: string
+          description: 販売単価
+          example: 1500
+          maximum: 10000
+          minimum: 1
+        effectiveFrom:
+          type: string
+          format: date
+          description: 有効開始日
+      required:
+      - effectiveFrom
+      - salesUnitPrice
+    BookUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+          description: 本ID
+        title:
+          type: string
+          description: タイトル
+          maxLength: 100
+          minLength: 1
+        author:
+          type: string
+          description: 著者
+          maxLength: 200
+          minLength: 0
+        releaseDate:
+          type: string
+          format: date
+          description: 発売日付
+        publisherId:
+          type: string
+          format: int64
+          description: 出版社ID
+        genreId:
+          type: string
+          format: int64
+          description: ジャンルID
+        isbn:
+          type: string
+          description: ISBN
+          example: '9784000000000'
+        version:
+          type: string
+          format: int64
+          description: バージョン
+      required:
+      - genreId
+      - id
+      - isbn
+      - publisherId
+      - releaseDate
+      - title
+      - version
+    BookResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+          description: 本ID
+        title:
+          type: string
+          description: タイトル
+        author:
+          type: string
+          description: 著者
+        releaseDate:
+          type: string
+          format: date
+          description: 発売日付
+        publisherId:
+          type: string
+          format: int64
+          description: 出版社ID
+        publisherName:
+          type: string
+          description: 出版社名
+        genreId:
+          type: string
+          format: int64
+          description: ジャンルID
+        genreName:
+          type: string
+          description: ジャンル名
+        isbn:
+          type: string
+          description: ISBN
+        salesUnitPrice:
+          type: string
+          description: 販売単価
+        updateAt:
+          type: string
+          format: date-time
+          description: 更新日時
+        version:
+          type: string
+          format: int64
+          description: バージョン
+        bookStockList:
+          type: array
+          description: 本在庫リスト
+          items:
+            "$ref": "#/components/schemas/BookStockResponse"
+      required:
+      - bookStockList
+      - genreId
+      - genreName
+      - id
+      - isbn
+      - publisherId
+      - publisherName
+      - releaseDate
+      - salesUnitPrice
+      - title
+      - updateAt
+      - version
+    BookStockResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+          description: 本在庫ID
+        bookStockStoreId:
+          type: string
+          format: int64
+          description: 本在庫店舗ID
+        storeName:
+          type: string
+          description: 本在庫店舗名
+        bookStockQuantity:
+          type: string
+          description: 本在庫数量
+      required:
+      - bookStockQuantity
+      - bookStockStoreId
+      - id
+      - storeName
+    BookCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: タイトル
+          maxLength: 100
+          minLength: 1
+        author:
+          type: string
+          description: 著者
+          maxLength: 200
+          minLength: 0
+        releaseDate:
+          type: string
+          format: date
+          description: 発売日付
+        publisherId:
+          type: string
+          format: int64
+          description: 出版社ID
+        genreId:
+          type: string
+          format: int64
+          description: ジャンルID
+        isbn:
+          type: string
+          description: ISBN
+          example: '9784000000000'
+        salesUnitPrice:
+          type: string
+          description: 販売単価
+          example: 1200
+          maximum: 10000
+          minimum: 1
+      required:
+      - genreId
+      - isbn
+      - publisherId
+      - releaseDate
+      - salesUnitPrice
+      - title
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: ユーザー名
+          minLength: 1
+        password:
+          type: string
+          description: パスワード
+          minLength: 1
+      required:
+      - password
+      - username
+    LoginResponse:
+      type: object
+      properties:
+        username:
+          type: string
+          description: ユーザー名
+        tokenType:
+          type: string
+          description: トークン種別
+          example: Bearer
+        accessToken:
+          type: string
+          description: アクセストークン
+        expiresIn:
+          type: string
+          format: int64
+          description: 有効期限（秒）
+      required:
+      - accessToken
+      - expiresIn
+      - tokenType
+      - username
+    BookPageResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          description: 検索結果
+          items:
+            "$ref": "#/components/schemas/BookResponse"
+        page:
+          type: string
+          description: ページ番号
+          minimum: 0
+        size:
+          type: string
+          description: 1ページあたりの件数
+          minimum: 1
+        totalElements:
+          type: string
+          format: int64
+          description: 総件数
+          minimum: 0
+        totalPages:
+          type: string
+          description: 総ページ数
+          minimum: 0
+      required:
+      - content
+    OpenBdBookResponse:
+      type: object
+      properties:
+        onix:
+          "$ref": "#/components/schemas/OpenBdOnixResponse"
+          description: JPRO-onix準拠項目
+        hanmoto:
+          "$ref": "#/components/schemas/OpenBdHanmotoResponse"
+          description: 版元ドットコム独自書誌項目
+        summary:
+          "$ref": "#/components/schemas/OpenBdSummaryResponse"
+          description: 書誌の概要
+    OpenBdHanmotoResponse:
+      type: object
+      properties:
+        datekoukai:
+          type: string
+          description: 公開日
+        datemodified:
+          type: string
+          description: 情報更新日時
+        datecreated:
+          type: string
+          description: 情報作成日時
+        dateshuppan:
+          type: string
+          description: 出版年月日
+        reviews:
+          type: array
+          description: レビュー情報
+          items:
+            type: object
+            additionalProperties: {}
+        hanmotoinfo:
+          type: object
+          additionalProperties: {}
+          description: 版元ドットコム独自項目
+    OpenBdOnixProductIdentifierResponse:
+      type: object
+      properties:
+        ProductIDType:
+          type: string
+          description: IDの種類
+        IDValue:
+          type: string
+          description: ISBN
+    OpenBdOnixResponse:
+      type: object
+      properties:
+        RecordReference:
+          type: string
+          description: ISBNコード
+        NotificationType:
+          type: string
+          description: 通知種別・削除フラグ等
+        ProductIdentifier:
+          "$ref": "#/components/schemas/OpenBdOnixProductIdentifierResponse"
+          description: 商品識別子
+        DescriptiveDetail:
+          type: object
+          additionalProperties: {}
+          description: 商品情報
+        CollateralDetail:
+          type: object
+          additionalProperties: {}
+          description: 販促情報
+        PublishingDetail:
+          type: object
+          additionalProperties: {}
+          description: 出版情報
+        ProductSupply:
+          type: object
+          additionalProperties: {}
+          description: 供給情報
+    OpenBdSummaryResponse:
+      type: object
+      properties:
+        isbn:
+          type: string
+          description: ISBN
+        title:
+          type: string
+          description: 書名
+        volume:
+          type: string
+          description: 巻号
+        series:
+          type: string
+          description: シリーズ名
+        publisher:
+          type: string
+          description: 出版者
+        pubdate:
+          type: string
+          description: 出版年月日または出版年月
+        cover:
+          type: string
+          format: uri
+          description: 書影URL
+        author:
+          type: string
+          description: 著者名
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
