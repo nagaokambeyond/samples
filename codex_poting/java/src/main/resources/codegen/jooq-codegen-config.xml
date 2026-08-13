@@ -1,0 +1,19 @@
+<configuration>
+    <jdbc>
+        <driver>org.h2.Driver</driver>
+        <url>${codeGenJdbcUrl}</url>
+        <user>sa</user>
+        <password></password>
+    </jdbc>
+    <generator>
+        <database>
+            <name>org.jooq.meta.h2.H2Database</name>
+            <inputSchema>public</inputSchema>
+            <includes>${generatedTablePattern}</includes>
+        </database>
+        <target>
+            <packageName>${jooqGeneratedPackage}</packageName>
+            <directory>${jooqGeneratedDirectory}</directory>
+        </target>
+    </generator>
+</configuration>
