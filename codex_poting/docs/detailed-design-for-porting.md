@@ -44,6 +44,407 @@ Spring Boot、Spring Security、Bean Validation、JPA、MyBatis、Doma、jOOQ �
 - 更新・削除・在庫加算・販売単価履歴追加では、行ロックまたは楽観ロックで競合を検出する。
 - 同一処理内で使う現在日時は、可能な限り 1 回取得して使い回す。
 
+### 3.1 レイヤー設計の基準
+
+Controller 層は現行の Spring API Controller、Service 層と Repository 層は既定 profile で使われる Doma 実装を設計の基準とする。
+
+| 対象 | 設計上の正 | 移植時の扱い |
+| --- | --- | --- |
+| HTTP 契約 | `docs/openapi.yaml` と API interface | path、method、JSON、status code、認証要否を維持する |
+| Controller 層 | `api/controller` 配下の現行 Controller | HTTP とユースケースの接続責務として移植する |
+| Service 層 | `BooksOperationServiceDoma`、`PurchaseOperationServiceDoma` | 処理順、トランザクション、検証、ロックを維持する |
+| Repository 層 | Doma の生成 DAO、Custom DAO、SQL ファイル | 同等の CRUD、検索、集計、ロック操作へ置き換える |
+| 完了条件 | `docs/porting-acceptance-tests.md` | 全ケースが移植先で成功すること |
+
+JPA、MyBatis、jOOQ は同一仕様の別実装例であり、本章の処理フローを決める根拠にはしない。移植先で ORM や SQL ライブラリを選ぶ際の比較材料としてのみ扱う。
+
+### 3.2 全体アーキテクチャ
+
+```mermaid
+flowchart LR
+    Client["API client"] --> Security["Authentication / authorization"]
+    Security --> Controller["Controller"]
+    Controller --> RequestValidation["Request validation"]
+    Controller --> Service["Service / use case"]
+    Service --> DataValidation["Data validator"]
+    Service --> Converter["Converter"]
+    Service --> Dao["Generated DAO / Custom DAO"]
+    Dao --> Database[(Database)]
+    Controller --> ExternalClient["OpenBD client"]
+    Controller -. failure .-> ErrorHandler["Problem Detail error handler"]
+    Service -. failure .-> ErrorHandler
+    ExternalClient -. failure .-> ErrorHandler
+```
+
+移植先での依存方向は次のとおりとする。
+
+- Controller は Service の公開インターフェイスと共通の認証・入力検証機能に依存する。
+- Service は Validator、Converter、Repository 相当のインターフェイスに依存する。
+- Repository は DB entity と DB 接続機能に依存するが、HTTP request / response には依存しない。
+- Converter は API DTO と永続化モデルまたは検索結果モデルの変換だけを行い、DB へアクセスしない。
+- Validator は入力済みデータの業務上の整合性を検証する。HTTP status の組み立ては行わない。
+- 例外ハンドラは各層の例外を一元的に Problem Detail へ変換する。
+
+### 3.3 レイヤー別責務
+
+| レイヤー / 部品 | 担当すること | 担当しないこと |
+| --- | --- | --- |
+| Controller | HTTP 入出力、DTO 単項目検証の起動、相関検証、認証済み要求の受付、Service 呼び出し、成功 status code の決定 | SQL、トランザクション、在庫計算、価格履歴調整 |
+| Service | ユースケースの処理順、トランザクション境界、業務検証、ロックを伴う更新、例外の業務的な意味付け | HTTP header や Problem Detail JSON の直接生成 |
+| Validator | 外部キー参照、ISBN 一意性、version、仕入明細 ISBN の存在確認 | entity の登録・更新、HTTP response 生成 |
+| Converter | request から entity、検索結果から response、金額や在庫履歴 entity の組み立て | DB 検索、トランザクション制御 |
+| 生成 DAO 相当 | 単一テーブルの基本 CRUD、version を使った楽観ロック | 複雑な JOIN、検索条件組み立て、複数テーブルの業務処理 |
+| Custom DAO 相当 | JOIN、検索、件数、前後履歴、明示採番、`FOR UPDATE NOWAIT` | HTTP DTO の生成、ユースケースの処理順制御 |
+| 共通機能 | 認証、例外変換、ログ、ページ計算、設定、時刻、リトライ | 個別ユースケース固有の業務ルール |
+
+### 3.4 Controller 層詳細
+
+#### 3.4.1 Controller 共通規約
+
+- request body、path parameter、query parameter を API DTO またはプリミティブ値として受け取る。
+- DTO の必須、桁数、範囲、形式は Controller 到達時に検証する。
+- 複数項目の組み合わせ検証は専用 Validator を呼び出す。
+- DB entity や外部 API の生成 DTO を response として直接返さない。
+- 成功時の HTTP status は API 契約に従う。業務例外からエラー status を決める処理は共通例外ハンドラへ委譲する。
+- Controller 自身は DB トランザクションを開始しない。
+
+#### 3.4.2 Controller 対応表
+
+| Controller | Operation | 認証 | Controller の処理 | 委譲先 |
+| --- | --- | --- | --- | --- |
+| `BooksOperationApiController` | 書籍取得 | 不要 | path の ID を受け取る | `BooksOperationService.findById` |
+| `BooksOperationApiController` | 書籍検索 | 不要 | page の下限検証、発売日範囲の相関検証、設定から page size を取得 | `BooksOperationService.search` |
+| `BooksOperationApiController` | 書籍登録 | 必須 | request DTO の単項目検証 | `BooksOperationService.create` |
+| `BooksOperationApiController` | 書籍更新 | 必須 | request DTO の単項目検証 | `BooksOperationService.update` |
+| `BooksOperationApiController` | 販売単価履歴追加 | 必須 | path ID と request DTO の検証、空 body の 200 を生成 | `BooksOperationService.createSalesUnitPrice` |
+| `BooksOperationApiController` | 書籍削除 | 必須 | path の ID を受け取る | `BooksOperationService.delete` |
+| `PurchaseOperationApiController` | 仕入登録 | 必須 | request DTO と明細リストを検証 | `PurchaseOperationService.create` |
+| `AuthOperationApiController` | ログイン | 不要 | 回数制限消費、資格情報認証、token response の生成 | 認証機能、`LoginRateLimitService`、`JwtTokenService` |
+| `AuthOperationApiController` | 回数制限リセット | 必須 | 全カウンタのリセットを依頼 | `LoginRateLimitService` |
+| `OpenBdBooksApiController` | OpenBD 書誌取得 | 不要 | ISBN を外部 API へ渡し、結果を内部 response へ変換 | OpenBD `BooksApi`、`ModelMapper` |
+
+認証と OpenBD は現行コードでは専用 Service を介さず Controller が共通機能を組み合わせている。移植先で `AuthenticationService` や `OpenBdService` を設けてもよいが、処理順、例外、response は本書の契約を維持する。書籍と仕入については Doma Service の処理を Controller へ移動してはならない。
+
+### 3.5 Service 層詳細
+
+#### 3.5.1 Service 公開契約
+
+| Service | Operation | 入力 | 出力 |
+| --- | --- | --- | --- |
+| Books | `findById` | `id` | `BookResponse` |
+| Books | `search` | `keyword`, `releaseDateFrom`, `releaseDateTo`, `page`, `size` | `BookPageResponse` |
+| Books | `create` | `BookCreateRequest` | `BookResponse` |
+| Books | `update` | `BookUpdateRequest` | `BookResponse` |
+| Books | `createSalesUnitPrice` | `bookId`, `BookSalesUnitPriceCreateRequest` | なし |
+| Books | `delete` | `id` | なし |
+| Purchase | `create` | `PurchaseInvoiceCreateRequest` | `PurchaseInvoiceResponse` |
+
+#### 3.5.2 書籍取得
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-only |
+| ロック | なし |
+| 利用 DAO | `BookCustomDao.selectByIdWithPublisherName` |
+| 検証 | SQL 結果が 0 件でないこと |
+| 主な例外 | 0 件の場合 `RepositoryDataNotfoundException`、HTTP 404 |
+| ロールバック | 読み取りのみのため更新対象なし |
+
+処理順:
+
+1. ID を指定して、出版社、ジャンル、現在販売単価、店舗別在庫を含む書籍情報を取得する。
+2. 結果が `null` の場合はデータなし例外を送出する。
+3. `BookOperationConverterDoma` 相当で検索結果を `BookResponse` へ変換する。
+4. 在庫行は `bookStockList` として書籍単位に集約して返す。
+
+#### 3.5.3 書籍検索
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-only |
+| ロック | なし |
+| 利用 DAO | `BookCustomDao.selectByTitleOrAuthorStartingWithIgnoreCase`、`countByTitleOrAuthorStartingWithIgnoreCase` |
+| 検証 | page は 0 以上、発売日は両方指定または両方未指定、From は To 以下 |
+| 主な例外 | 入力不正の場合 HTTP 400 |
+| ロールバック | 読み取りのみのため更新対象なし |
+
+処理順:
+
+1. `PageCalculator.calculateOffset(page, size)` 相当で `page * size` を計算する。
+2. 同一の keyword、発売日条件を使い、書籍一覧を limit / offset 付きで取得する。
+3. 同一条件で総件数を取得する。
+4. 検索結果を `BookResponse` のリストへ変換する。
+5. page、size、totalElements、`PageCalculator.calculateTotalPages` 相当の totalPages を設定する。
+
+ページングは在庫 JOIN より前に書籍単位で適用する。先に在庫を JOIN してから limit / offset を適用すると、在庫件数によって 1 ページの書籍数が変わるため禁止する。
+
+#### 3.5.4 書籍登録
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-write、処理全体で 1 トランザクション |
+| ロック | 明示的な行ロックなし |
+| 利用 DAO | `PublisherDao`、`BookGenreDao`、`BookCustomDao.selectByIsbn`、`BookDao.insert`、`BookSalesUnitPriceHistoryCustomDao.selectNextId` / `insertWithId`、登録結果取得用 `BookCustomDao` |
+| 検証 | 出版社・ジャンル存在、ISBN 未使用 |
+| 主な例外 | 参照先なし、ISBN 重複は HTTP 400。DB 制約違反も同等に扱う |
+| ロールバック | book と初期販売単価履歴の両方。結果再取得失敗時も全体をロールバックする |
+
+処理順:
+
+1. 出版社 ID とジャンル ID の存在を順番に検証する。
+2. ISBN で既存書籍を取得し、存在する場合は一意制約例外を送出する。
+3. 同一の現在日時を createAt と updateAt に設定し、version 1 の book entity を生成する。
+4. book を登録し、採番された book ID を得る。
+5. book ID、販売単価、発売日を使い、`effectiveFrom = releaseDate`、`effectiveTo = null`、version 1 の初期販売単価履歴を生成する。
+6. 販売単価履歴 ID を取得して履歴を登録する。
+7. 書籍取得と同じ結合検索で登録結果を再取得し、`BookResponse` を返す。
+
+#### 3.5.5 書籍更新
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-write、ロック失敗時のみ短いリトライ対象 |
+| ロック | book を `FOR UPDATE NOWAIT` 相当で取得 |
+| 利用 DAO | `PublisherDao`、`BookGenreDao`、`BookCustomDao.selectByIdWithWriteLock` / `selectByIsbn`、`BookDao.update`、登録結果取得用 `BookCustomDao` |
+| 検証 | 出版社・ジャンル存在、book 存在、request.version 一致、ISBN が自分以外で未使用 |
+| 主な例外 | データなし 404、参照・一意性違反 400、version またはロック競合 409 |
+| ロールバック | book の更新全体。結果再取得失敗時も更新をロールバックする |
+
+処理順:
+
+1. 出版社 ID とジャンル ID の存在を検証する。
+2. ID を指定して book を書き込みロック付きで取得する。
+3. 0 件ならデータなし例外を送出する。
+4. DB の version と request.version を比較する。
+5. ISBN の使用書籍が存在する場合、更新対象自身であることを確認する。
+6. タイトル、著者、発売日、出版社、ジャンル、ISBN、updateAt を更新する。販売単価は変更しない。
+7. version 条件付きで更新する。Doma の `OptimisticLockException` 相当は更新競合例外へ変換する。
+8. 結合検索で更新結果を再取得して返す。
+
+#### 3.5.6 販売単価履歴追加
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-write、ロック失敗時のみ短いリトライ対象 |
+| ロック | 対象 book を `FOR UPDATE NOWAIT` 相当で取得 |
+| 利用 DAO | `BookCustomDao.selectByIdWithWriteLock`、`BookSalesUnitPriceHistoryCustomDao.selectFollowingHistories` / `selectPreviousHistory` / `selectNextId` / `insertWithId`、`BookSalesUnitPriceHistoryDao.update` |
+| 検証 | book 存在、同一 effectiveFrom が未登録、直前履歴が存在 |
+| 主な例外 | データなし 404、同一開始日 400、version またはロック競合 409 |
+| ロールバック | 直前履歴の終了日更新と新履歴登録をまとめてロールバックする |
+
+処理順:
+
+1. 対象 book を書き込みロック付きで取得し、0 件ならデータなし例外を送出する。
+2. 同じ book で `effective_from >= request.effectiveFrom` の後続履歴を開始日昇順で取得する。
+3. 先頭履歴の effectiveFrom が request と同じ場合は一意制約例外を送出する。
+4. `effective_from < request.effectiveFrom` の直前履歴を開始日降順で 1 件取得する。
+5. 直前履歴がない場合はデータなし例外を送出する。
+6. 直前履歴の effectiveTo を `request.effectiveFrom - 1 日` に変更し、version 条件付きで更新する。
+7. 後続履歴がなければ新履歴の effectiveTo を `null`、あれば先頭後続履歴の `effectiveFrom - 1 日` とする。
+8. 新しい ID、販売単価、期間、監査日時、version 1 を設定して履歴を登録する。
+
+#### 3.5.7 書籍削除
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-write、ロック失敗時のみ短いリトライ対象 |
+| ロック | book を `FOR UPDATE NOWAIT` 相当で取得 |
+| 利用 DAO | `BookCustomDao.selectByIdWithWriteLock`、`BookDao.delete` |
+| 検証 | book 存在 |
+| 主な例外 | データなし 404、version またはロック競合 409、外部キー制約違反は DB 制約に従う |
+| ロールバック | 削除処理全体 |
+
+処理順:
+
+1. ID を指定して book を書き込みロック付きで取得する。
+2. 0 件ならデータなし例外を送出する。
+3. 取得した version を条件に book を削除する。
+4. Doma の `OptimisticLockException` 相当は更新競合例外へ変換する。
+
+#### 3.5.8 仕入登録
+
+| 項目 | 設計 |
+| --- | --- |
+| トランザクション | read-write、明細全件を含む 1 トランザクション。ロック失敗時のみ短いリトライ対象 |
+| ロック | 明細ごとに受入店舗 ID と book ID の在庫行を `FOR UPDATE NOWAIT` 相当で取得 |
+| 利用 DAO | `SupplierDao`、`StoreDao`、`BookCustomDao.selectByIsbn`、`PurchaseInvoiceDao.insert`、`PurchaseInvoiceDetailDao.insert`、`BookStockMovementDao.insert`、`BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock`、`BookStockDao.insert` / `update` |
+| 検証 | 仕入先、受入店舗、全明細 ISBN の存在 |
+| 主な例外 | 参照先なし 400、在庫 version またはロック競合 409、DB 制約違反 |
+| ロールバック | 伝票、全明細、全在庫増減履歴、全在庫更新をまとめてロールバックする |
+
+処理順:
+
+1. supplierId、receivingStoreId の順で参照先を検証する。
+2. 明細を入力順に検証し、ISBN ごとの book ID map を作る。1 件でも存在しなければ処理を中止する。
+3. 処理内で共通利用する現在日時を 1 回取得する。
+4. 各明細について book ID を設定し、`unitPrice * quantity` を 64 bit 整数で計算する。
+5. 明細金額の合計を伝票金額とし、種別 `PURCHASE` の仕入伝票を生成して登録する。
+6. 明細を入力順に処理し、伝票 ID を設定して登録する。
+7. 同じ明細について、種別 `PURCHASE`、発生元 `PURCHASE_INVOICE` の在庫増減履歴を登録する。
+8. 受入店舗 ID と book ID で在庫行をロック付き取得する。
+9. 在庫がなければ明細数量を初期数量として新規登録する。
+10. 在庫があれば既存数量へ明細数量を加算し、同じ現在日時を updateAt に設定して version 条件付きで更新する。
+11. 在庫更新で楽観ロックが失敗した場合は更新競合例外へ変換し、伝票を含む処理全体をロールバックする。
+12. 登録済み伝票と明細を `PurchaseInvoiceResponse` へ変換して返す。
+
+同じ ISBN が複数明細に含まれる場合も、明細の入力順に在庫取得と数量加算を繰り返す。移植時は一括更新へ変更せず、この結果とロック特性を維持する。
+
+### 3.6 Repository 層詳細
+
+本書では Doma の DAO を Repository 層の基準とする。移植先で名称を Repository、Mapper、Gateway などに変更してよいが、生成 DAO 相当と Custom DAO 相当の責務は混在させない。
+
+#### 3.6.1 生成 DAO 相当
+
+生成 DAO は単一テーブルの基本 CRUD を担当する。各 DAO は原則として次の契約を持つ。
+
+| Operation | 入力 | 戻り値 / 0 件 | SQL とロック |
+| --- | --- | --- | --- |
+| `selectById` | ID | entity または `null` | 主キー検索、ロックなし |
+| `selectByIdAndVersion` | ID、version | entity。0 件は取得必須例外 | 主キーと version の一致検索、ロックなし |
+| `insert` | entity | 影響行数 | 1 行 INSERT。自動採番列は登録後 entity へ反映 |
+| `update` | entity | 影響行数 | 主キーと version を条件に UPDATE。成功時に version を加算 |
+| `delete` | entity | 影響行数 | 主キーと version を条件に DELETE |
+
+`update` と `delete` の対象が 0 件の場合、Doma は `OptimisticLockException` を送出する。移植先でも単なる「更新 0 件」として成功扱いにせず、Service が HTTP 409 対象の競合例外へ変換できる契約にする。
+
+| DAO | テーブル | 本ユースケースで使う操作 |
+| --- | --- | --- |
+| `BookDao` | `book` | insert、update、delete |
+| `BookSalesUnitPriceHistoryDao` | `book_sales_unit_price_history` | 直前履歴の update |
+| `BookStockDao` | `book_stock` | insert、update |
+| `BookStockMovementDao` | `book_stock_movement` | insert |
+| `PurchaseInvoiceDao` | `purchase_invoice` | insert。返品伝票検証では selectById も利用可能 |
+| `PurchaseInvoiceDetailDao` | `purchase_invoice_detail` | insert |
+| `PublisherDao` | `publisher` | selectById |
+| `BookGenreDao` | `book_genre` | selectById |
+| `SupplierDao` | `supplier` | selectById |
+| `StoreDao` | `store` | selectById |
+
+#### 3.6.2 `BookCustomDao` 相当
+
+| Operation | 入力 | 戻り値 / 0 件 | SQL 概要 | ロック |
+| --- | --- | --- | --- | --- |
+| `selectByIdWithPublisherName` | id | 集約書籍または `null` | 出版社、ジャンル、現在単価を INNER JOIN、在庫と店舗を LEFT JOIN。`b.id, bs.id` 順 | なし |
+| `selectByTitleOrAuthorStartingWithIgnoreCase` | keyword、発売日 From / To、limit、offset | 集約書籍リスト。0 件は空リスト | CTE 内で書籍を ID 順にページングした後、在庫と店舗を LEFT JOIN | なし |
+| `countByTitleOrAuthorStartingWithIgnoreCase` | keyword、発売日 From / To | 件数、0 件は 0 | 一覧と同じ書籍・現在単価・検索条件で count | なし |
+| `selectByIdWithWriteLock` | id | book または `null` | ID 完全一致 | `FOR UPDATE NOWAIT` |
+| `selectByIsbn` | isbn | book または `null` | ISBN 完全一致 | なし |
+
+検索 SQL の詳細:
+
+- keyword が `null` または trim 後空文字の場合、keyword 条件を付けない。
+- keyword がある場合、title または author の小文字化した値に対する前方一致とする。
+- 発売日条件は From と To が両方ある場合だけ `BETWEEN` を付ける。片方指定は Controller 相関検証で拒否する。
+- 現在単価は `effective_from <= current_date` かつ `effective_to IS NULL OR current_date <= effective_to` の履歴を INNER JOIN する。
+- 現在単価履歴がない書籍は取得・検索・count の対象外になる。
+- 在庫がない書籍も返すため、`book_stock` と `store` は LEFT JOIN とする。
+- 一覧の count には在庫を JOIN しない。これにより在庫店舗数による件数の水増しを防ぐ。
+
+#### 3.6.3 `BookSalesUnitPriceHistoryCustomDao` 相当
+
+| Operation | 入力 | 戻り値 / 0 件 | SQL 概要 | ロック |
+| --- | --- | --- | --- | --- |
+| `selectNextId` | なし | 次の ID | `coalesce(max(id), 0) + 1` | なし |
+| `insertWithId` | 履歴 entity | 影響行数 | ID を明示した INSERT | なし |
+| `selectFollowingHistories` | bookId、effectiveFrom | 履歴リスト。0 件は空リスト | 同一 book、開始日が指定日以降、開始日昇順 | なし。親 book のロック下で呼ぶ |
+| `selectPreviousHistory` | bookId、effectiveFrom | 直前履歴または `null` | 同一 book、開始日が指定日より前、開始日降順の先頭 1 件 | なし。親 book のロック下で呼ぶ |
+
+`selectNextId` は現行 Doma SQL の明示採番方式である。移植先で sequence や identity を使う場合も、登録された ID が後続処理で取得でき、同時登録で重複しないことを保証する。
+
+#### 3.6.4 `BookStockCustomDao` 相当
+
+| Operation | 入力 | 戻り値 / 0 件 | SQL 概要 | ロック |
+| --- | --- | --- | --- | --- |
+| `selectByStoreIdAndBookIdWithWriteLock` | storeId、bookId | 在庫 entity または `null` | 店舗 ID と book ID の完全一致 | `FOR UPDATE NOWAIT` |
+
+0 件の場合は例外にせず、新規在庫作成へ分岐する。同一店舗・同一書籍の並行新規登録では一意制約競合が起こり得るため、トランザクションをロールバックし、移植先の競合方針に従って HTTP 409 または限定リトライへ変換する。
+
+### 3.7 Validator と Converter
+
+#### 3.7.1 `BookDataValidatorDoma` 相当
+
+| Operation | DAO 呼び出し順 | 成功条件 | 失敗時 |
+| --- | --- | --- | --- |
+| 外部キー検証 | `PublisherDao.selectById`、`BookGenreDao.selectById` | 両方存在 | 最初に見つかった不足参照を外部キー参照エラーにする |
+| version 検証 | DAO 呼び出しなし | DB entity.version と request.version が一致 | 更新競合エラー |
+| ISBN 一意性検証 | `BookCustomDao.selectByIsbn` | 0 件、または取得 book が更新対象自身 | 一意制約エラー |
+
+#### 3.7.2 `PurchaseDataValidatorDoma` 相当
+
+| Operation | DAO 呼び出し順 | 成功時の結果 | 失敗時 |
+| --- | --- | --- | --- |
+| 仕入参照検証 | supplier、store、各明細 ISBN の順 | 挿入順を保持する ISBN と book ID の map | 最初に見つかった不足参照を外部キー参照エラーにする |
+| 返品元伝票検証 | purchase invoice | ID が null、または存在して種別が PURCHASE | 不足または種別不一致を外部キー参照エラーにする |
+
+現行の仕入登録は返品元伝票検証を呼び出さないが、Validator の責務として定義されている。将来、返品伝票を追加する場合の参照契約として扱う。
+
+#### 3.7.3 Converter 相当
+
+- `BookOperationConverterDoma` は集約検索結果を `BookResponse` へ変換し、在庫を `BookStockResponse` のリストへ変換する。
+- `PurchaseOperationConverterDoma` は request と解決済み book ID map から明細 entity を作り、明細金額を計算する。
+- 仕入伝票は種別 `PURCHASE` と明細金額合計を設定する。
+- 在庫新規作成時は受入店舗、book ID、明細数量、監査日時を設定する。
+- 在庫増減履歴は店舗、book、数量、伝票 ID、明細 ID、仕入日、種別を設定する。
+- response 変換では永続化 entity の内部関連や外部 API DTO を露出させない。
+
+### 3.8 共通機能設計
+
+| 共通機能 | 呼び出し元 / 適用箇所 | 実行タイミング | 失敗時の動作 |
+| --- | --- | --- | --- |
+| DTO 単項目検証 | Web framework、全 Controller | Service 呼び出し前 | HTTP 400 Problem Detail |
+| 検索相関検証 | `BooksOperationApiControllerValidator` 相当 | 書籍検索 Service 呼び出し前 | HTTP 400 Problem Detail |
+| データ検証 | Doma Validator 相当 | Service が書き込み前に明示呼び出し | 参照・一意性は HTTP 400、version は 409 |
+| Bearer 認証 | Security middleware | 認証必須 Controller 到達前 | HTTP 401 |
+| JWT 発行・検証 | ログイン、認証 middleware | ログイン成功後、認証必須 request ごと | 認証失敗は HTTP 401 |
+| ログイン回数制限 | ログイン Controller | 資格情報認証より前に回数を消費 | 上限超過は HTTP 429 |
+| Problem Detail 変換 | 共通例外ハンドラ | Controller または Service の例外送出後 | 9 章の status、title、detail、errors を返す |
+| ページ計算 | 書籍検索 Service | 一覧取得前と response 生成時 | page / size 不正は入力検証で事前に拒否 |
+| トランザクション | Service | Service operation 開始から正常終了まで | 未処理例外時に operation 内の全更新をロールバック |
+| ロック失敗リトライ | 更新、単価追加、削除、仕入 | 一時的な悲観ロック失敗時 | 上限後は HTTP 409。業務検証エラーはリトライしない |
+| 楽観ロック変換 | 更新・削除 DAO 呼び出し | Doma の `OptimisticLockException` 発生時 | 共通の更新競合例外へ変換し HTTP 409 |
+| API ログ | interceptor / advice 相当 | request 受信、response または例外返却時 | ログ失敗で業務結果を変更しない。password と token は記録しない |
+| 設定管理 | 起動時設定 | DI / application 初期化時 | 必須秘密情報や URL 不正は起動失敗とする |
+| 現在日時 | Service、JWT、回数制限 | 1 operation 内では原則 1 回取得 | DB とアプリの基準日・timezone を一貫させる |
+| OpenBD 通信 | OpenBD Controller または専用 Service | ISBN 検証後 | 書誌なし 404、外部 API 失敗 502 |
+
+### 3.9 Codex による移植実装の規約
+
+Codex へ実装を依頼する際は、次の順で資料を正として扱う。
+
+1. `docs/openapi.yaml`: HTTP method、path、認証、request / response schema、status code
+2. 本章の Doma Service フロー: 業務処理順、トランザクション、検証、ロック、例外
+3. Doma Custom DAO と SQL: JOIN、検索条件、件数、並び順、ロック条件
+4. 7 章のデータモデル: テーブル、列、制約、version、監査項目
+5. `docs/porting-acceptance-tests.md`: 実装完了条件
+
+実装時の必須規約:
+
+- Controller に本章 3.5 の業務処理を記述しない。
+- Service が read-only / read-write のトランザクション境界を持つ。
+- DB entity、集約検索モデル、API DTO、外部 API DTO を分離する。
+- 基本 CRUD と Custom DAO 相当の複雑な SQL を分離する。
+- DAO の 0 件が `null`、空リスト、0、または例外のどれになるかを Repository 契約とテストで固定する。
+- 書き込み処理の検証順、ロック順、登録順、ロールバック範囲を本章から変更しない。
+- 書籍検索では書籍をページングしてから在庫を結合し、count では在庫を JOIN しない。
+- Doma の `FOR UPDATE NOWAIT`、version 更新、ロック失敗リトライと同等の競合検出を実装する。
+- フレームワーク固有例外は境界でアプリケーション共通例外へ変換し、9 章の Problem Detail に統一する。
+- 実装完了時は受け入れテスト仕様のケース ID と自動テストを対応付ける。
+
+### 3.10 受け入れテストとのトレーサビリティ
+
+| 設計対象 | 主な担当層 | 受け入れテストケース |
+| --- | --- | --- |
+| ログイン、認可、回数制限 | Security、Auth Controller、認証共通機能 | `AUTH-001` から `AUTH-007` |
+| 書籍取得 | Books Controller、Books Service、Book Custom DAO、Converter | `BOOK-001`、`BOOK-002` |
+| 書籍検索・ページング・相関検証 | Books Controller、Controller Validator、Books Service、Book Custom DAO、PageCalculator | `BOOK-003` から `BOOK-011` |
+| 書籍登録 | Books Controller、Books Service、Book Validator、Book / Price History DAO | `BOOK-W-001` から `BOOK-W-005` |
+| 書籍更新 | Books Controller、Books Service、Book Validator、Book DAO / Custom DAO | `BOOK-W-006` から `BOOK-W-008` |
+| 書籍削除 | Books Controller、Books Service、Book DAO / Custom DAO | `BOOK-W-009`、`BOOK-W-010` |
+| 販売単価履歴追加 | Books Controller、Books Service、Book / Price History DAO | `PRICE-001` から `PRICE-006` |
+| 仕入、明細、在庫、在庫増減履歴 | Purchase Controller、Purchase Service、Purchase Validator / Converter、Purchase / Stock DAO | `PURCHASE-001` から `PURCHASE-010` |
+| OpenBD 連携 | OpenBD Controller、外部 API client、Converter | `OPENBD-001` から `OPENBD-009` |
+| Problem Detail と競合変換 | 入力検証、Validator、Service、共通例外ハンドラ | `ERROR-001` から `ERROR-005` |
+
 ## 4. 認証・認可仕様
 
 ### 4.1 ログイン認証
