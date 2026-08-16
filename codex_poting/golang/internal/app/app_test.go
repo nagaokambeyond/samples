@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -13,10 +14,17 @@ import (
 	"codex-poting/golang/internal/applog"
 	"codex-poting/golang/internal/config"
 	"codex-poting/golang/internal/db"
+	"codex-poting/golang/internal/openbd"
 )
 
 type appTestFieldError struct {
 	Field string `json:"field"`
+}
+
+type appDoerFunc func(*http.Request) (*http.Response, error)
+
+func (f appDoerFunc) Do(req *http.Request) (*http.Response, error) {
+	return f(req)
 }
 
 func TestBookSearchAndGet(t *testing.T) {
@@ -256,16 +264,37 @@ func TestOpenBDAcceptance(t *testing.T) {
 			wantStubISBNs:  []string{isbn1},
 			wantStubCalled: true,
 		},
+		{
+			name:        "OPENBD-010 response order and DTO conversion",
+			requestPath: "/api/books/openbd?isbn=" + isbn1 + "," + isbn2,
+			stubs: map[string]stubResponse{
+				isbn1 + "," + isbn2: {status: http.StatusOK, body: "[" + strings.TrimSuffix(book1, "}") + `,"transport":"must-not-leak"},` + book2 + "]"},
+			},
+			wantStatus:     http.StatusOK,
+			wantLen:        2,
+			wantStubISBNs:  []string{isbn1 + "," + isbn2},
+			wantStubCalled: true,
+			assertBody: func(t *testing.T, body []map[string]any) {
+				t.Helper()
+				first := body[0]["summary"].(map[string]any)
+				second := body[1]["summary"].(map[string]any)
+				if first["isbn"] != isbn1 || second["isbn"] != isbn2 {
+					t.Fatalf("response order changed: %+v", body)
+				}
+				if _, leaked := body[0]["transport"]; leaked {
+					t.Fatalf("external client field leaked: %+v", body[0])
+				}
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var mu sync.Mutex
 			var gotStubISBNs []string
-			stub := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			doer := appDoerFunc(func(r *http.Request) (*http.Response, error) {
 				if r.URL.Path != "/v1/get" {
-					http.NotFound(w, r)
-					return
+					return &http.Response{StatusCode: http.StatusNotFound, Body: io.NopCloser(strings.NewReader("")), Header: make(http.Header)}, nil
 				}
 				isbn := r.URL.Query().Get("isbn")
 				mu.Lock()
@@ -274,16 +303,14 @@ func TestOpenBDAcceptance(t *testing.T) {
 				resp, ok := tt.stubs[isbn]
 				if !ok {
 					t.Errorf("unexpected stub ISBN: %s", isbn)
-					http.NotFound(w, r)
-					return
+					return &http.Response{StatusCode: http.StatusNotFound, Body: io.NopCloser(strings.NewReader("")), Header: make(http.Header)}, nil
 				}
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(resp.status)
-				_, _ = w.Write([]byte(resp.body))
-			}))
-			defer stub.Close()
+				header := make(http.Header)
+				header.Set("Content-Type", "application/json")
+				return &http.Response{StatusCode: resp.status, Body: io.NopCloser(strings.NewReader(resp.body)), Header: header}, nil
+			})
 
-			router := testRouterWithOpenBDBaseURL(t, stub.URL)
+			router := testRouterWithOpenBDClient(t, doer)
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(http.MethodGet, tt.requestPath, nil)
 			router.ServeHTTP(w, req)
@@ -416,18 +443,18 @@ func testRouter(t *testing.T) http.Handler {
 	return NewRouter(cfg, sqlDB)
 }
 
-func testRouterWithOpenBDBaseURL(t *testing.T, baseURL string) http.Handler {
+func testRouterWithOpenBDClient(t *testing.T, client openbd.Doer) http.Handler {
 	t.Helper()
-	t.Setenv("OPENBD_BASE_URL", baseURL)
 	sqlDB, err := db.OpenMemory()
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { sqlDB.Close() })
 	cfg := config.Load()
+	cfg.OpenBDBaseURL = "http://openbd.test"
 	cfg.APIBodyLogEnabled = false
 	cfg.SQLLogEnabled = false
-	return NewRouter(cfg, sqlDB)
+	return NewRouterWithOptions(cfg, sqlDB, Options{OpenBDHTTPClient: client})
 }
 
 func login(t *testing.T, router http.Handler) string {

@@ -751,7 +751,7 @@ components:
           items:
             "$ref": "#/components/schemas/PurchaseInvoiceDetailCreateRequest"
           maxItems: 10
-          minItems: 0
+          minItems: 1
       required:
       - details
       - purchaseInvoiceDate

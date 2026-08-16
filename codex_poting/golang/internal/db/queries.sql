@@ -85,6 +85,9 @@ SELECT EXISTS(SELECT 1 FROM store WHERE id = sqlc.arg(id));
 -- name: ExistsBookID :one
 SELECT EXISTS(SELECT 1 FROM book WHERE id = sqlc.arg(id));
 
+-- name: GetBookVersion :one
+SELECT version FROM book WHERE id = sqlc.arg(id);
+
 -- name: FindBookByISBN :one
 SELECT id FROM book WHERE isbn = sqlc.arg(isbn);
 
@@ -106,7 +109,7 @@ SET title = sqlc.arg(title),
 WHERE id = sqlc.arg(id) AND version = sqlc.arg(version);
 
 -- name: DeleteBook :execrows
-DELETE FROM book WHERE id = sqlc.arg(id);
+DELETE FROM book WHERE id = sqlc.arg(id) AND version = sqlc.arg(version);
 
 -- name: CreateSalesUnitPriceHistory :one
 INSERT INTO book_sales_unit_price_history (book_id, sales_unit_price, effective_from, effective_to, create_at, update_at, version)
@@ -121,7 +124,7 @@ ORDER BY effective_from ASC
 LIMIT 1;
 
 -- name: GetPrevSalesUnitPriceHistory :one
-SELECT id, effective_from
+SELECT id, effective_from, version
 FROM book_sales_unit_price_history
 WHERE book_id = sqlc.arg(book_id) AND effective_from < sqlc.arg(effective_from)
 ORDER BY effective_from DESC
@@ -130,7 +133,7 @@ LIMIT 1;
 -- name: UpdateSalesUnitPriceHistoryEffectiveTo :execrows
 UPDATE book_sales_unit_price_history
 SET effective_to = sqlc.arg(effective_to), update_at = sqlc.arg(now), version = version + 1
-WHERE id = sqlc.arg(id);
+WHERE id = sqlc.arg(id) AND version = sqlc.arg(version);
 
 -- name: CreatePurchaseInvoice :one
 INSERT INTO purchase_invoice (purchase_invoice_type, return_purchase_invoice_id, purchase_invoice_date, supplier_id, receiving_store_id, purchase_invoice_amount, create_at, update_at, version)
@@ -168,7 +171,7 @@ UPDATE book_stock
 SET book_stock_quantity = book_stock_quantity + sqlc.arg(quantity_delta),
     update_at = sqlc.arg(now),
     version = version + 1
-WHERE id = sqlc.arg(id);
+WHERE id = sqlc.arg(id) AND version = sqlc.arg(version);
 
 -- name: CreateBookStock :one
 INSERT INTO book_stock (book_stock_store_id, book_stock_book_id, book_stock_quantity, create_at, update_at, version)

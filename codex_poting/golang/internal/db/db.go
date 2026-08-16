@@ -3,8 +3,10 @@ package db
 import (
 	"database/sql"
 	_ "embed"
+	"fmt"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 
 	_ "modernc.org/sqlite"
 )
@@ -15,16 +17,19 @@ var schemaSQL string
 //go:embed seed.sql
 var seedSQL string
 
+var memoryDBSequence atomic.Uint64
+
 func Open(path string) (*sql.DB, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return nil, err
 	}
-	db, err := sql.Open("sqlite", path)
+	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
 	}
-	if _, err := db.Exec("PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;"); err != nil {
-		db.Close()
+	dsn := fmt.Sprintf("file:%s?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)", filepath.ToSlash(absPath))
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
 		return nil, err
 	}
 	if err := Init(db); err != nil {
@@ -35,12 +40,10 @@ func Open(path string) (*sql.DB, error) {
 }
 
 func OpenMemory() (*sql.DB, error) {
-	db, err := sql.Open("sqlite", "file:memdb?mode=memory&cache=shared")
+	name := memoryDBSequence.Add(1)
+	dsn := fmt.Sprintf("file:memdb-%d?mode=memory&cache=shared&_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)", name)
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
-		return nil, err
-	}
-	if _, err := db.Exec("PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;"); err != nil {
-		db.Close()
 		return nil, err
 	}
 	if err := Init(db); err != nil {

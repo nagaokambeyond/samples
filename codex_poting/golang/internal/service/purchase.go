@@ -14,6 +14,12 @@ func (s *Service) CreatePurchase(ctx context.Context, req PurchaseInvoiceCreateR
 	if fields := validatePurchase(req); len(fields) > 0 {
 		return PurchaseInvoiceResponse{}, problem.Validation(fields)
 	}
+	return withWriteRetry(ctx, func() (PurchaseInvoiceResponse, error) {
+		return s.createPurchase(ctx, req)
+	})
+}
+
+func (s *Service) createPurchase(ctx context.Context, req PurchaseInvoiceCreateRequest) (PurchaseInvoiceResponse, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return PurchaseInvoiceResponse{}, err
@@ -43,7 +49,7 @@ func (s *Service) CreatePurchase(ctx context.Context, req PurchaseInvoiceCreateR
 		bookIDs[i] = id
 		total += *d.PurchaseInvoiceDetailUnitPrice * *d.PurchaseInvoiceDetailQuantity
 	}
-	now := nowString()
+	now := s.nowString()
 	invoiceID, err := q.CreatePurchaseInvoice(ctx, dbsqlc.CreatePurchaseInvoiceParams{
 		PurchaseInvoiceDate: *req.PurchaseInvoiceDate, SupplierID: *req.SupplierID, ReceivingStoreID: *req.ReceivingStoreID,
 		PurchaseInvoiceAmount: total, Now: now,
@@ -69,25 +75,42 @@ func (s *Service) CreatePurchase(ctx context.Context, req PurchaseInvoiceCreateR
 		stock, err := q.GetBookStock(ctx, dbsqlc.GetBookStockParams{StoreID: *req.ReceivingStoreID, BookID: bookIDs[i]})
 		if errors.Is(err, sql.ErrNoRows) {
 			_, err = q.CreateBookStock(ctx, dbsqlc.CreateBookStockParams{StoreID: *req.ReceivingStoreID, BookID: bookIDs[i], Quantity: *d.PurchaseInvoiceDetailQuantity, Now: now})
+			if isSQLiteUniqueConstraintError(err) {
+				return PurchaseInvoiceResponse{}, problem.Conflict()
+			}
 		} else if err == nil {
-			_, err = q.AddBookStockQuantity(ctx, dbsqlc.AddBookStockQuantityParams{ID: stock.ID, QuantityDelta: *d.PurchaseInvoiceDetailQuantity, Now: now})
+			var rows int64
+			rows, err = q.AddBookStockQuantity(ctx, dbsqlc.AddBookStockQuantityParams{
+				ID: stock.ID, QuantityDelta: *d.PurchaseInvoiceDetailQuantity, Now: now, Version: stock.Version,
+			})
+			if err == nil && rows == 0 {
+				return PurchaseInvoiceResponse{}, problem.Conflict()
+			}
 		}
 		if err != nil {
 			return PurchaseInvoiceResponse{}, err
 		}
 	}
-	if err := tx.Commit(); err != nil {
-		return PurchaseInvoiceResponse{}, err
-	}
-	return s.getPurchase(ctx, invoiceID)
-}
-
-func (s *Service) getPurchase(ctx context.Context, id int64) (PurchaseInvoiceResponse, error) {
-	row, err := s.q.GetPurchaseInvoice(ctx, id)
+	response, err := s.getPurchaseWith(ctx, q, invoiceID)
 	if err != nil {
 		return PurchaseInvoiceResponse{}, err
 	}
-	details, err := s.q.ListPurchaseInvoiceDetails(ctx, id)
+	if err := tx.Commit(); err != nil {
+		return PurchaseInvoiceResponse{}, err
+	}
+	return response, nil
+}
+
+func (s *Service) getPurchase(ctx context.Context, id int64) (PurchaseInvoiceResponse, error) {
+	return s.getPurchaseWith(ctx, s.q, id)
+}
+
+func (s *Service) getPurchaseWith(ctx context.Context, q *dbsqlc.Queries, id int64) (PurchaseInvoiceResponse, error) {
+	row, err := q.GetPurchaseInvoice(ctx, id)
+	if err != nil {
+		return PurchaseInvoiceResponse{}, err
+	}
+	details, err := q.ListPurchaseInvoiceDetails(ctx, id)
 	if err != nil {
 		return PurchaseInvoiceResponse{}, err
 	}

@@ -113,6 +113,7 @@ curl 'http://localhost:8080/api/books/search?page=0'
 - `SQL_LOG_ENABLED`: 既定値 `true`
 - `LOG_LEVEL`: 既定値 `debug`。`debug`、`info`、`warn`、`error` を指定できる。
 - `LOG_FORMAT`: 既定値 `json`。`text` または `json` を指定できる。
+- `TIME_ZONE`: 既定値 `Asia/Tokyo`。業務日付と監査日時の基準timezone。
 
 ## テスト方針
 
@@ -120,4 +121,5 @@ curl 'http://localhost:8080/api/books/search?page=0'
 - routing を含む API 挙動は `internal/app` の handler-level test に追加する。
 - `internal/handler` のテストは handler の分割単位に合わせて配置する。
 - `internal/service` の validation テストは対象ファイルに合わせて `*_validation_test.go` に配置する。
-- OpenBD 連携のテストでは `httptest.Server` を使い、config の `OPENBD_BASE_URL` を差し替える。
+- 受け入れテストは `internal/app/*_acceptance_test.go` にケースID付きで配置する。
+- OpenBD 連携のテストは `openbd.Doer` を差し替え、外部通信やローカルport待受に依存させない。

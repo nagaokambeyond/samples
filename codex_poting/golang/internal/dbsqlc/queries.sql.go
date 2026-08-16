@@ -15,17 +15,23 @@ UPDATE book_stock
 SET book_stock_quantity = book_stock_quantity + ?1,
     update_at = ?2,
     version = version + 1
-WHERE id = ?3
+WHERE id = ?3 AND version = ?4
 `
 
 type AddBookStockQuantityParams struct {
 	QuantityDelta int64  `json:"quantity_delta"`
 	Now           string `json:"now"`
 	ID            int64  `json:"id"`
+	Version       int64  `json:"version"`
 }
 
 func (q *Queries) AddBookStockQuantity(ctx context.Context, arg AddBookStockQuantityParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, addBookStockQuantity, arg.QuantityDelta, arg.Now, arg.ID)
+	result, err := q.db.ExecContext(ctx, addBookStockQuantity,
+		arg.QuantityDelta,
+		arg.Now,
+		arg.ID,
+		arg.Version,
+	)
 	if err != nil {
 		return 0, err
 	}
@@ -234,11 +240,16 @@ func (q *Queries) CreateSalesUnitPriceHistory(ctx context.Context, arg CreateSal
 }
 
 const deleteBook = `-- name: DeleteBook :execrows
-DELETE FROM book WHERE id = ?1
+DELETE FROM book WHERE id = ?1 AND version = ?2
 `
 
-func (q *Queries) DeleteBook(ctx context.Context, id int64) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteBook, id)
+type DeleteBookParams struct {
+	ID      int64 `json:"id"`
+	Version int64 `json:"version"`
+}
+
+func (q *Queries) DeleteBook(ctx context.Context, arg DeleteBookParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteBook, arg.ID, arg.Version)
 	if err != nil {
 		return 0, err
 	}
@@ -399,6 +410,17 @@ func (q *Queries) GetBookStock(ctx context.Context, arg GetBookStockParams) (Get
 	return i, err
 }
 
+const getBookVersion = `-- name: GetBookVersion :one
+SELECT version FROM book WHERE id = ?1
+`
+
+func (q *Queries) GetBookVersion(ctx context.Context, id int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getBookVersion, id)
+	var version int64
+	err := row.Scan(&version)
+	return version, err
+}
+
 const getNextSalesUnitPriceHistory = `-- name: GetNextSalesUnitPriceHistory :one
 SELECT id, effective_from
 FROM book_sales_unit_price_history
@@ -425,7 +447,7 @@ func (q *Queries) GetNextSalesUnitPriceHistory(ctx context.Context, arg GetNextS
 }
 
 const getPrevSalesUnitPriceHistory = `-- name: GetPrevSalesUnitPriceHistory :one
-SELECT id, effective_from
+SELECT id, effective_from, version
 FROM book_sales_unit_price_history
 WHERE book_id = ?1 AND effective_from < ?2
 ORDER BY effective_from DESC
@@ -440,12 +462,13 @@ type GetPrevSalesUnitPriceHistoryParams struct {
 type GetPrevSalesUnitPriceHistoryRow struct {
 	ID            int64  `json:"id"`
 	EffectiveFrom string `json:"effective_from"`
+	Version       int64  `json:"version"`
 }
 
 func (q *Queries) GetPrevSalesUnitPriceHistory(ctx context.Context, arg GetPrevSalesUnitPriceHistoryParams) (GetPrevSalesUnitPriceHistoryRow, error) {
 	row := q.db.QueryRowContext(ctx, getPrevSalesUnitPriceHistory, arg.BookID, arg.EffectiveFrom)
 	var i GetPrevSalesUnitPriceHistoryRow
-	err := row.Scan(&i.ID, &i.EffectiveFrom)
+	err := row.Scan(&i.ID, &i.EffectiveFrom, &i.Version)
 	return i, err
 }
 
@@ -722,17 +745,23 @@ func (q *Queries) UpdateBook(ctx context.Context, arg UpdateBookParams) (int64, 
 const updateSalesUnitPriceHistoryEffectiveTo = `-- name: UpdateSalesUnitPriceHistoryEffectiveTo :execrows
 UPDATE book_sales_unit_price_history
 SET effective_to = ?1, update_at = ?2, version = version + 1
-WHERE id = ?3
+WHERE id = ?3 AND version = ?4
 `
 
 type UpdateSalesUnitPriceHistoryEffectiveToParams struct {
 	EffectiveTo sql.NullString `json:"effective_to"`
 	Now         string         `json:"now"`
 	ID          int64          `json:"id"`
+	Version     int64          `json:"version"`
 }
 
 func (q *Queries) UpdateSalesUnitPriceHistoryEffectiveTo(ctx context.Context, arg UpdateSalesUnitPriceHistoryEffectiveToParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, updateSalesUnitPriceHistoryEffectiveTo, arg.EffectiveTo, arg.Now, arg.ID)
+	result, err := q.db.ExecContext(ctx, updateSalesUnitPriceHistoryEffectiveTo,
+		arg.EffectiveTo,
+		arg.Now,
+		arg.ID,
+		arg.Version,
+	)
 	if err != nil {
 		return 0, err
 	}

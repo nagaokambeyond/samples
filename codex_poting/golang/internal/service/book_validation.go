@@ -31,6 +31,7 @@ func validateBookSearchCorrelation(from, to string) error {
 func validateBookCreate(req BookCreateRequest) []problem.FieldError {
 	var fields []problem.FieldError
 	checkTitle(req.Title, &fields)
+	checkAuthor(req.Author, &fields)
 	checkDate("releaseDate", req.ReleaseDate, &fields)
 	checkRequiredInt("publisherId", req.PublisherID, &fields)
 	checkRequiredInt("genreId", req.GenreID, &fields)
@@ -43,6 +44,7 @@ func validateBookUpdate(req BookUpdateRequest) []problem.FieldError {
 	var fields []problem.FieldError
 	checkRequiredInt("id", req.ID, &fields)
 	checkTitle(req.Title, &fields)
+	checkAuthor(req.Author, &fields)
 	checkDate("releaseDate", req.ReleaseDate, &fields)
 	checkRequiredInt("publisherId", req.PublisherID, &fields)
 	checkRequiredInt("genreId", req.GenreID, &fields)
@@ -51,12 +53,12 @@ func validateBookUpdate(req BookUpdateRequest) []problem.FieldError {
 	return fields
 }
 
-func validateSalesPrice(req SalesUnitPriceCreateRequest) []problem.FieldError {
+func validateSalesPrice(req SalesUnitPriceCreateRequest, now time.Time) []problem.FieldError {
 	var fields []problem.FieldError
 	checkRange("salesUnitPrice", req.SalesUnitPrice, 1, 10000, &fields)
 	if req.EffectiveFrom == nil || *req.EffectiveFrom == "" {
 		fields = append(fields, problem.FieldError{Field: "effectiveFrom", Message: "null は許可されていません"})
-	} else if d, err := parseDate(*req.EffectiveFrom); err != nil || !d.After(time.Now()) {
+	} else if _, err := parseDate(*req.EffectiveFrom); err != nil || *req.EffectiveFrom <= now.Format("2006-01-02") {
 		fields = append(fields, problem.FieldError{Field: "effectiveFrom", Message: "未来の日付にしてください"})
 	}
 	return fields

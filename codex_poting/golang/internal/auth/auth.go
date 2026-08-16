@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -10,14 +11,22 @@ import (
 type TokenService struct {
 	secret    []byte
 	expiresIn time.Duration
+	now       func() time.Time
 }
 
 func NewTokenService(secret string, expiresSeconds int64) *TokenService {
-	return &TokenService{secret: []byte(secret), expiresIn: time.Duration(expiresSeconds) * time.Second}
+	return NewTokenServiceWithClock(secret, expiresSeconds, time.Now)
+}
+
+func NewTokenServiceWithClock(secret string, expiresSeconds int64, clock func() time.Time) *TokenService {
+	if clock == nil {
+		clock = time.Now
+	}
+	return &TokenService{secret: []byte(secret), expiresIn: time.Duration(expiresSeconds) * time.Second, now: clock}
 }
 
 func (s *TokenService) Issue(username string) (string, error) {
-	now := time.Now()
+	now := s.now()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		Subject:   username,
 		IssuedAt:  jwt.NewNumericDate(now),
@@ -28,8 +37,11 @@ func (s *TokenService) Issue(username string) (string, error) {
 
 func (s *TokenService) Validate(raw string) error {
 	token, err := jwt.ParseWithClaims(raw, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, fmt.Errorf("unexpected signing method: %s", token.Method.Alg())
+		}
 		return s.secret, nil
-	})
+	}, jwt.WithTimeFunc(s.now), jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil {
 		return err
 	}
@@ -43,6 +55,7 @@ type RateLimiter struct {
 	enabled bool
 	limit   int
 	loc     *time.Location
+	now     func() time.Time
 	mu      sync.Mutex
 	counts  map[string]loginCount
 }
@@ -53,11 +66,18 @@ type loginCount struct {
 }
 
 func NewRateLimiter(enabled bool, limit int, zone string) *RateLimiter {
+	return NewRateLimiterWithClock(enabled, limit, zone, time.Now)
+}
+
+func NewRateLimiterWithClock(enabled bool, limit int, zone string, clock func() time.Time) *RateLimiter {
 	loc, err := time.LoadLocation(zone)
 	if err != nil {
 		loc = time.Local
 	}
-	return &RateLimiter{enabled: enabled, limit: limit, loc: loc, counts: map[string]loginCount{}}
+	if clock == nil {
+		clock = time.Now
+	}
+	return &RateLimiter{enabled: enabled, limit: limit, loc: loc, now: clock, counts: map[string]loginCount{}}
 }
 
 func (r *RateLimiter) Consume(username string) bool {
@@ -66,7 +86,7 @@ func (r *RateLimiter) Consume(username string) bool {
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	day := time.Now().In(r.loc).Format("2006-01-02")
+	day := r.now().In(r.loc).Format("2006-01-02")
 	c := r.counts[username]
 	if c.day != day {
 		c = loginCount{day: day}

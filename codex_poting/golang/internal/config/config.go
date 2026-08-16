@@ -22,6 +22,7 @@ type Config struct {
 	SQLLogEnabled            bool
 	LogLevel                 string
 	LogFormat                string
+	TimeZone                 string
 }
 
 func Load() Config {
@@ -42,6 +43,7 @@ func Load() Config {
 		SQLLogEnabled:            envBool("SQL_LOG_ENABLED", true),
 		LogLevel:                 env("LOG_LEVEL", "debug"),
 		LogFormat:                env("LOG_FORMAT", "json"),
+		TimeZone:                 env("TIME_ZONE", "Asia/Tokyo"),
 	}
 }
 

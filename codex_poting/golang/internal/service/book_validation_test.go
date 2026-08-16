@@ -70,10 +70,11 @@ func TestValidateBookUpdateRequest(t *testing.T) {
 }
 
 func TestValidateSalesPriceRequest(t *testing.T) {
+	now := time.Date(2026, time.August, 16, 12, 0, 0, 0, time.FixedZone("JST", 9*60*60))
 	price := int64(0)
-	past := time.Now().AddDate(0, 0, -1).Format("2006-01-02")
+	past := now.AddDate(0, 0, -1).Format("2006-01-02")
 
-	fields := validateSalesPrice(SalesUnitPriceCreateRequest{SalesUnitPrice: &price, EffectiveFrom: &past})
+	fields := validateSalesPrice(SalesUnitPriceCreateRequest{SalesUnitPrice: &price, EffectiveFrom: &past}, now)
 
 	for _, field := range []string{"salesUnitPrice", "effectiveFrom"} {
 		if !hasFieldError(fields, field) {

@@ -12,6 +12,12 @@ func checkTitle(v *string, fields *[]problem.FieldError) {
 	}
 }
 
+func checkAuthor(v *string, fields *[]problem.FieldError) {
+	if v != nil && len([]rune(*v)) > 200 {
+		*fields = append(*fields, problem.FieldError{Field: "author", Message: "0 から 200 の間のサイズにしてください"})
+	}
+}
+
 func checkDate(field string, v *string, fields *[]problem.FieldError) {
 	if v == nil || *v == "" {
 		*fields = append(*fields, problem.FieldError{Field: field, Message: "null は許可されていません"})

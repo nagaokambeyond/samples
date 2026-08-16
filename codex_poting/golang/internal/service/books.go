@@ -24,15 +24,16 @@ func (s *Service) SearchBooks(ctx context.Context, keyword, from, to string, pag
 		return BookPageResponse{}, err
 	}
 	keyword = strings.TrimSpace(keyword)
+	today := s.today()
 	params := dbsqlc.SearchBookBasesParams{
-		Today: today(), Keyword: keyword, ReleaseDateFrom: from, ReleaseDateTo: to,
+		Today: today, Keyword: keyword, ReleaseDateFrom: from, ReleaseDateTo: to,
 		LimitRows: s.pageSize, OffsetRows: page * s.pageSize,
 	}
 	rows, err := s.q.SearchBookBases(ctx, params)
 	if err != nil {
 		return BookPageResponse{}, err
 	}
-	total, err := s.q.CountBookSearch(ctx, dbsqlc.CountBookSearchParams{Today: today(), Keyword: keyword, ReleaseDateFrom: from, ReleaseDateTo: to})
+	total, err := s.q.CountBookSearch(ctx, dbsqlc.CountBookSearchParams{Today: today, Keyword: keyword, ReleaseDateFrom: from, ReleaseDateTo: to})
 	if err != nil {
 		return BookPageResponse{}, err
 	}
@@ -69,12 +70,15 @@ func (s *Service) CreateBook(ctx context.Context, req BookCreateRequest) (BookRe
 	} else if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return BookResponse{}, err
 	}
-	now := nowString()
+	now := s.nowString()
 	id, err := q.CreateBook(ctx, dbsqlc.CreateBookParams{
 		Title: *req.Title, Author: nullableString(req.Author), ReleaseDate: *req.ReleaseDate,
 		PublisherID: *req.PublisherID, GenreID: *req.GenreID, Isbn: *req.Isbn, Now: now,
 	})
 	if err != nil {
+		if isSQLiteUniqueConstraintError(err) {
+			return BookResponse{}, problem.DataValidation(fmt.Sprintf("一意制約に違反しています: book(isbn=%s)", *req.Isbn))
+		}
 		return BookResponse{}, err
 	}
 	if _, err := q.CreateSalesUnitPriceHistory(ctx, dbsqlc.CreateSalesUnitPriceHistoryParams{
@@ -82,16 +86,26 @@ func (s *Service) CreateBook(ctx context.Context, req BookCreateRequest) (BookRe
 	}); err != nil {
 		return BookResponse{}, err
 	}
+	response, err := s.getBookWith(ctx, q, id)
+	if err != nil {
+		return BookResponse{}, err
+	}
 	if err := tx.Commit(); err != nil {
 		return BookResponse{}, err
 	}
-	return s.GetBook(ctx, id)
+	return response, nil
 }
 
 func (s *Service) UpdateBook(ctx context.Context, req BookUpdateRequest) (BookResponse, error) {
 	if fields := validateBookUpdate(req); len(fields) > 0 {
 		return BookResponse{}, problem.Validation(fields)
 	}
+	return withWriteRetry(ctx, func() (BookResponse, error) {
+		return s.updateBook(ctx, req)
+	})
+}
+
+func (s *Service) updateBook(ctx context.Context, req BookUpdateRequest) (BookResponse, error) {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return BookResponse{}, err
@@ -101,12 +115,15 @@ func (s *Service) UpdateBook(ctx context.Context, req BookUpdateRequest) (BookRe
 	if err := s.validateBookRefs(ctx, q, *req.PublisherID, *req.GenreID); err != nil {
 		return BookResponse{}, err
 	}
-	exists, err := q.ExistsBookID(ctx, *req.ID)
+	version, err := q.GetBookVersion(ctx, *req.ID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return BookResponse{}, problem.NotFound()
+	}
 	if err != nil {
 		return BookResponse{}, err
 	}
-	if !exists {
-		return BookResponse{}, problem.NotFound()
+	if version != *req.Version {
+		return BookResponse{}, problem.Conflict()
 	}
 	if id, err := q.FindBookByISBN(ctx, *req.Isbn); err == nil && id != *req.ID {
 		return BookResponse{}, problem.DataValidation(fmt.Sprintf("一意制約に違反しています: book(isbn=%s)", *req.Isbn))
@@ -115,35 +132,72 @@ func (s *Service) UpdateBook(ctx context.Context, req BookUpdateRequest) (BookRe
 	}
 	rows, err := q.UpdateBook(ctx, dbsqlc.UpdateBookParams{
 		ID: *req.ID, Title: *req.Title, Author: nullableString(req.Author), ReleaseDate: *req.ReleaseDate,
-		PublisherID: *req.PublisherID, GenreID: *req.GenreID, Isbn: *req.Isbn, Version: *req.Version, Now: nowString(),
+		PublisherID: *req.PublisherID, GenreID: *req.GenreID, Isbn: *req.Isbn, Version: *req.Version, Now: s.nowString(),
 	})
 	if err != nil {
+		if isSQLiteUniqueConstraintError(err) {
+			return BookResponse{}, problem.DataValidation(fmt.Sprintf("一意制約に違反しています: book(isbn=%s)", *req.Isbn))
+		}
 		return BookResponse{}, err
 	}
 	if rows == 0 {
 		return BookResponse{}, problem.Conflict()
 	}
+	response, err := s.getBookWith(ctx, q, *req.ID)
+	if err != nil {
+		return BookResponse{}, err
+	}
 	if err := tx.Commit(); err != nil {
 		return BookResponse{}, err
 	}
-	return s.GetBook(ctx, *req.ID)
+	return response, nil
 }
 
 func (s *Service) DeleteBook(ctx context.Context, id int64) error {
-	rows, err := s.q.DeleteBook(ctx, id)
+	_, err := withWriteRetry(ctx, func() (struct{}, error) {
+		return struct{}{}, s.deleteBook(ctx, id)
+	})
+	return err
+}
+
+func (s *Service) deleteBook(ctx context.Context, id int64) error {
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	q := s.txQueries(tx)
+	version, err := q.GetBookVersion(ctx, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return problem.NotFound()
+	}
+	if err != nil {
+		return err
+	}
+	rows, err := q.DeleteBook(ctx, dbsqlc.DeleteBookParams{ID: id, Version: version})
+	if err != nil {
+		if isSQLiteLockError(err) {
+			return err
+		}
 		return problem.DataValidation(err.Error())
 	}
 	if rows == 0 {
-		return problem.NotFound()
+		return problem.Conflict()
 	}
-	return nil
+	return tx.Commit()
 }
 
 func (s *Service) CreateSalesUnitPrice(ctx context.Context, bookID int64, req SalesUnitPriceCreateRequest) error {
-	if fields := validateSalesPrice(req); len(fields) > 0 {
+	if fields := validateSalesPrice(req, s.now()); len(fields) > 0 {
 		return problem.Validation(fields)
 	}
+	_, err := withWriteRetry(ctx, func() (struct{}, error) {
+		return struct{}{}, s.createSalesUnitPrice(ctx, bookID, req)
+	})
+	return err
+}
+
+func (s *Service) createSalesUnitPrice(ctx context.Context, bookID int64, req SalesUnitPriceCreateRequest) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -173,9 +227,13 @@ func (s *Service) CreateSalesUnitPrice(ctx context.Context, bookID int64, req Sa
 	}
 	eff, _ := parseDate(*req.EffectiveFrom)
 	prevTo := eff.AddDate(0, 0, -1).Format("2006-01-02")
-	now := nowString()
-	if _, err := q.UpdateSalesUnitPriceHistoryEffectiveTo(ctx, dbsqlc.UpdateSalesUnitPriceHistoryEffectiveToParams{ID: prev.ID, EffectiveTo: sql.NullString{String: prevTo, Valid: true}, Now: now}); err != nil {
+	now := s.nowString()
+	rows, err := q.UpdateSalesUnitPriceHistoryEffectiveTo(ctx, dbsqlc.UpdateSalesUnitPriceHistoryEffectiveToParams{ID: prev.ID, EffectiveTo: sql.NullString{String: prevTo, Valid: true}, Now: now, Version: prev.Version})
+	if err != nil {
 		return err
+	}
+	if rows == 0 {
+		return problem.Conflict()
 	}
 	var nextTo sql.NullString
 	if nextErr == nil {
@@ -186,13 +244,16 @@ func (s *Service) CreateSalesUnitPrice(ctx context.Context, bookID int64, req Sa
 		BookID: bookID, SalesUnitPrice: *req.SalesUnitPrice, EffectiveFrom: *req.EffectiveFrom, EffectiveTo: nextTo, Now: now,
 	})
 	if err != nil {
-		return problem.DataValidation(err.Error())
+		if isSQLiteUniqueConstraintError(err) {
+			return problem.DataValidation(err.Error())
+		}
+		return err
 	}
 	return tx.Commit()
 }
 
 func (s *Service) getBookWith(ctx context.Context, q *dbsqlc.Queries, id int64) (BookResponse, error) {
-	base, err := q.GetBookBase(ctx, dbsqlc.GetBookBaseParams{ID: id, Today: today()})
+	base, err := q.GetBookBase(ctx, dbsqlc.GetBookBaseParams{ID: id, Today: s.today()})
 	if errors.Is(err, sql.ErrNoRows) {
 		return BookResponse{}, problem.NotFound()
 	}
