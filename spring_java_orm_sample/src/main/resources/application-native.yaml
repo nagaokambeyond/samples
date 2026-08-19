@@ -1,0 +1,13 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.mybatis.spring.boot.autoconfigure.MybatisAutoConfiguration
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      - org.springframework.boot.jooq.autoconfigure.JooqAutoConfiguration
+  h2:
+    console:
+      enabled: false
+  sql:
+    init:
+      schema-locations: classpath:generator-schema.sql

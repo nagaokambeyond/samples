@@ -17,6 +17,7 @@
 - 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の値変換の対応を揃える。
 - API 関連のクラスは `api`、`api/annotation`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
 - OpenBD API クライアント関連の手書き設定は `openbd/config` に置き、OpenAPI Generator 生成コードは `openbd/generated` に置く。
+- JPA profile 固有の Spring 設定は `jpa/config` に置く。JPA auditing は `JpaAuditingConfig` で `jpa` profile に限定して有効化する。
 - 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
 - ページ計算や例外ハンドリング補助などの共通ユーティリティは `util` package に置く。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
@@ -40,7 +41,7 @@
 - `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
 - 日付範囲の相関チェックは `BooksOperationApiControllerValidator` に集約する。
 - `page` は 0 始まりとする。ページサイズはリクエストパラメータではなく、`application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込む。
-- Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の役割を確認する。現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma`、JPA repository の有効化は `application-jpa.yaml` で扱う。
+- Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml`、`application-jpa.yaml`、`application-native.yaml` の役割を確認する。現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma`、JPA repository と JPA auditing の有効化は `jpa` profile、ネイティブ実行は `doma,native` profile で扱う。
 - 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を4つの Service 実装で揃える。
 - ページ数と offset の計算は `com.example.demo.util.PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
 - 販売単価履歴追加 API は `/api/books/{id}/sales-unit-prices` とし、`BookSalesUnitPriceCreateRequest` で `salesUnitPrice` と未来日の `effectiveFrom` を受け取り、成功時は空 body の 200 を返す。
@@ -73,12 +74,22 @@
 - OpenBD 書誌取得 API を変更する場合は `OpenBdBooksApiControllerTest` で、単一 ISBN、カンマ区切り ISBN、書誌なし 404、入力不正 400、OpenBD API 失敗 502 を確認する。
 - OpenBD 生成コードを更新する場合は `./gradlew syncOpenBdGeneratedSources` を使い、`src/main/java/com/example/demo/openbd/generated` の差分を確認する。
 
+## AOT / ネイティブイメージ
+
+- 通常の Java コンパイル用 toolchain は Java 21 とする。`graalvmNative` のネイティブイメージ生成には、`build.gradle` で指定された Oracle GraalVM 25 を使用する。
+- `processAot` とネイティブ実行時は `doma,native` profile を使用する。profile を変更する場合は `graalvmNative.binaries.main.runtimeArgs` と `processAot` の引数を揃える。
+- `application-native.yaml` では MyBatis、JPA、jOOQ の自動構成を除外し、H2 Console を無効化し、`generator-schema.sql` をスキーマ初期化に使用する。ネイティブ実行で別の永続化方式を有効化する変更は、自動構成除外と runtime hints を含めて検証する。
+- `DemoApplication` の `@ImportRuntimeHints` で `NativeRuntimeHints` を登録する。ネイティブ実行時にリフレクションを使う request / response DTO、Doma Entity、OpenBD 生成 DTO などを追加・変更した場合は、`NativeRuntimeHints.REFLECTION_TYPES` の更新要否を確認する。
+- Doma SQL や実行時に読み込む classpath resource を追加・移動した場合は、`NativeRuntimeHints` の resource pattern を確認する。現在は `META-INF/com/example/demo/doma/**/*.sql` と `generator-schema.sql` を登録している。
+- AOT / ネイティブ対応を変更した場合は `./gradlew processAot` を実行する。必要に応じて `./gradlew nativeCompile` を実行し、生成された `demo` 実行ファイルで対象 API を確認する。`nativeCompile` は時間がかかるため、ネイティブ対応と無関係な変更では必須としない。
+
 ## Service と例外
 
 - `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースとして扱う。
 - Service インターフェースを変更する場合は、JPA / MyBatis / Doma / jOOQ の4実装をすべて確認する。
 - `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースとして扱う。
 - 現在のデフォルト profile は `doma` であり、通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` を使う。実装切り替えに関わる変更では `application.yaml` の `spring.profiles.default`、各実装の `@Profile`、Doma 実装の `@Primary` の扱いを確認する。
+- `@EnableJpaAuditing` は `DemoApplication` ではなく、`jpa` profile の `JpaAuditingConfig` に置く。JPA 以外の profile やネイティブ AOT 処理で JPA auditing を有効化しない。
 - jOOQ 実装は `src/main/java/com/example/demo/jooq` 配下に置く。手書きの SQL / DSL 組み立ては `jooq/dsl`、Service は `jooq/service`、変換は `jooq/converter`、参照存在チェックは `jooq/validator` の役割に合わせる。
 - jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力する。生成コードを直接編集しない。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
@@ -148,3 +159,5 @@
 - 行ロック関連: `BookRowLock`
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
+
+AOT / GraalVM、`NativeRuntimeHints`、`application-native.yaml`、ネイティブ実行時に使う DTO・Doma Entity・classpath resource を変更した場合は、`./gradlew processAot` を確認し、必要に応じて `./gradlew nativeCompile` と生成された実行ファイルで動作確認する。

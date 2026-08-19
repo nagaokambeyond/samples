@@ -13,6 +13,7 @@ buildscript {
 plugins {
     id 'java'
     id 'org.springframework.boot' version '4.1.0'
+    id 'org.graalvm.buildtools.native' version '1.1.5'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.domaframework.doma.codegen' version '3.2.2'
     id 'org.domaframework.doma.compile' version '4.0.3'
@@ -117,6 +118,27 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'demo'
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(25)
+                vendor = JvmVendorSpec.matching('Oracle Corporation')
+                nativeImageCapable = true
+            }
+            requiredVersion = '25'
+            buildArgs.add('--enable-url-protocols=https')
+            buildArgs.add('--initialize-at-build-time=org.slf4j,ch.qos.logback,org.apache.logging,org.apache.commons.logging,org.springframework.core.SpringProperties,org.springframework.boot.logging.log4j2')
+            runtimeArgs('--spring.profiles.active=doma,native')
+        }
+    }
+}
+
+tasks.named('processAot') {
+    args '--spring.profiles.active=doma,native'
 }
 
 tasks.register('generateJooq', JavaExec) {

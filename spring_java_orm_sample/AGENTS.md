@@ -19,6 +19,7 @@
 - springdoc-openapi
 - ModelMapper
 - OpenAPI Generator
+- GraalVM Native Build Tools
 
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。`/api/books/openbd` では OpenBD API クライアントを使って外部書誌情報を取得します。初期データは `src/main/resources/data.sql` で投入されます。
 
@@ -60,6 +61,15 @@ Gradle Wrapper を使用してください。
 
 `compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存しているため、通常のビルド時にも jOOQ 生成コードや OpenBD 生成コードが更新される可能性があります。
 
+ネイティブイメージを確認する場合は、Oracle GraalVM 25 を使用する以下のタスクを実行してください。通常の Java コンパイル用 toolchain は Java 21 のままです。
+
+```shell
+./gradlew processAot
+./gradlew nativeCompile
+```
+
+`processAot` と生成したネイティブ実行ファイルは `doma,native` profile で動作します。`nativeCompile` は実行時間が長いため、ネイティブ対応に関わる変更時に実行してください。
+
 ## ディレクトリ構成
 
 - `src/main/java/com/example/demo/api`: API インターフェース
@@ -73,11 +83,12 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/service`: アプリケーション共通の Service インターフェース
 - `src/main/java/com/example/demo/util`: 共通ユーティリティ。ページ計算、例外ハンドリング補助を含みます。
 - `src/main/java/com/example/demo/exception`: アプリケーション例外
-- `src/main/java/com/example/demo/config`: Spring 設定、Security / JWT、ログイン回数制限、例外ハンドリング、検索設定、ロック失敗リトライ設定
+- `src/main/java/com/example/demo/config`: Spring 設定、Security / JWT、ログイン回数制限、例外ハンドリング、検索設定、ロック失敗リトライ設定、ネイティブイメージ用 runtime hints
 - `src/main/java/com/example/demo/openbd`: OpenBD API クライアント設定と OpenAPI Generator 生成コード
 - `src/main/java/com/example/demo/openbd/config`: OpenBD API クライアントの Spring 設定、接続先設定
 - `src/main/java/com/example/demo/openbd/generated`: OpenAPI Generator で生成した OpenBD API クライアントコード
-- `src/main/java/com/example/demo/jpa`: JPA 実装。Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
+- `src/main/java/com/example/demo/jpa`: JPA 実装。設定、Entity、Repository、Service、converter、型変換、データバリデーションを含みます。
+- `src/main/java/com/example/demo/jpa/config`: JPA profile 固有の Spring 設定
 - `src/main/java/com/example/demo/mybatis`: MyBatis 実装。手書き Mapper / 表示向け Entity / Service / converter / TypeHandler / データバリデーションと、Generator 生成コードを含みます。
 - `src/main/java/com/example/demo/doma`: Doma 実装。手書き DAO / 表示向け Entity / AggregateStrategy / Service / converter / データバリデーションと、CodeGen 生成コードを含みます。
 - `src/main/java/com/example/demo/jooq`: jOOQ 実装。Service、DSL component、converter、validator、表示向け row、jOOQ 生成コードを含みます。
@@ -85,6 +96,7 @@ Gradle Wrapper を使用してください。
 - `src/main/java/com/example/demo/jooq/generated`: jOOQ 生成コード
 - `src/main/resources/application.yaml`: アプリケーション設定
 - `src/main/resources/application-jpa.yaml`: JPA profile 用の Spring Data JPA Repository 有効化設定
+- `src/main/resources/application-native.yaml`: ネイティブ実行用の自動構成除外、H2、SQL 初期化設定
 - `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
 - `src/main/resources/codegen`: Doma CodeGen / jOOQ CodeGen 補助設定
 - `src/main/resources/openapi/openbd_api_spec.yaml`: OpenBD API クライアント生成用 OpenAPI 仕様
@@ -118,6 +130,8 @@ Gradle Wrapper を使用してください。
 - `PageCalculator` は `src/main/java/com/example/demo/util` 配下でページ数と offset の計算を扱います。`ExceptionHandlerUtil` は `GlobalExceptionHandler` の validation error 生成補助を扱います。
 - `SearchProperties` は検索 API のページサイズ設定を扱います。
 - `OpenBdClientConfig` は OpenAPI Generator 生成の `ApiClient`、`BooksApi`、`MetadataApi` Bean を構成します。接続先は `OpenBdProperties` と `application.yaml` の `openbd.base-url` で管理します。
+- `NativeRuntimeHints` は request / response DTO、Doma Entity、OpenBD 生成 DTO などのリフレクション情報と、Doma SQL / `generator-schema.sql` のリソース情報を AOT に登録します。対象型や実行時リソースを追加した場合は runtime hints も確認してください。
+- `DemoApplication` は `@ImportRuntimeHints` で `NativeRuntimeHints` を読み込みます。JPA auditing は `jpa` profile の `JpaAuditingConfig` でのみ有効化します。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は本情報、`book_sales_unit_price_history` 由来の現在販売単価、`book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookOperationConverterJPA` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
@@ -130,6 +144,7 @@ Gradle Wrapper を使用してください。
 - `BookStockMovementType` と `BookStockMovementSourceType` は在庫増減履歴の共有ドメイン型です。JPA は converter、MyBatis は TypeHandler、Doma は `@Domain`、jOOQ は Service / DSL 側の値変換で扱います。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
+- ネイティブイメージの AOT 処理と実行には `doma,native` profile を使用します。`native` profile では MyBatis、JPA、jOOQ の自動構成と H2 Console を無効化し、`generator-schema.sql` でスキーマを初期化します。
 - 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login`、書籍の取得・検索、OpenBD 書誌取得は公開され、それ以外の API は Bearer token が必要です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - `BookCreateRequest` / `BookUpdateRequest` / `BookResponse` には `isbn` が含まれます。ISBN は `@Isbn` で 13 桁数字として検証し、登録・更新時は各永続化方式の `BookDataValidator*` で一意性を確認します。
@@ -169,6 +184,8 @@ Gradle Wrapper を使用してください。
 OpenBD API クライアント設定を変更した場合は `OpenBdClientConfigTest` を確認してください。OpenBD 書誌取得 API を変更した場合は `OpenBdBooksApiControllerTest` を確認してください。ページ計算を変更した場合は `PageCalculatorTest` を確認してください。
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認してください。
+
+`NativeRuntimeHints`、`application-native.yaml`、AOT / GraalVM 設定、ネイティブ実行時に利用する DTO・Doma Entity・リソースを変更した場合は、まず `./gradlew processAot` を確認し、必要に応じて `./gradlew nativeCompile` と生成された実行ファイルで動作確認してください。
 
 ## エージェント向け注意事項
 
