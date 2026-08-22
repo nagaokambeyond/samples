@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -52,7 +53,7 @@ public class BookStockMovement {
     @NotNull
     private Long storeId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "fk_book_stock_movement_01"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Store store;
@@ -61,7 +62,7 @@ public class BookStockMovement {
     @NotNull
     private Long bookId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "fk_book_stock_movement_02"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Book book;

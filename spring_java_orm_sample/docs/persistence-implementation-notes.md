@@ -99,6 +99,7 @@
 - JPA 実装は `BooksOperationServiceJPA`、`BookRepository`、`BookSalesUnitPriceHistoryRepository`、`PublisherRepository`、`BookGenreRepository`、`Book`、`BookSalesUnitPriceHistory`、`Publisher`、`BookGenre` を中心に構成されています。
 - 仕入登録は `PurchaseOperationServiceJPA`、`PurchaseOrderRepository`、`PurchaseOrderDetailRepository`、`BookStockRepository`、`BookStockMovementRepository`、`PurchaseDataValidatorJPA`、`PurchaseOperationConverterJPA` を中心に構成されています。
 - JPA Entity には `Supplier`、`Store`、`PurchaseOrder`、`PurchaseOrderDetail`、`BookStock`、`BookStockMovement` もあります。
+- `BookStockMovement` の `book` / `store` 関連は、暗黙的な EAGER fetch を避けるため `FetchType.LAZY` を明示します。関連情報が必要な場合は、entity 側の EAGER に頼らず、`join fetch`、`EntityGraph`、DTO query などで取得範囲を明示してください。
 - `application.yaml` では Spring Data JPA repository を無効化し、`application-jpa.yaml` で有効化します。JPA profile の起動確認や設定変更時は、両方の設定を確認してください。
 - JPA 側の検索は Spring Data JPA Repository メソッドまたは明示的な `@Query` を優先してください。在庫リストのように1書籍が複数行になる取得では native query と projection の利用を許容します。
 - JPA 側の取得・検索レスポンスは `BookRepository.BookWithStockRowProjection` を使います。列を変更する場合は projection、native query、`BookOperationConverterJPA` を揃えてください。
