@@ -20,6 +20,7 @@
 - JPA profile 固有の Spring 設定は `jpa/config` に置く。JPA auditing は `JpaAuditingConfig` で `jpa` profile に限定して有効化する。
 - 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
 - ページ計算や例外ハンドリング補助などの共通ユーティリティは `util` package に置く。
+- BootUI は開発支援用のため、`build.gradle` の `developmentOnly` dependency として扱う。通常の `implementation` dependency へ変更しない。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
 ## API 実装
@@ -29,7 +30,7 @@
 - API の入出力には Entity ではなく request / response DTO を使う。
 - 認証 API は `/api/auth/login` とし、`LoginRequest` でユーザー名とパスワードを受け取り、`LoginResponse` で `Bearer` token、ユーザー名、有効期限秒数を返す。
 - ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` とし、Bearer token 必須で 204 を返す。
-- Security / JWT / ログイン回数制限の設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml` の `app.auth` / `app.auth.login-rate-limit`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。
+- Security / JWT / ログイン回数制限の設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml` の `app.auth` / `app.auth.login-rate-limit`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。開発支援画面の `/bootui` と `/bootui/**` は Spring Security / JWT filter の対象外とする。
 - 書籍の取得・検索と OpenBD 書誌取得は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId`、`isbn` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - ISBN は `@Isbn` で 13 桁数字として検証する。`BookCreateRequest` / `BookUpdateRequest` / `PurchaseInvoiceDetailCreateRequest` の ISBN 制約を変更する場合は API テストと OpenAPI 例も確認する。
@@ -159,5 +160,7 @@
 - 行ロック関連: `BookRowLock`
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
+
+BootUI の dependency や `SecurityConfig` の除外設定を変更した場合は、`./gradlew bootRun` で起動し、`http://localhost:8080/bootui` が未認証で表示できることを確認する。
 
 AOT / GraalVM、`NativeRuntimeHints`、`application-native.yaml`、ネイティブ実行時に使う DTO・Doma Entity・classpath resource を変更した場合は、`./gradlew processAot` を確認し、必要に応じて `./gradlew nativeCompile` と生成された実行ファイルで動作確認する。

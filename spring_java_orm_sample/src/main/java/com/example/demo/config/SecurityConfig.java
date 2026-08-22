@@ -31,7 +31,8 @@ public class SecurityConfig {
             .requestMatchers(
                 "/swagger-ui/**", "/v3/api-docs*/**",
                 "/h2-console/**",
-                "/scalar/**", "/health/**"
+                "/scalar/**", "/health/**",
+                "/bootui", "/bootui/**"
             );
     }
 
@@ -60,7 +61,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/books/{id}", "/api/books/search", "/api/books/openbd").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/bootui", "/bootui/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(

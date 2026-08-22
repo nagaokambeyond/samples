@@ -33,6 +33,7 @@ ext {
     myBatisGeneratorVersion = '2.0.0'
     myBatisSpringBootVersion = '4.0.1'
     springDocVersion = '3.0.3'
+    bootUiVersion = '1.13.1'
     jacksonDatabindNullableVersion = '0.2.6'
 
     // Shared code generation
@@ -82,6 +83,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    developmentOnly "com.julien-dubois.bootui:bootui-spring-boot-starter:${bootUiVersion}"
 
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-scalar:${springDocVersion}"

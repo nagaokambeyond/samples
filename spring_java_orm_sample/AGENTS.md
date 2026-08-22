@@ -20,6 +20,7 @@
 - ModelMapper
 - OpenAPI Generator
 - GraalVM Native Build Tools
+- BootUI（開発時のみ）
 
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。`/api/books/openbd` では OpenBD API クライアントを使って外部書誌情報を取得します。初期データは `src/main/resources/data.sql` で投入されます。
 
@@ -49,6 +50,7 @@ Gradle Wrapper を使用してください。
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html#/`
 - Scalar: `http://localhost:8080/scalar`
 - H2 Console: `http://localhost:8080/h2-console`
+- BootUI: `http://localhost:8080/bootui`
 
 生成物を更新する意図がある場合のみ、以下を実行してください。
 
@@ -132,6 +134,7 @@ Gradle Wrapper を使用してください。
 - `OpenBdClientConfig` は OpenAPI Generator 生成の `ApiClient`、`BooksApi`、`MetadataApi` Bean を構成します。接続先は `OpenBdProperties` と `application.yaml` の `openbd.base-url` で管理します。
 - `NativeRuntimeHints` は request / response DTO、Doma Entity、OpenBD 生成 DTO などのリフレクション情報と、Doma SQL / `generator-schema.sql` のリソース情報を AOT に登録します。対象型や実行時リソースを追加した場合は runtime hints も確認してください。
 - `DemoApplication` は `@ImportRuntimeHints` で `NativeRuntimeHints` を読み込みます。JPA auditing は `jpa` profile の `JpaAuditingConfig` でのみ有効化します。
+- BootUI は `build.gradle` の `developmentOnly` dependency として導入し、開発時のアプリケーション確認に使用します。`/bootui` と `/bootui/**` は `SecurityConfig` で Spring Security / JWT filter の対象外です。
 - `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は本情報、`book_sales_unit_price_history` 由来の現在販売単価、`book_stock` / `store` 由来の在庫表示情報を `BookResponse` / `BookStockResponse` に変換します。
 - JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の在庫行を `BookOperationConverterJPA` で書籍単位に集約します。
 - MyBatis の取得・検索は `BookWithPublisherName` と `BookStockWithStoreName` を `BookCustomMapper.xml` の nested collection で組み立てます。
@@ -145,7 +148,7 @@ Gradle Wrapper を使用してください。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
 - ネイティブイメージの AOT 処理と実行には `doma,native` profile を使用します。`native` profile では MyBatis、JPA、jOOQ の自動構成と H2 Console を無効化し、`generator-schema.sql` でスキーマを初期化します。
-- 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login`、書籍の取得・検索、OpenBD 書誌取得は公開され、それ以外の API は Bearer token が必要です。
+- 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login`、書籍の取得・検索、OpenBD 書誌取得は公開され、それ以外の API は Bearer token が必要です。開発支援画面の `/bootui` と `/bootui/**` は認証対象外です。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - `BookCreateRequest` / `BookUpdateRequest` / `BookResponse` には `isbn` が含まれます。ISBN は `@Isbn` で 13 桁数字として検証し、登録・更新時は各永続化方式の `BookDataValidator*` で一意性を確認します。
 - `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれます。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しません。
@@ -184,6 +187,8 @@ Gradle Wrapper を使用してください。
 OpenBD API クライアント設定を変更した場合は `OpenBdClientConfigTest` を確認してください。OpenBD 書誌取得 API を変更した場合は `OpenBdBooksApiControllerTest` を確認してください。ページ計算を変更した場合は `PageCalculatorTest` を確認してください。
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認してください。
+
+BootUI の dependency や Security 設定を変更した場合は、`./gradlew bootRun` で起動し、`http://localhost:8080/bootui` が未認証で表示できることを確認してください。
 
 `NativeRuntimeHints`、`application-native.yaml`、AOT / GraalVM 設定、ネイティブ実行時に利用する DTO・Doma Entity・リソースを変更した場合は、まず `./gradlew processAot` を確認し、必要に応じて `./gradlew nativeCompile` と生成された実行ファイルで動作確認してください。
 
