@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.example.demo.openbd.generated.invoker.ApiClient;
 import com.example.demo.openbd.generated.invoker.JSON;
 
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.23.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.24.0")
 @JsonDeserialize(using = JsonSchemaDraft04AdditionalPropertiesDto.JsonSchemaDraft04AdditionalPropertiesDtoDeserializer.class)
 @JsonSerialize(using = JsonSchemaDraft04AdditionalPropertiesDto.JsonSchemaDraft04AdditionalPropertiesDtoSerializer.class)
 public class JsonSchemaDraft04AdditionalPropertiesDto extends AbstractOpenApiSchema {

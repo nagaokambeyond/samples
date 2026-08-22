@@ -40,7 +40,7 @@ import com.example.demo.openbd.generated.invoker.ApiClient;
   OnixProductIdentifierDto.JSON_PROPERTY_PRODUCT_I_D_TYPE,
   OnixProductIdentifierDto.JSON_PROPERTY_ID_VALUE
 })
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.23.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.24.0")
 public class OnixProductIdentifierDto {
   public static final String JSON_PROPERTY_PRODUCT_I_D_TYPE = "ProductIDType";
   @jakarta.annotation.Nullable

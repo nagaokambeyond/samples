@@ -48,7 +48,7 @@ import com.example.demo.openbd.generated.invoker.ApiClient;
   JsonSchemaDraft04Dto.JSON_PROPERTY_REQUIRED,
   JsonSchemaDraft04Dto.JSON_PROPERTY_ADDITIONAL_PROPERTIES_SCHEMA
 })
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.23.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.24.0")
 public class JsonSchemaDraft04Dto {
   public static final String JSON_PROPERTY_$_SCHEMA = "$schema";
   @jakarta.annotation.Nullable

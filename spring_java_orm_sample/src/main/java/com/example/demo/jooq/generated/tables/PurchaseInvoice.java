@@ -7,7 +7,6 @@ package com.example.demo.jooq.generated.tables;
 import com.example.demo.jooq.generated.Indexes;
 import com.example.demo.jooq.generated.Keys;
 import com.example.demo.jooq.generated.Public;
-import com.example.demo.jooq.generated.tables.PurchaseInvoice.PurchaseInvoicePath;
 import com.example.demo.jooq.generated.tables.PurchaseInvoiceDetail.PurchaseInvoiceDetailPath;
 import com.example.demo.jooq.generated.tables.Store.StorePath;
 import com.example.demo.jooq.generated.tables.Supplier.SupplierPath;

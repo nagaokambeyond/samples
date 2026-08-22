@@ -48,7 +48,7 @@ import com.example.demo.openbd.generated.invoker.ApiClient;
   OnixDto.JSON_PROPERTY_PUBLISHING_DETAIL,
   OnixDto.JSON_PROPERTY_PRODUCT_SUPPLY
 })
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.23.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.24.0")
 public class OnixDto {
   public static final String JSON_PROPERTY_RECORD_REFERENCE = "RecordReference";
   @jakarta.annotation.Nullable

@@ -43,7 +43,7 @@ import com.example.demo.openbd.generated.invoker.ApiClient;
   SummaryDto.JSON_PROPERTY_COVER,
   SummaryDto.JSON_PROPERTY_AUTHOR
 })
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.23.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.24.0")
 public class SummaryDto {
   public static final String JSON_PROPERTY_ISBN = "isbn";
   @jakarta.annotation.Nonnull

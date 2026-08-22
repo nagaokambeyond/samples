@@ -40,7 +40,7 @@ import com.example.demo.openbd.generated.invoker.ApiClient;
   ErrorResponseDto.JSON_PROPERTY_ERROR,
   ErrorResponseDto.JSON_PROPERTY_MESSAGE
 })
-@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.23.0")
+@jakarta.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.24.0")
 public class ErrorResponseDto {
   public static final String JSON_PROPERTY_ERROR = "error";
   @jakarta.annotation.Nullable
