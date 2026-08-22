@@ -27,9 +27,7 @@ import static com.example.demo.jooq.generated.Tables.BOOK_SALES_UNIT_PRICE_HISTO
 import static com.example.demo.jooq.generated.Tables.BOOK_STOCK;
 import static com.example.demo.jooq.generated.Tables.PUBLISHER;
 import static com.example.demo.jooq.generated.Tables.STORE;
-import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.lower;
-import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.noCondition;
 
 @Component
@@ -200,7 +198,9 @@ public class BookOperationDsl {
 
     public Long insert(@NonNull BookCreateRequest request){
         final var now = LocalDateTime.now();
-        return dsl.insertInto(BOOK)
+        final var id = nextSequenceValue("book_seq");
+        dsl.insertInto(BOOK)
+            .set(BOOK.ID, id)
             .set(BOOK.TITLE, request.getTitle())
             .set(BOOK.AUTHOR, request.getAuthor())
             .set(BOOK.RELEASE_DATE, request.getReleaseDate())
@@ -210,13 +210,13 @@ public class BookOperationDsl {
             .set(BOOK.CREATE_AT, now)
             .set(BOOK.UPDATE_AT, now)
             .set(BOOK.VERSION, 1L)
-            .returningResult(BOOK.ID)
-            .fetchOne(BOOK.ID);
+            .execute();
+        return id;
     }
 
     public void insertSalesUnitPriceHistory(Long bookId, Integer salesUnitPrice, LocalDate effectiveFrom, LocalDate effectiveTo, LocalDateTime now) {
         dsl.insertInto(BOOK_SALES_UNIT_PRICE_HISTORY)
-            .set(BOOK_SALES_UNIT_PRICE_HISTORY.ID, selectNextSalesUnitPriceHistoryId())
+            .set(BOOK_SALES_UNIT_PRICE_HISTORY.ID, nextSequenceValue("book_sales_unit_price_history_seq"))
             .set(BOOK_SALES_UNIT_PRICE_HISTORY.BOOK_ID, bookId)
             .set(BOOK_SALES_UNIT_PRICE_HISTORY.SALES_UNIT_PRICE, salesUnitPrice)
             .set(BOOK_SALES_UNIT_PRICE_HISTORY.EFFECTIVE_FROM, effectiveFrom)
@@ -227,10 +227,9 @@ public class BookOperationDsl {
             .execute();
     }
 
-    private Long selectNextSalesUnitPriceHistoryId() {
-        return dsl.select(coalesce(max(BOOK_SALES_UNIT_PRICE_HISTORY.ID), 0L).add(1L))
-            .from(BOOK_SALES_UNIT_PRICE_HISTORY)
-            .fetchOne(0, Long.class);
+    private Long nextSequenceValue(String sequenceName) {
+        final var value = (Number) dsl.fetchValue("SELECT NEXT VALUE FOR " + sequenceName);
+        return value.longValue();
     }
 
     public List<BookSalesUnitPriceHistoryRow> selectFollowingSalesUnitPriceHistories(Long bookId, LocalDate effectiveFrom) {

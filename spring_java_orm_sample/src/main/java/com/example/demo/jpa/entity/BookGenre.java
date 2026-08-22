@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BookGenre {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "book_genre_seq_generator", sequenceName = "book_genre_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_genre_seq_generator")
     private Long id;
 
     @Column(length = 100, comment = "ジャンル名")

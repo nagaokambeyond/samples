@@ -26,7 +26,7 @@
 
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。`/api/books/openbd` では OpenBD API クライアントを使って外部書誌情報を取得します。初期データは `src/main/resources/data.sql` で投入されます。
 
-現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id`、`book_sales_unit_price_history.book_id` は `book.id` を参照します。`book.isbn` は 13 桁の一意な ISBN として扱います。検索 API はページングされ、出版社名・ジャンル名・ISBN・現在販売単価・在庫リストを含む `BookPageResponse` を返します。
+現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` です。各テーブルの主キーはテーブル単位の `*_seq` シーケンスで採番します。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id`、`book_sales_unit_price_history.book_id` は `book.id` を参照します。`book.isbn` は 13 桁の一意な ISBN として扱います。検索 API はページングされ、出版社名・ジャンル名・ISBN・現在販売単価・在庫リストを含む `BookPageResponse` を返します。
 
 ## 追加の作業規約
 
@@ -149,6 +149,9 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - 仕入登録は JPA / MyBatis / Doma / jOOQ の各 `PurchaseOperationService*` が `PurchaseInvoice` / `PurchaseInvoiceDetail` 相当のデータを登録し、在庫をロックして新規作成または数量加算し、`book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の在庫増減履歴を登録します。
 - `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型です。JPA は `PurchaseInvoiceTypeConverter`、MyBatis は `PurchaseInvoiceTypeHandler`、Doma は `@Domain`、jOOQ は converter / Service 側の値変換で扱います。
 - `BookStockMovementType` と `BookStockMovementSourceType` は在庫増減履歴の共有ドメイン型です。JPA は converter、MyBatis は TypeHandler、Doma は `@Domain`、jOOQ は Service / DSL 側の値変換で扱います。
+- 全テーブルの主キーは `generator-schema.sql` で定義した `publisher_seq`、`book_genre_seq`、`book_seq`、`supplier_seq`、`store_seq`、`purchase_invoice_seq`、`purchase_invoice_detail_seq`、`book_sales_unit_price_history_seq`、`book_stock_seq`、`book_stock_movement_seq` から採番します。`max(id) + 1` や IDENTITY 採番へ戻さないでください。
+- JPA は `@SequenceGenerator(allocationSize = 1)`、MyBatis は `generatorConfig.xml` と Mapper XML の `selectKey BEFORE`、Doma は `@SequenceGenerator(allocationSize = 1)`、jOOQ は `BookOperationDsl` / `PurchaseOperationDsl` のシーケンス取得処理を使います。採番方式を変更する場合は4実装と生成設定を揃えてください。
+- `data.sql` は依存関係を考慮した順序で既存データを削除して初期データを投入し、最後に各シーケンスを初期データの次の値へ再設定します。初期データの ID を変更した場合は `ALTER SEQUENCE ... RESTART WITH` も更新してください。
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
 - ネイティブイメージの AOT 処理と実行には `doma,native` profile を使用します。`native` profile では MyBatis、JPA、jOOQ の自動構成と H2 Console を無効化し、`generator-schema.sql` でスキーマを初期化します。
@@ -188,6 +191,8 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 テストが失敗している状態、または実行できていない状態では実装完了として扱わず、失敗内容・未実行理由・残っている対応をユーザーへ明示してください。
 
 永続化方式ごとの参照存在チェックや ISBN 一意性チェックを変更した場合は、`BookDataValidatorJPATest`、`BookDataValidatorMybatisTest`、`BookDataValidatorJooqTest` と、`PurchaseDataValidatorJPATest`、`PurchaseDataValidatorMybatisTest`、`PurchaseDataValidatorDomaTest`、`PurchaseDataValidatorJooqTest` を確認してください。
+
+主キーシーケンス、採番処理、`data.sql` のシーケンス再設定、仕入登録の flush / 在庫ロック順序を変更した場合は、JPA / MyBatis / Doma / jOOQ の `BooksOperationService*Test` と `PurchaseOperationService*Test` を確認してください。
 
 OpenBD API クライアント設定を変更した場合は `OpenBdClientConfigTest` を確認してください。OpenBD 書誌取得 API を変更した場合は `OpenBdBooksApiControllerTest` を確認してください。ページ計算を変更した場合は `PageCalculatorTest` を確認してください。
 

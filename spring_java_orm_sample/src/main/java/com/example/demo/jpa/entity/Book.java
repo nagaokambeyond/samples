@@ -26,7 +26,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Book {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "book_seq_generator", sequenceName = "book_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_seq_generator")
     private Long id;
 
     @Column(nullable = false, length = 100, comment = "タイトル")

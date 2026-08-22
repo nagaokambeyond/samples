@@ -31,7 +31,9 @@ public class PurchaseOperationDsl {
     private final DSLContext dsl;
 
     public PurchaseInvoiceRow insertPurchaseInvoice(PurchaseInvoiceCreateRequest request, long amount, LocalDateTime now) {
-        final var id = dsl.insertInto(PURCHASE_INVOICE)
+        final var purchaseInvoiceId = nextSequenceValue("purchase_invoice_seq");
+        dsl.insertInto(PURCHASE_INVOICE)
+            .set(PURCHASE_INVOICE.ID, purchaseInvoiceId)
             .set(PURCHASE_INVOICE.PURCHASE_INVOICE_TYPE, PurchaseInvoiceType.PURCHASE.getValue())
             .set(PURCHASE_INVOICE.RETURN_PURCHASE_INVOICE_ID, (Long) null)
             .set(PURCHASE_INVOICE.PURCHASE_INVOICE_DATE, request.getPurchaseInvoiceDate())
@@ -41,9 +43,7 @@ public class PurchaseOperationDsl {
             .set(PURCHASE_INVOICE.CREATE_AT, now)
             .set(PURCHASE_INVOICE.UPDATE_AT, now)
             .set(PURCHASE_INVOICE.VERSION, 1L)
-            .returningResult(PURCHASE_INVOICE.ID)
-            .fetchOne(PURCHASE_INVOICE.ID);
-        final var purchaseInvoiceId = Objects.requireNonNull(id);
+            .execute();
 
         return new PurchaseInvoiceRow(
             purchaseInvoiceId,
@@ -65,7 +65,9 @@ public class PurchaseOperationDsl {
         long detailAmount,
         LocalDateTime now
     ) {
-        final var id = dsl.insertInto(PURCHASE_INVOICE_DETAIL)
+        final var detailId = nextSequenceValue("purchase_invoice_detail_seq");
+        dsl.insertInto(PURCHASE_INVOICE_DETAIL)
+            .set(PURCHASE_INVOICE_DETAIL.ID, detailId)
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_ID, purchaseInvoiceId)
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_BOOK_ID, bookId)
             .set(PURCHASE_INVOICE_DETAIL.PURCHASE_INVOICE_DETAIL_UNIT_PRICE, request.getPurchaseInvoiceDetailUnitPrice())
@@ -74,9 +76,7 @@ public class PurchaseOperationDsl {
             .set(PURCHASE_INVOICE_DETAIL.CREATE_AT, now)
             .set(PURCHASE_INVOICE_DETAIL.UPDATE_AT, now)
             .set(PURCHASE_INVOICE_DETAIL.VERSION, 1L)
-            .returningResult(PURCHASE_INVOICE_DETAIL.ID)
-            .fetchOne(PURCHASE_INVOICE_DETAIL.ID);
-        final var detailId = Objects.requireNonNull(id);
+            .execute();
 
         return new PurchaseInvoiceDetailRow(
             detailId,
@@ -93,6 +93,7 @@ public class PurchaseOperationDsl {
         final var bookStock = selectBookStockForUpdate(storeId, detail.getPurchaseInvoiceDetailBookId());
         if (Objects.isNull(bookStock)) {
             dsl.insertInto(BOOK_STOCK)
+                .set(BOOK_STOCK.ID, nextSequenceValue("book_stock_seq"))
                 .set(BOOK_STOCK.BOOK_STOCK_STORE_ID, storeId)
                 .set(BOOK_STOCK.BOOK_STOCK_BOOK_ID, detail.getPurchaseInvoiceDetailBookId())
                 .set(BOOK_STOCK.BOOK_STOCK_QUANTITY, detail.getPurchaseInvoiceDetailQuantity())
@@ -137,6 +138,7 @@ public class PurchaseOperationDsl {
 
     public void insertBookStockMovement(Long storeId, PurchaseInvoiceRow purchaseInvoice, PurchaseInvoiceDetailRow detail, LocalDateTime now) {
         dsl.insertInto(BOOK_STOCK_MOVEMENT)
+            .set(BOOK_STOCK_MOVEMENT.ID, nextSequenceValue("book_stock_movement_seq"))
             .set(BOOK_STOCK_MOVEMENT.STORE_ID, storeId)
             .set(BOOK_STOCK_MOVEMENT.BOOK_ID, detail.getPurchaseInvoiceDetailBookId())
             .set(BOOK_STOCK_MOVEMENT.MOVEMENT_TYPE, BookStockMovementType.PURCHASE.getValue())
@@ -149,5 +151,10 @@ public class PurchaseOperationDsl {
             .set(BOOK_STOCK_MOVEMENT.UPDATE_AT, now)
             .set(BOOK_STOCK_MOVEMENT.VERSION, 1L)
             .execute();
+    }
+
+    private Long nextSequenceValue(String sequenceName) {
+        final var value = (Number) dsl.fetchValue("SELECT NEXT VALUE FOR " + sequenceName);
+        return value.longValue();
     }
 }

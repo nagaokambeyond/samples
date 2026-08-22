@@ -22,7 +22,6 @@ import org.jooq.Check;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
@@ -68,7 +67,7 @@ public class PurchaseInvoice extends TableImpl<PurchaseInvoiceRecord> {
     /**
      * The column <code>public.purchase_invoice.id</code>.
      */
-    public final TableField<PurchaseInvoiceRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<PurchaseInvoiceRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.purchase_invoice.purchase_invoice_type</code>.
@@ -191,11 +190,6 @@ public class PurchaseInvoice extends TableImpl<PurchaseInvoiceRecord> {
     @Override
     public List<Index> getIndexes() {
         return Arrays.asList(Indexes.IDX_PURCHASE_INVOICE_01, Indexes.IDX_PURCHASE_INVOICE_02, Indexes.IDX_PURCHASE_INVOICE_03, Indexes.IDX_PURCHASE_INVOICE_04, Indexes.IDX_PURCHASE_INVOICE_05);
-    }
-
-    @Override
-    public Identity<PurchaseInvoiceRecord, Long> getIdentity() {
-        return (Identity<PurchaseInvoiceRecord, Long>) super.getIdentity();
     }
 
     @Override

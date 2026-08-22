@@ -26,7 +26,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BookSalesUnitPriceHistory {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "book_sales_unit_price_history_seq_generator", sequenceName = "book_sales_unit_price_history_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_sales_unit_price_history_seq_generator")
     private Long id;
 
     @Column(nullable = false, comment = "本ID")

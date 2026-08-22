@@ -62,6 +62,11 @@ public class PurchaseOperationServiceJPA implements PurchaseOperationService {
             return savedDetail;
         }).toList();
 
+        purchaseOrderRepository.flush();
+        purchaseOrderDetailRepository.flush();
+        bookStockRepository.flush();
+        bookStockMovementRepository.flush();
+
         return converter.toResponse(purchaseInvoice, savedDetails);
     }
 }

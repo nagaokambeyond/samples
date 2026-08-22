@@ -15,7 +15,6 @@ import java.util.Collection;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
 import org.jooq.Path;
@@ -60,7 +59,7 @@ public class Publisher extends TableImpl<PublisherRecord> {
     /**
      * The column <code>public.publisher.id</code>.
      */
-    public final TableField<PublisherRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<PublisherRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.publisher.publisher_name</code>. 出版社名
@@ -147,11 +146,6 @@ public class Publisher extends TableImpl<PublisherRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
-    }
-
-    @Override
-    public Identity<PublisherRecord, Long> getIdentity() {
-        return (Identity<PublisherRecord, Long>) super.getIdentity();
     }
 
     @Override

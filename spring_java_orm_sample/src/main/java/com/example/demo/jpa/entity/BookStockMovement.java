@@ -16,6 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
@@ -46,7 +47,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BookStockMovement {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "book_stock_movement_seq_generator", sequenceName = "book_stock_movement_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "book_stock_movement_seq_generator")
     private Long id;
 
     @Column(name = "store_id", comment = "店舗ID")

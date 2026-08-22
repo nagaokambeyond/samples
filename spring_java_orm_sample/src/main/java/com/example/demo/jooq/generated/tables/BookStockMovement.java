@@ -21,7 +21,6 @@ import org.jooq.Check;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
@@ -67,7 +66,7 @@ public class BookStockMovement extends TableImpl<BookStockMovementRecord> {
     /**
      * The column <code>public.book_stock_movement.id</code>.
      */
-    public final TableField<BookStockMovementRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<BookStockMovementRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.book_stock_movement.store_id</code>. 店舗ID
@@ -195,11 +194,6 @@ public class BookStockMovement extends TableImpl<BookStockMovementRecord> {
     @Override
     public List<Index> getIndexes() {
         return Arrays.asList(Indexes.IDX_BOOK_STOCK_MOVEMENT_01, Indexes.IDX_BOOK_STOCK_MOVEMENT_02, Indexes.IDX_BOOK_STOCK_MOVEMENT_03);
-    }
-
-    @Override
-    public Identity<BookStockMovementRecord, Long> getIdentity() {
-        return (Identity<BookStockMovementRecord, Long>) super.getIdentity();
     }
 
     @Override

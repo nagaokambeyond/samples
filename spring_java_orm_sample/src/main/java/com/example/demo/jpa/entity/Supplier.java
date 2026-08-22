@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Supplier {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "supplier_seq_generator", sequenceName = "supplier_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "supplier_seq_generator")
     private Long id;
 
     @Column(comment = "仕入先名", length = 100)

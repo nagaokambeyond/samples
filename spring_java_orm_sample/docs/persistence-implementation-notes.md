@@ -14,9 +14,10 @@
 - `book.isbn` は 13 桁の一意な ISBN として扱います。登録・更新時は各 `BookDataValidator*` で一意性を確認し、仕入登録時は明細 ISBN から本 ID を解決します。
 - `book_sales_unit_price_history` は本の販売単価履歴を扱います。現在単価は `effective_from <= current_date` かつ `effective_to IS NULL OR current_date <= effective_to` の履歴から取得します。
 - 現在のスキーマには `publisher`、`book_genre`、`book`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` があります。
+- 全テーブルの主キーは、テーブル単位の `publisher_seq`、`book_genre_seq`、`book_seq`、`supplier_seq`、`store_seq`、`purchase_invoice_seq`、`purchase_invoice_detail_seq`、`book_sales_unit_price_history_seq`、`book_stock_seq`、`book_stock_movement_seq` で採番します。IDENTITY や `max(id) + 1` は使用しません。
 - `purchase_invoice.purchase_invoice_type` は `PurchaseInvoiceType` で扱います。JPA / MyBatis / Doma / jOOQ の型変換設定を揃えてください。
 - `book_stock_movement.movement_type` は `BookStockMovementType`、`book_stock_movement.source_type` は `BookStockMovementSourceType` で扱います。JPA / MyBatis / Doma / jOOQ の型変換または値変換の設定を揃えてください。
-- profile や Spring Data JPA repository の有効化設定を変更する場合は、`application.yaml` と `application-jpa.yaml` の両方を確認してください。
+- profile や Spring Data JPA repository の有効化設定を変更する場合は、`application.yaml`、`application-jpa.yaml`、`application-native.yaml` を確認してください。ネイティブ実行は `doma,native` profile で `generator-schema.sql` を初期化スキーマに使います。
 - Service 内のメソッドで排他をかけてデータを取得する箇所があれば、メソッドに `@RetryableOnLockFailure` を付けてリトライします。
 - ページング検索の offset と totalPages は `com.example.demo.util.PageCalculator` を使って計算します。各 Service 実装で計算式を重複させないでください。
 - JPA / MyBatis / Doma / jOOQ のうち1つの実装を変更する場合でも、他の実装で同じ仕様が必要か確認してください。
@@ -41,6 +42,7 @@
 - jOOQ の行ロック取得は `BookOperationDsl` / `PurchaseOperationDsl` で `forUpdate().noWait()` を使い、ロック失敗は `PessimisticLockingFailureException` に変換して既存の `RetryableOnLockFailure` / `GlobalExceptionHandler` に乗せます。
 - jOOQ 生成コードには `book_stock_movement` と `book_sales_unit_price_history` も含まれます。jOOQ 側では在庫増減種別を DB 上の `Integer` として扱い、保存時は `BookStockMovementType#getValue()` / `BookStockMovementSourceType#getValue()` を使います。
 - 仕入登録では `PurchaseOperationDsl.insertBookStockMovement` で `book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の履歴を登録します。
+- jOOQ の登録処理は `BookOperationDsl` / `PurchaseOperationDsl` の `nextSequenceValue` で対象の `*_seq` から ID を取得し、INSERT 文へ明示的に設定します。`returning` や `max(id) + 1` に依存しないでください。
 - jOOQ 側のデータバリデーションを変更する場合は `BookDataValidatorJooqTest` / `PurchaseDataValidatorJooqTest` を確認してください。
 - jOOQ 実装は `jooq` profile で有効になります。既定の永続化方式を変更する場合は、`application.yaml` の `spring.profiles.default`、各実装の `@Profile`、Doma の `@Primary` を合わせて確認してください。
 
@@ -66,7 +68,10 @@
 - Doma CodeGen の対象スキーマを変える場合は、`generator-schema.sql` と `build.gradle` の `domaCodeGen` 設定の整合性を確認してください。
 - Doma CodeGen の対象テーブルは `build.gradle` の `generatedTablePattern` 経由で管理しています。テーブル追加・削除時は MyBatis / jOOQ と合わせて更新してください。
 - Doma CodeGen の型解決は `src/main/resources/codegen/entityPropertyClassNames.properties` も参照します。`PurchaseInvoiceType`、`BookStockMovementType`、`BookStockMovementSourceType` などのドメイン型を追加・変更する場合はこのファイルも確認してください。
+- Doma 生成 Entity の ID は `@GeneratedValue(strategy = GenerationType.SEQUENCE)` と、各 `*_seq` を指定した `@SequenceGenerator(allocationSize = 1)` で採番します。生成元スキーマや CodeGen 設定を変更した場合は、全生成 Entity の sequence 名を確認してください。
+- 販売単価履歴の手書き採番は `BookSalesUnitPriceHistoryCustomDao.selectNextId` と `selectNextId.sql` で `book_sales_unit_price_history_seq` の次の値を取得します。
 - Doma 仕入登録では `BookStockMovementDao` で `book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の履歴を登録します。
+- Doma 仕入登録では伝票を INSERT する前に、全明細の対象在庫を `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で取得してロックします。ロック取得順序を変更する場合は並行実行時の競合を確認してください。
 - Doma 側の仕入データバリデーションを変更する場合は `PurchaseDataValidatorDomaTest` を確認してください。
 - Doma 側の更新・削除では、Doma の楽観ロック例外を `ObjectOptimisticLockingFailureException` に変換する既存方針を維持してください。
 
@@ -74,7 +79,9 @@
 
 - `src/main/java/com/example/demo/mybatis/generator` 配下は MyBatis Generator の生成コードです。手作業での編集は避けてください。
 - `src/main/resources/com/example/demo/mybatis/generator` 配下の XML も生成物として扱ってください。
-- 手書き SQL は `BookCustomMapper` / `BookStockCustomMapper` と対応する XML に追加してください。販売単価履歴の ID 採番付き登録は `BookCustomMapper` に置かれています。
+- 手書き SQL は `BookCustomMapper` / `BookStockCustomMapper` と対応する XML に追加してください。本登録と販売単価履歴の ID 採番付き登録は `BookCustomMapper` に置かれています。
+- MyBatis Generator の `generatedKey` は `generatorConfig.xml` で `SELECT NEXT VALUE FOR *_seq` を指定し、生成 Mapper XML の `selectKey order="BEFORE"` で INSERT 前に ID を設定します。手書きの `BookCustomMapper.insertWithGeneratedKey` も同じ方式を使います。
+- `BookCustomMapper.selectNextSalesUnitPriceHistoryId` は `book_sales_unit_price_history_seq` の次の値を取得します。`max(id) + 1` に戻さないでください。
 - `BookWithPublisherName` は MyBatis 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は resultMap、nested collection、`BookOperationConverterMybatis` も更新してください。
 - `BookWithPublisherName` は `publisherName`、`genreName`、`isbn`、`salesUnitPrice`、`bookStockList` を含みます。取得・検索 SQL では `publisher`、`book_genre`、`book_sales_unit_price_history`、`book_stock`、`store` の結合を維持してください。
 - 本検索・取得では `book_sales_unit_price_history` を現在日付で結合し、`BookResponse.salesUnitPrice` を返します。検索 count SQL でも同じ現在単価条件を維持してください。
@@ -106,11 +113,14 @@
 - `BookWithStockRowProjection` は `publisherName`、`genreName`、`isbn`、`salesUnitPrice`、在庫・店舗表示用の行項目を含みます。取得・検索 query では `publisher`、`book_genre`、`book_sales_unit_price_history`、`book_stock`、`store` の結合を維持してください。
 - 本検索・取得では `book_sales_unit_price_history` を現在日付で結合し、`BookResponse.salesUnitPrice` を返します。検索 count query でも同じ現在単価条件を維持してください。
 - 販売単価履歴の追加では `BookSalesUnitPriceHistoryRepository` を使い、前履歴の `effective_to` を新履歴の前日に更新し、後続履歴がある場合は新履歴の `effective_to` を後続履歴の前日にします。
+- JPA Entity の ID は `@GeneratedValue(strategy = GenerationType.SEQUENCE)` と、各 `*_seq` を指定した `@SequenceGenerator(allocationSize = 1)` で採番します。Entity と DB シーケンス名を一致させてください。
+- `BookSalesUnitPriceHistoryRepository.nextId` は、手書き native INSERT 用に `book_sales_unit_price_history_seq` の次の値を取得します。
 - JPA の `BookWithStockRowProjection` は1書籍1行ではなく、在庫単位の行を返します。`BookOperationConverterJPA.toResponseFrom(...)` / `toResponse(...)` で書籍単位に集約し、`bookStockList` を組み立ててください。
 - JPA 側のページング検索は、取得 query と count query の条件を揃えてください。一覧検索で在庫・店舗を結合する場合は、先に書籍をページングしてから `book_stock` / `store` を結合し、count query は書籍条件のみを数える方針を維持してください。
 - 検索条件の `keyword` は任意です。未指定または空文字の場合はタイトル/著者条件を付けない方針を維持してください。
 - JPA 側の更新・削除では `findByIdWithWriteLock` による書き込みロックを維持してください。
 - JPA 側の仕入登録では `BookStockRepository.findByStoreIdAndBookIdWithWriteLock` による在庫行ロックを維持してください。
+- JPA の仕入登録はレスポンスを返す前に `PurchaseOrderRepository`、`PurchaseOrderDetailRepository`、`BookStockRepository`、`BookStockMovementRepository` を明示的に `flush()` します。制約違反や書き込みエラーをトランザクション内で検出するため、この順序を不用意に削除しないでください。
 - JPA 側の `publisherId` / `genreId` 参照存在チェックは `PublisherRepository` / `BookGenreRepository` を使う `BookDataValidatorJPA` に集約してください。
 - JPA 側の ISBN 一意性チェックと仕入明細 ISBN 参照チェックは `BookRepository.findByIsbn` を使います。
 - JPA 側のデータバリデーションを変更する場合は `BookDataValidatorJPATest` / `PurchaseDataValidatorJPATest` を確認してください。
@@ -145,6 +155,9 @@
   - `data.sql`
 
 ## スキーマ変更時の注意
+
+- 主キー採番は全テーブルでシーケンス方式に統一しています。シーケンスを追加・変更する場合は、`generator-schema.sql`、`data.sql`、JPA Entity / Repository、`generatorConfig.xml`、MyBatis 生成 XML / 手書き XML、Doma 生成 Entity / 手書き SQL、jOOQ DSL の整合性を確認してください。
+- `data.sql` は外部キー依存順に既存データを削除してから初期データを投入し、最後に各 `ALTER SEQUENCE ... RESTART WITH` で未使用の次の値へ進めます。初期データの ID を変更した場合は再開値も更新してください。
 
 - `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` テーブルのカラムを変更する場合は、以下の整合性を確認してください。
   - JPA Entity
@@ -187,6 +200,7 @@
 - 生成コードの対象テーブルは `build.gradle` の `generatedTablePattern` で管理しています。MyBatis / Doma / jOOQ の生成対象を揃えてください。
 - 仕入・在庫・販売単価履歴系の外部キーを変更する場合は、`purchase_invoice.return_purchase_invoice_id`、`purchase_invoice.supplier_id`、`purchase_invoice.receiving_store_id`、`purchase_invoice_detail.purchase_invoice_id`、`purchase_invoice_detail.purchase_invoice_detail_book_id`、`book_stock.book_stock_store_id`、`book_stock.book_stock_book_id`、`book_stock_movement.store_id`、`book_stock_movement.book_id`、`book_sales_unit_price_history.book_id` の整合性を確認してください。
 - 検索条件を変更する場合は、JPA / MyBatis / Doma / jOOQ の一覧取得と件数取得が同じ条件になるよう確認してください。
+- 主キーシーケンス、採番 SQL、初期データの再開値、仕入登録の flush / 在庫ロック順序を変更した場合は、JPA / MyBatis / Doma / jOOQ の `BooksOperationService*Test` と `PurchaseOperationService*Test` を確認してください。
 
 ## 生成コマンド
 

@@ -20,7 +20,6 @@ import org.jooq.Check;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
@@ -67,7 +66,7 @@ public class BookSalesUnitPriceHistory extends TableImpl<BookSalesUnitPriceHisto
     /**
      * The column <code>public.book_sales_unit_price_history.id</code>.
      */
-    public final TableField<BookSalesUnitPriceHistoryRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<BookSalesUnitPriceHistoryRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.book_sales_unit_price_history.book_id</code>. 本ID
@@ -183,11 +182,6 @@ public class BookSalesUnitPriceHistory extends TableImpl<BookSalesUnitPriceHisto
     @Override
     public List<Index> getIndexes() {
         return Arrays.asList(Indexes.IDX_BOOK_SALES_UNIT_PRICE_HISTORY_01, Indexes.IDX_BOOK_SALES_UNIT_PRICE_HISTORY_02, Indexes.IDX_BOOK_SALES_UNIT_PRICE_HISTORY_03);
-    }
-
-    @Override
-    public Identity<BookSalesUnitPriceHistoryRecord, Long> getIdentity() {
-        return (Identity<BookSalesUnitPriceHistoryRecord, Long>) super.getIdentity();
     }
 
     @Override

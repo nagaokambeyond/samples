@@ -10,6 +10,7 @@ import org.seasar.doma.GeneratedValue;
 import org.seasar.doma.GenerationType;
 import org.seasar.doma.Id;
 import org.seasar.doma.Metamodel;
+import org.seasar.doma.SequenceGenerator;
 import org.seasar.doma.Table;
 import org.seasar.doma.Version;
 
@@ -22,7 +23,8 @@ public class BookStockMovement extends AbstractBookStockMovement {
 
     /** */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @SequenceGenerator(sequence = "book_stock_movement_seq", allocationSize = 1)
     @Column(name = "id")
     Long id;
 

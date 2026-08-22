@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Store {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "store_seq_generator", sequenceName = "store_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "store_seq_generator")
     private Long id;
 
     @Column(comment = "店舗名", length = 100)

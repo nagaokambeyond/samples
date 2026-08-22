@@ -50,6 +50,11 @@ public class PurchaseOperationServiceDoma implements PurchaseOperationService {
         final var amount = details.stream().mapToLong(PurchaseInvoiceDetail::getPurchaseInvoiceDetailAmount).sum();
         final var purchaseInvoice = converter.toPurchaseInvoice(request, amount, now);
 
+        details.forEach(purchaseInvoiceDetail -> bookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock(
+            purchaseInvoice.getReceivingStoreId(),
+            purchaseInvoiceDetail.getPurchaseInvoiceDetailBookId()
+        ));
+
         purchaseInvoiceDao.insert(purchaseInvoice);
 
         details.forEach(purchaseInvoiceDetail -> {

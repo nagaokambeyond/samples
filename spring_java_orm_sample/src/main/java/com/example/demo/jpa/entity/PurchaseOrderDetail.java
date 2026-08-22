@@ -25,7 +25,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PurchaseOrderDetail {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "purchase_invoice_detail_seq_generator", sequenceName = "purchase_invoice_detail_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "purchase_invoice_detail_seq_generator")
     private Long id;
 
     @Column(name = "purchase_invoice_id", comment = "仕入伝票ID")

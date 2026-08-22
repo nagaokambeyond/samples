@@ -15,7 +15,6 @@ import java.util.Collection;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
 import org.jooq.Path;
@@ -60,7 +59,7 @@ public class BookGenre extends TableImpl<BookGenreRecord> {
     /**
      * The column <code>public.book_genre.id</code>.
      */
-    public final TableField<BookGenreRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<BookGenreRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.book_genre.genre_name</code>. ジャンル名
@@ -147,11 +146,6 @@ public class BookGenre extends TableImpl<BookGenreRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
-    }
-
-    @Override
-    public Identity<BookGenreRecord, Long> getIdentity() {
-        return (Identity<BookGenreRecord, Long>) super.getIdentity();
     }
 
     @Override

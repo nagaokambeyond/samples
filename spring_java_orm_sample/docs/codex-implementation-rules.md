@@ -39,6 +39,7 @@
 - 認証 API は `/api/auth/login` とし、`LoginRequest` でユーザー名とパスワードを受け取り、`LoginResponse` で `Bearer` token、ユーザー名、有効期限秒数を返す。
 - ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` とし、Bearer token 必須で 204 を返す。
 - Security / JWT / ログイン回数制限の設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml` の `app.auth` / `app.auth.login-rate-limit`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。開発支援画面の `/bootui` と `/bootui/**` は Spring Security / JWT filter の対象外とする。
+- Actuator の Web 公開は `application.yaml` の `management.endpoints.web.exposure.include: health` で `health` のみに限定する。`env` など設定情報を返すエンドポイントを追加公開しない。
 - 書籍の取得・検索と OpenBD 書誌取得は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
 - `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId`、`isbn` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
 - ISBN は `@Isbn` で 13 桁数字として検証する。`BookCreateRequest` / `BookUpdateRequest` / `PurchaseInvoiceDetailCreateRequest` の ISBN 制約を変更する場合は API テストと OpenAPI 例も確認する。
@@ -74,6 +75,14 @@
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
 - `src/main/java/com/example/demo/openbd/generated` 配下は OpenAPI Generator 生成コードなので直接編集しない。OpenBD API 仕様や生成設定を変更する場合は `src/main/resources/openapi/openbd_api_spec.yaml`、`build.gradle` の `openApiGenerate` / `syncOpenBdGeneratedSources`、`OpenBdClientConfig`、`OpenBdProperties`、`OpenBdClientConfigTest` を確認する。
 - `compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存する。通常のビルドでも jOOQ 生成コードと OpenBD 生成コードが更新される可能性があるため、生成差分を確認する。
+
+## 主キー採番
+
+- 現在の全テーブルの主キーは、`generator-schema.sql` に定義したテーブル単位の `*_seq` シーケンスで採番する。IDENTITY や `max(id) + 1` による採番を追加しない。
+- シーケンスを追加・変更する場合は、`generator-schema.sql`、`data.sql` の `ALTER SEQUENCE ... RESTART WITH`、JPA Entity / Repository、`generatorConfig.xml` と MyBatis Mapper XML、Doma 生成 Entity / 手書き SQL、jOOQ DSL を揃える。
+- JPA は `@GeneratedValue(strategy = SEQUENCE)` と `@SequenceGenerator(allocationSize = 1)`、MyBatis は `selectKey order="BEFORE"`、Doma は `@GeneratedValue(strategy = SEQUENCE)` と `@SequenceGenerator(allocationSize = 1)`、jOOQ は `BookOperationDsl` / `PurchaseOperationDsl` のシーケンス取得処理を使う。
+- `data.sql` は外部キー依存順に既存データを削除してから初期データを投入し、最後に各シーケンスを未使用の次の値へ再設定する。初期データの最大 ID と再開値をずらさない。
+- MyBatis / Doma / jOOQ の生成コードを手作業で採番方式へ追従させず、生成元を更新して対応する生成タスクを実行し、差分を確認する。
 
 ## OpenBD 連携
 
@@ -116,6 +125,8 @@
 - `BookDataValidator*` を変更する場合は、出版社・ジャンルの参照存在チェック、未使用 ISBN の許可、同一 book の ISBN 維持、他 book の ISBN 利用時の一意制約違反をテストする。
 - `PurchaseDataValidator*` を変更する場合は、仕入先・受入店舗・明細 ISBN の参照存在チェックと、ISBN から解決した本 ID map を返すことをテストする。
 - 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock`、jOOQ は `PurchaseOperationDsl` の `forUpdate().noWait()` で在庫行をロックしてから新規作成または数量加算する。
+- JPA の仕入登録は、レスポンスを返す前に伝票、明細、在庫、在庫増減履歴の各 Repository を `flush()` し、DB 制約違反や書き込みエラーをトランザクション内で確定させる。
+- Doma の仕入登録は、伝票を登録する前に全明細の在庫行を `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で取得してロックする現在の順序を維持する。
 - 仕入登録では在庫更新後に `book_stock_movement` へ在庫増減履歴を登録する。種別は仕入登録では `BookStockMovementType.PURCHASE`、発生元種別は `BookStockMovementSourceType.PURCHASE_INVOICE` を使い、伝票 ID / 明細 ID / ISBN から解決した本 ID / 受入店舗 ID / 数量を揃える。
 - 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しない。
 - 排他ロックを取得して更新・削除する Service メソッドには、必要に応じて `@RetryableOnLockFailure` を付ける。
@@ -166,6 +177,8 @@
 - jOOQ 仕入実装: `PurchaseOperationServiceJooqTest`
 - ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
 - 行ロック関連: `BookRowLock`
+
+主キーシーケンス、採番処理、`data.sql` のシーケンス再設定、仕入登録の flush / 在庫ロック順序を変更した場合は、4方式の `BooksOperationService*Test` と `PurchaseOperationService*Test` を確認する。
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
 

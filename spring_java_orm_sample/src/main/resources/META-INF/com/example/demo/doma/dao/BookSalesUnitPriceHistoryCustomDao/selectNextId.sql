@@ -1,4 +1,1 @@
-select
-  coalesce(max(id), 0) + 1
-from
-  book_sales_unit_price_history
+select next value for book_sales_unit_price_history_seq

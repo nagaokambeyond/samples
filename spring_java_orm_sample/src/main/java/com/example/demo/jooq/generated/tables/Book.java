@@ -25,7 +25,6 @@ import java.util.List;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
@@ -71,7 +70,7 @@ public class Book extends TableImpl<BookRecord> {
     /**
      * The column <code>public.book.id</code>.
      */
-    public final TableField<BookRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<BookRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.book.title</code>. タイトル
@@ -188,11 +187,6 @@ public class Book extends TableImpl<BookRecord> {
     @Override
     public List<Index> getIndexes() {
         return Arrays.asList(Indexes.IDX_BOOK_01, Indexes.IDX_BOOK_02, Indexes.IDX_BOOK_03, Indexes.IDX_BOOK_04, Indexes.IDX_BOOK_05);
-    }
-
-    @Override
-    public Identity<BookRecord, Long> getIdentity() {
-        return (Identity<BookRecord, Long>) super.getIdentity();
     }
 
     @Override

@@ -22,7 +22,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Publisher {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SequenceGenerator(name = "publisher_seq_generator", sequenceName = "publisher_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "publisher_seq_generator")
     private Long id;
 
     @Column(length = 100, comment = "出版社名")

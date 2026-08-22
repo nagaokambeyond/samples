@@ -1,3 +1,14 @@
+DELETE FROM book_stock_movement;
+DELETE FROM book_stock;
+DELETE FROM book_sales_unit_price_history;
+DELETE FROM purchase_invoice_detail;
+DELETE FROM purchase_invoice;
+DELETE FROM book;
+DELETE FROM book_genre;
+DELETE FROM publisher;
+DELETE FROM store;
+DELETE FROM supplier;
+
 MERGE INTO publisher (id, publisher_name, create_at, update_at, version) VALUES (1, '◯◯書房', '2026-01-01', '2026-01-01', 0);
 MERGE INTO publisher (id, publisher_name, create_at, update_at, version) VALUES (2, '△△出版', '2026-01-01', '2026-01-01', 0);
 MERGE INTO publisher (id, publisher_name, create_at, update_at, version) VALUES (3, '□□パブリッシング', '2026-01-01', '2026-01-01', 0);
@@ -85,11 +96,13 @@ MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_d
 MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (8, 5, 4, 1, 22, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
 MERGE INTO book_stock_movement (id, store_id, book_id, movement_type, quantity_delta, source_type, source_id, source_detail_id, movement_date, create_at, update_at, version) VALUES (9, 5, 5, 1, 32, NULL, NULL, NULL, '2026-01-01', '2026-01-01', '2026-01-01 23:59:59', 0);
 
-ALTER TABLE publisher ALTER COLUMN id RESTART WITH 4;
-ALTER TABLE book_genre ALTER COLUMN id RESTART WITH 7;
-ALTER TABLE book ALTER COLUMN id RESTART WITH 22;
-ALTER TABLE book_sales_unit_price_history ALTER COLUMN id RESTART WITH 22;
-ALTER TABLE supplier ALTER COLUMN id RESTART WITH 6;
-ALTER TABLE store ALTER COLUMN id RESTART WITH 6;
-ALTER TABLE book_stock ALTER COLUMN id RESTART WITH 10;
-ALTER TABLE book_stock_movement ALTER COLUMN id RESTART WITH 10;
+ALTER SEQUENCE publisher_seq RESTART WITH 4;
+ALTER SEQUENCE book_genre_seq RESTART WITH 7;
+ALTER SEQUENCE book_seq RESTART WITH 22;
+ALTER SEQUENCE book_sales_unit_price_history_seq RESTART WITH 22;
+ALTER SEQUENCE supplier_seq RESTART WITH 6;
+ALTER SEQUENCE store_seq RESTART WITH 6;
+ALTER SEQUENCE purchase_invoice_seq RESTART WITH 1;
+ALTER SEQUENCE purchase_invoice_detail_seq RESTART WITH 1;
+ALTER SEQUENCE book_stock_seq RESTART WITH 10;
+ALTER SEQUENCE book_stock_movement_seq RESTART WITH 10;

@@ -160,9 +160,13 @@
     for update nowait
   </select>
 
-  <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity" useGeneratedKeys="true" keyProperty="id">
-    insert into book (title, author, release_date, publisher_id, genre_id, isbn, create_at, update_at, version)
+  <insert id="insertWithGeneratedKey" parameterType="com.example.demo.mybatis.generator.entity.BookEntity">
+    <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Long">
+      select next value for book_seq
+    </selectKey>
+    insert into book (id, title, author, release_date, publisher_id, genre_id, isbn, create_at, update_at, version)
     values (
+      #{id,jdbcType=BIGINT},
       #{title,jdbcType=VARCHAR},
       #{author,jdbcType=VARCHAR},
       #{releaseDate,jdbcType=DATE},
@@ -176,7 +180,7 @@
   </insert>
 
   <select id="selectNextSalesUnitPriceHistoryId" resultType="long">
-    select coalesce(max(id), 0) + 1 from book_sales_unit_price_history
+    select next value for book_sales_unit_price_history_seq
   </select>
 
   <insert id="insertSalesUnitPriceHistoryWithId" parameterType="com.example.demo.mybatis.generator.entity.BookSalesUnitPriceHistoryEntity">

@@ -15,7 +15,6 @@ import java.util.Collection;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
-import org.jooq.Identity;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
 import org.jooq.Path;
@@ -60,7 +59,7 @@ public class Supplier extends TableImpl<SupplierRecord> {
     /**
      * The column <code>public.supplier.id</code>.
      */
-    public final TableField<SupplierRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false).generatedByDefaultAsIdentity(), this, "");
+    public final TableField<SupplierRecord, Long> ID = createField(DSL.name("id"), SQLDataType.BIGINT.nullable(false), this, "");
 
     /**
      * The column <code>public.supplier.supplier_name</code>. 仕入先名
@@ -147,11 +146,6 @@ public class Supplier extends TableImpl<SupplierRecord> {
     @Override
     public Schema getSchema() {
         return aliased() ? null : Public.PUBLIC;
-    }
-
-    @Override
-    public Identity<SupplierRecord, Long> getIdentity() {
-        return (Identity<SupplierRecord, Long>) super.getIdentity();
     }
 
     @Override

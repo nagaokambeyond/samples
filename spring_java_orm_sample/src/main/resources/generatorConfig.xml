@@ -28,22 +28,22 @@
 
         <!-- 生成対象テーブル -->
         <table tableName="book" domainObjectName="BookEntity" mapperName="BookMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR book_seq"/>
         </table>
         <table tableName="publisher" domainObjectName="PublisherEntity" mapperName="PublisherMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR publisher_seq"/>
         </table>
         <table tableName="book_genre" domainObjectName="BookGenreEntity" mapperName="BookGenreMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR book_genre_seq"/>
         </table>
         <table tableName="supplier" domainObjectName="SupplierEntity" mapperName="SupplierMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR supplier_seq"/>
         </table>
         <table tableName="store" domainObjectName="StoreEntity" mapperName="StoreMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR store_seq"/>
         </table>
         <table tableName="purchase_invoice" domainObjectName="PurchaseOrderEntity" mapperName="PurchaseOrderMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR purchase_invoice_seq"/>
             <columnOverride
                     column="purchase_invoice_type"
                     property="purchaseInvoiceType"
@@ -51,13 +51,13 @@
                     typeHandler="com.example.demo.mybatis.typehandler.PurchaseInvoiceTypeHandler"/>
         </table>
         <table tableName="purchase_invoice_detail" domainObjectName="PurchaseOrderDetailEntity" mapperName="PurchaseOrderDetailMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR purchase_invoice_detail_seq"/>
         </table>
         <table tableName="book_stock" domainObjectName="BookStockEntity" mapperName="BookStockMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR book_stock_seq"/>
         </table>
         <table tableName="book_stock_movement" domainObjectName="BookStockMovementEntity" mapperName="BookStockMovementMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR book_stock_movement_seq"/>
             <columnOverride
                     column="movement_type"
                     property="movementType"
@@ -70,7 +70,7 @@
                     typeHandler="com.example.demo.mybatis.typehandler.BookStockMovementSourceTypeHandler"/>
         </table>
         <table tableName="book_sales_unit_price_history" domainObjectName="BookSalesUnitPriceHistoryEntity" mapperName="BookSalesUnitPriceHistoryMapper">
-            <generatedKey column="id" sqlStatement="JDBC" identity="true"/>
+            <generatedKey column="id" sqlStatement="SELECT NEXT VALUE FOR book_sales_unit_price_history_seq"/>
         </table>
     </context>
 </generatorConfiguration>

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookSalesUnitPriceHistoryRepository extends JpaRepository<BookSalesUnitPriceHistory, Long> {
-    @Query(value = "SELECT coalesce(max(id), 0) + 1 FROM book_sales_unit_price_history", nativeQuery = true)
+    @Query(value = "SELECT NEXT VALUE FOR book_sales_unit_price_history_seq", nativeQuery = true)
     Long nextId();
 
     @Modifying
