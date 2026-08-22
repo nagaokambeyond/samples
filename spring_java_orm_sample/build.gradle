@@ -12,12 +12,12 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.1.0'
-    id 'org.graalvm.buildtools.native' version '1.1.5'
+    id 'org.springframework.boot' version '4.1.1'
+    id 'org.graalvm.buildtools.native' version '1.1.6'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.domaframework.doma.codegen' version '3.2.2'
     id 'org.domaframework.doma.compile' version '4.0.3'
-    id 'org.openapi.generator' version '7.23.0'
+    id 'org.openapi.generator' version '7.24.0'
 }
 
 group = 'com.example'
@@ -31,10 +31,10 @@ ext {
     domaVersion = '3.14.0'
     domaSpringBootVersion = '3.0.0'
     myBatisGeneratorVersion = '2.0.0'
-    myBatisSpringBootVersion = '4.0.1'
+    myBatisSpringBootVersion = '4.1.0'
     springDocVersion = '3.0.3'
     bootUiVersion = '1.13.1'
-    jacksonDatabindNullableVersion = '0.2.6'
+    jacksonDatabindNullableVersion = '0.2.11'
 
     // Shared code generation
     codeGenSchema = 'src/main/resources/generator-schema.sql'

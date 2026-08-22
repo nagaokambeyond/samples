@@ -23,6 +23,14 @@
 - BootUI は開発支援用のため、`build.gradle` の `developmentOnly` dependency として扱う。通常の `implementation` dependency へ変更しない。
 - SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
 
+## 依存関係とビルド設定
+
+- 現在の主な明示バージョンは、Spring Boot 4.1.1、GraalVM Native Build Tools 1.1.6、OpenAPI Generator 7.24.0、MyBatis Spring Boot Starter 4.1.0、Doma 3.14.0 / Doma Spring Boot Starter 3.0.0、springdoc-openapi 3.0.3、BootUI 1.13.1、H2 2.4.240、jackson-databind-nullable 0.2.11 とする。
+- Spring Boot BOM 管理下の依存は、原則として明示バージョンを追加せず BOM に従う。
+- 依存バージョンを更新する場合は、snapshot / milestone / RC ではなく stable release を基本にする。例外的に prerelease を使う場合は理由と検証範囲を明示する。
+- Spring Boot、jOOQ、OpenAPI Generator などの更新では、`compileJava` や `./gradlew test` により jOOQ / OpenBD の生成コードが更新される可能性がある。生成差分は直接編集せず、生成ツールのバージョン表記、未使用 import、テンプレート差分など妥当な機械的変更か確認する。
+- 依存更新後は基本的に `./gradlew test` を実行し、最後に `git status --short` と生成コード差分を確認する。
+
 ## API 実装
 
 - API 仕様を変更する場合は、`AuthOperationApi` / `BooksOperationApi` / `OpenBdBooksApi` / `PurchaseOperationApi`、各 Controller、request / response DTO、API validator、`GlobalExceptionHandler`、`readme.md` の整合性を確認する。

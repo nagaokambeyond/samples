@@ -22,6 +22,8 @@
 - GraalVM Native Build Tools
 - BootUI（開発時のみ）
 
+現在の主な明示バージョンは、Spring Boot 4.1.1、GraalVM Native Build Tools 1.1.6、OpenAPI Generator 7.24.0、MyBatis Spring Boot Starter 4.1.0、Doma 3.14.0 / Doma Spring Boot Starter 3.0.0、springdoc-openapi 3.0.3、BootUI 1.13.1、H2 2.4.240、jackson-databind-nullable 0.2.11 です。Spring Boot BOM 管理下の依存は、原則として明示バージョンを追加せず BOM に従います。
+
 API は `/api/auth`、`/api/books`、`/api/purchases` 配下にあり、H2 のインメモリデータベースを使用します。`/api/books/openbd` では OpenBD API クライアントを使って外部書誌情報を取得します。初期データは `src/main/resources/data.sql` で投入されます。
 
 現在の主なドメインは `book`、`publisher`、`book_genre`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` です。`book.publisher_id` は `publisher.id`、`book.genre_id` は `book_genre.id`、`book_sales_unit_price_history.book_id` は `book.id` を参照します。`book.isbn` は 13 桁の一意な ISBN として扱います。検索 API はページングされ、出版社名・ジャンル名・ISBN・現在販売単価・在庫リストを含む `BookPageResponse` を返します。
@@ -62,6 +64,7 @@ Gradle Wrapper を使用してください。
 ```
 
 `compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存しているため、通常のビルド時にも jOOQ 生成コードや OpenBD 生成コードが更新される可能性があります。
+Spring Boot や OpenAPI Generator などの依存バージョンを更新した場合も、生成コード差分が出る可能性があります。差分が生成ツールのバージョン表記や未使用 import 削除など機械的な内容か確認してください。
 
 ネイティブイメージを確認する場合は、Oracle GraalVM 25 を使用する以下のタスクを実行してください。通常の Java コンパイル用 toolchain は Java 21 のままです。
 
