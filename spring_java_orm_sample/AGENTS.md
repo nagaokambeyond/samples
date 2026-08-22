@@ -53,6 +53,7 @@ Gradle Wrapper を使用してください。
 - Scalar: `http://localhost:8080/scalar`
 - H2 Console: `http://localhost:8080/h2-console`
 - BootUI: `http://localhost:8080/bootui`
+- Actuator Health: `http://localhost:8080/actuator/health`
 
 生成物を更新する意図がある場合のみ、以下を実行してください。
 
@@ -152,6 +153,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
 - ネイティブイメージの AOT 処理と実行には `doma,native` profile を使用します。`native` profile では MyBatis、JPA、jOOQ の自動構成と H2 Console を無効化し、`generator-schema.sql` でスキーマを初期化します。
 - 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login`、書籍の取得・検索、OpenBD 書誌取得は公開され、それ以外の API は Bearer token が必要です。開発支援画面の `/bootui` と `/bootui/**` は認証対象外です。
+- Actuator の Web 公開は `application.yaml` の `management.endpoints.web.exposure.include: health` で `/actuator/health` のみに限定します。`/actuator/env` など設定情報を返すエンドポイントを不用意に公開しないでください。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
 - `BookCreateRequest` / `BookUpdateRequest` / `BookResponse` には `isbn` が含まれます。ISBN は `@Isbn` で 13 桁数字として検証し、登録・更新時は各永続化方式の `BookDataValidator*` で一意性を確認します。
 - `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれます。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しません。

@@ -33,6 +33,11 @@ search:
   page-size: 10
 openbd:
   base-url: https://api.openbd.jp
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
 app:
   auth:
     username: admin
