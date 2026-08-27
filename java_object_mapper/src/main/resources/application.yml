@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: java-object-mapper
+  datasource:
+    url: jdbc:h2:mem:mapperdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
+
+benchmark:
+  auto-run: true
+  default-record-count: 100000
+  chunk-size: 1000
+
+logging:
+  level:
+    root: info
+    org.springframework.batch: warn
+    org.seasar.doma: warn

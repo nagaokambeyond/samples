@@ -1,0 +1,9 @@
+benchmark:
+  auto-run: false
+  default-record-count: 100
+  chunk-size: 25
+
+spring:
+  batch:
+    job:
+      enabled: false

@@ -1,0 +1,147 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.domaframework.doma.compile' version '4.0.3'
+    id 'org.graalvm.buildtools.native' version '1.1.8'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Spring Batch sample comparing ModelMapper and MapStruct with Doma3'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/generated-doma/java'
+        }
+    }
+}
+
+ext {
+    domaVersion = '3.14.0'
+    domaGenVersion = '2.28.0'
+    lombokVersion = '1.18.46'
+    mapstructVersion = '1.6.3'
+}
+
+configurations {
+    domaGen
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.seasar.doma.boot:doma-spring-boot-starter:3.0.0'
+    implementation "org.seasar.doma:doma-core:${domaVersion}"
+    implementation 'org.modelmapper:modelmapper:3.2.6'
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+
+    runtimeOnly 'com.h2database:h2'
+
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    annotationProcessor "org.seasar.doma:doma-processor:${domaVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+    domaGen "org.seasar.doma:doma-gen:${domaGenVersion}"
+    domaGen 'com.h2database:h2'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.batch:spring-batch-test'
+    testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+    testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('compileJava', JavaCompile) {
+    options.compilerArgs += [
+            '-parameters',
+            "-Adoma.resources.dir=${projectDir}/src/main/resources"
+    ]
+}
+
+tasks.register('prepareDomaGenDatabase', JavaExec) {
+    group = 'doma'
+    description = 'Creates the H2 database schema used by Doma-Gen.'
+    classpath = configurations.domaGen
+    mainClass = 'org.h2.tools.RunScript'
+    args = [
+            '-url', "jdbc:h2:file:${layout.buildDirectory.get().asFile}/doma-gen/mapperdb;MODE=REGULAR",
+            '-user', 'sa',
+            '-password', '',
+            '-script', "${projectDir}/src/main/resources/schema.sql"
+    ]
+}
+
+tasks.register('generateDomaEntities') {
+    group = 'doma'
+    description = 'Generates Doma entity classes from the H2 schema.'
+    dependsOn tasks.named('prepareDomaGenDatabase')
+
+    doLast {
+        ant.taskdef(
+                name: 'gen',
+                classname: 'org.seasar.doma.extension.gen.task.Gen',
+                classpath: configurations.domaGen.asPath
+        )
+        ant.typedef(
+                name: 'entityConfig',
+                classname: 'org.seasar.doma.extension.gen.task.EntityConfig',
+                classpath: configurations.domaGen.asPath
+        )
+        ant.typedef(
+                name: 'daoConfig',
+                classname: 'org.seasar.doma.extension.gen.task.DaoConfig',
+                classpath: configurations.domaGen.asPath
+        )
+        ant.typedef(
+                name: 'sqlConfig',
+                classname: 'org.seasar.doma.extension.gen.task.SqlConfig',
+                classpath: configurations.domaGen.asPath
+        )
+
+        ant.gen(
+                dialectName: 'h2',
+                driverClassName: 'org.h2.Driver',
+                url: "jdbc:h2:file:${layout.buildDirectory.get().asFile}/doma-gen/mapperdb;MODE=REGULAR",
+                user: 'sa',
+                password: '',
+                tableNamePattern: 'SOURCE_PEOPLE|MAPPED_PEOPLE_MODELMAPPER|MAPPED_PEOPLE_MAPSTRUCT|MAPPED_PEOPLE_LOMBOK_MODELMAPPER|MAPPED_PEOPLE_LOMBOK_MAPSTRUCT'
+        ) {
+            entityConfig(
+                    destDir: "${projectDir}/src/main/generated-doma/java",
+                    packageName: 'com.example.javaobjectmapper.doma',
+                    overwrite: true,
+                    useListener: false
+            )
+            daoConfig(generate: false)
+            sqlConfig(generate: false)
+        }
+    }
+}
+
+tasks.named('compileJava') {
+    dependsOn tasks.named('generateDomaEntities')
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+graalvmNative {
+    binaries {
+        main {
+            imageName = 'java-object-mapper'
+            buildArgs.add('--no-fallback')
+            buildArgs.add('-H:+AddAllCharsets')
+        }
+    }
+}

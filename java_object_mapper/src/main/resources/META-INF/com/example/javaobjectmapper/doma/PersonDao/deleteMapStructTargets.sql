@@ -1,0 +1,1 @@
+delete from mapped_people_mapstruct
