@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.aot.ProcessAot
+
 buildscript {
     ext {
         h2Version = '2.4.240'
@@ -139,8 +141,8 @@ graalvmNative {
     }
 }
 
-tasks.named('processAot') {
-    args '--spring.profiles.active=doma,native'
+tasks.named('processAot', ProcessAot).configure { ProcessAot processAot ->
+    processAot.setArgs(['--spring.profiles.active=doma,native'])
 }
 
 tasks.register('generateJooq', JavaExec) {
