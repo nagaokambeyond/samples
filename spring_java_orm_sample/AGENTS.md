@@ -47,6 +47,8 @@ Gradle Wrapper を使用してください。
 ./gradlew build
 ```
 
+`./gradlew test` は通常の JVM テストとして実行します。`build.gradle` の `test` タスクでは、Spring Boot AOT プラグインが `test` の runtime classpath に追加する AOT テスト生成物を除外するため、`sourceSets.test.output`、`sourceSets.main.output`、`configurations.testRuntimeClasspath` から classpath を明示的に構成しています。これにより通常のテスト実行時には `processTestAot` / `compileAotTestJava` / `aotTestClasses` を実行しません。この classpath 設定を削除したり `sourceSets.test.runtimeClasspath` へ戻したりする場合は、テスト実行時間とタスクグラフへの影響を確認してください。
+
 アプリ起動後に確認できる画面:
 
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html#/`
@@ -74,7 +76,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 ./gradlew nativeCompile
 ```
 
-`processAot` と生成したネイティブ実行ファイルは `doma,native` profile で動作します。`nativeCompile` は実行時間が長いため、ネイティブ対応に関わる変更時に実行してください。
+`processAot` と生成したネイティブ実行ファイルは `doma,native` profile で動作します。`nativeCompile` は実行時間が長いため、ネイティブ対応に関わる変更時に実行してください。ネイティブテストが必要な場合は `./gradlew nativeTest` を使用します。`nativeTest` のタスクグラフには `processTestAot` / `compileAotTestJava` / `aotTestClasses` が含まれ、通常の `./gradlew test` とは分離されています。
 
 ## ディレクトリ構成
 
@@ -155,6 +157,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` という生成名です。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成されます。生成名を変更する場合は影響範囲を確認してください。
 - 現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma` です。通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` が使われます。
 - ネイティブイメージの AOT 処理と実行には `doma,native` profile を使用します。`native` profile では MyBatis、JPA、jOOQ の自動構成と H2 Console を無効化し、`generator-schema.sql` でスキーマを初期化します。
+- 通常の `test` タスクは AOT テスト生成物を classpath に含めません。AOT テスト生成物は `nativeTest` の経路でのみ使用し、通常の JVM テストへ再接続しないでください。
 - 認証設定は `application.yaml` の `app.auth` 配下で管理します。`app.auth.login-rate-limit` はログインの日次回数制限を扱います。`/api/auth/login`、書籍の取得・検索、OpenBD 書誌取得は公開され、それ以外の API は Bearer token が必要です。開発支援画面の `/bootui` と `/bootui/**` は認証対象外です。
 - Actuator の Web 公開は `application.yaml` の `management.endpoints.web.exposure.include: health` で `/actuator/health` のみに限定します。`/actuator/env` など設定情報を返すエンドポイントを不用意に公開しないでください。
 - API の入出力には Entity ではなく request / response DTO を使ってください。
@@ -200,7 +203,7 @@ API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替え�
 
 BootUI の dependency や Security 設定を変更した場合は、`./gradlew bootRun` で起動し、`http://localhost:8080/bootui` が未認証で表示できることを確認してください。
 
-`NativeRuntimeHints`、`application-native.yaml`、AOT / GraalVM 設定、ネイティブ実行時に利用する DTO・Doma Entity・リソースを変更した場合は、まず `./gradlew processAot` を確認し、必要に応じて `./gradlew nativeCompile` と生成された実行ファイルで動作確認してください。
+`NativeRuntimeHints`、`application-native.yaml`、AOT / GraalVM 設定、`build.gradle` の通常テストと AOT テストの classpath 分離、ネイティブ実行時に利用する DTO・Doma Entity・リソースを変更した場合は、`./gradlew test --rerun-tasks` と `./gradlew processAot` を確認してください。テスト/AOT のタスク依存を変更した場合は `./gradlew nativeTest --dry-run` で `processTestAot` の経路が維持されていることも確認し、必要に応じて `./gradlew nativeTest`、`./gradlew nativeCompile`、生成された実行ファイルで動作確認してください。
 
 ## エージェント向け注意事項
 
