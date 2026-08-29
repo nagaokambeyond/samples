@@ -1,0 +1,37 @@
+spring:
+  devtools:
+    restart:
+      enabled: false
+  datasource:
+    hikari:
+      register-mbeans: true
+  h2:
+    console:
+      enabled: false
+  jpa:
+    show-sql: false
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+scalar:
+  enabled: false
+
+app:
+  auth:
+    expires-in-seconds: 7200
+
+logging:
+  level:
+    com.example.demo.api.log: WARN
+    org.hibernate.SQL: WARN
+    org.jooq.tools.LoggerListener: WARN
+    org.seasar.doma.jdbc.LogKind.SQL: WARN

@@ -57,6 +57,28 @@ Gradle Wrapper を使用してください。
 - BootUI: `http://localhost:8080/bootui`
 - Actuator Health: `http://localhost:8080/actuator/health`
 
+負荷テストを実行する場合は、`bootRun` ではなくパッケージ化した JAR を `loadtest` profile 付きで起動してください。`loadtest` profile は、測定結果に影響する API リクエスト／レスポンスログ、SQL ログ、H2 Console、DevTools の再起動機能、API ドキュメント用エンドポイントを無効化し、Hikari と Tomcat の MBean を有効化します。
+
+```shell
+./gradlew bootJar
+mkdir -p build/load-test
+java -XX:StartFlightRecording=filename=build/load-test/doma.jfr,dumponexit=true,settings=profile \
+  -jar build/libs/demo-0.0.1-SNAPSHOT.jar \
+  --spring.profiles.active=doma,loadtest \
+  --server.port=18080
+```
+
+負荷テストツールは `performance-tests/compose.yaml` で固定した公式 k6 Docker イメージを使います。リポジトリルートから実行してください。
+
+```shell
+docker compose -f performance-tests/compose.yaml pull
+BASE_URL=http://host.docker.internal:18080 \
+docker compose -f performance-tests/compose.yaml run --rm k6 \
+  run --summary-export=/results/capacity-ramp.json /work/scripts/capacity-ramp.js
+```
+
+ローカルでは Docker コンテナからホスト側 Spring Boot へ接続するため、`BASE_URL` の既定値は `http://host.docker.internal:18080` です。正式な最大性能測定では、API と k6 を別 PC または別 VM で動かし、API と負荷生成機が CPU、メモリ、ネットワークを奪い合わない構成にしてください。
+
 生成物を更新する意図がある場合のみ、以下を実行してください。
 
 ```shell
@@ -104,6 +126,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - `src/main/java/com/example/demo/jooq/generated`: jOOQ 生成コード
 - `src/main/resources/application.yaml`: アプリケーション設定
 - `src/main/resources/application-jpa.yaml`: JPA profile 用の Spring Data JPA Repository 有効化設定
+- `src/main/resources/application-loadtest.yaml`: 負荷テスト用設定。ログ、H2 Console、DevTools 再起動、API ドキュメント用エンドポイントを抑制し、JWT 有効期限と監視用 MBean を調整します。
 - `src/main/resources/application-native.yaml`: ネイティブ実行用の自動構成除外、H2、SQL 初期化設定
 - `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
 - `src/main/resources/codegen`: Doma CodeGen / jOOQ CodeGen 補助設定
@@ -121,6 +144,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - `src/test/java/com/example/demo/jooq/validator`: jOOQ データバリデーションのテスト
 - `src/test/java/com/example/demo/openbd/config`: OpenBD API クライアント設定のテスト
 - `src/test/java/com/example/demo/util`: 共通ユーティリティのテスト
+- `performance-tests`: k6 による API 負荷テスト。Docker Compose 設定、テストスクリプト、結果出力先を含みます。
 
 ## 重要な設計方針
 
@@ -180,6 +204,20 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - 仕入登録 API は `/api/purchases/create` で、`PurchaseInvoiceCreateRequest` と明細リストを受け取り、`PurchaseInvoiceResponse` を返します。
 - 仕入登録時は `supplierId`、`receivingStoreId`、明細の ISBN を参照チェックし、ISBN から本 ID を解決して明細金額と伝票金額を計算します。
 - 外部キー参照先なし、ISBN 一意制約違反、販売単価履歴の一意制約違反、相関バリデーションエラー、データなし、OpenBD 書誌なし、OpenBD API 呼び出しエラー、更新競合、認証エラー、ログイン回数制限超過は `GlobalExceptionHandler` で ProblemDetail に変換されます。
+
+## 負荷テスト方針
+
+- 負荷テストは `performance-tests` 配下の k6 スクリプトで行います。k6 は `performance-tests/compose.yaml` で指定した `grafana/k6:2.2.0` の公式 Docker イメージを使用し、イメージはローカルに存在しない場合や `pull` した場合に取得されます。通常の `docker compose run` のたびに毎回再ダウンロードされるわけではありません。
+- 既定の混合ワークロードは、書籍検索 70%、書籍取得 25%、仕入登録 5% です。OpenBD API は外部サービスなので負荷対象に含めません。
+- JWT は k6 の `setup()` でテスト開始時に1回だけ取得し、仕入登録リクエストで再利用します。`/api/auth/login` を各リクエストで呼び出すと、日次ログイン回数制限と認証処理の負荷が測定に混入します。
+- `performance-tests/compose.yaml` の既定値は、ローカルで試しやすいように各負荷テストが約2分以内で終わる設定です。現在の段階負荷は `START_RPS=10`、`TARGET_RPS_STAGES=25,50,100`、`WARMUP_DURATION=10s`、`RAMP_DURATION=10s`、`STEP_DURATION=20s`、`RAMP_DOWN_DURATION=10s` を基本にします。
+- 暫定的な合格基準は、HTTP 失敗率 1% 未満、check 成功率 99% 超、p95 レスポンスタイム 500ms 未満、p99 レスポンスタイム 1秒未満、`dropped_iterations` 0件です。これらは k6 の threshold としてコード化されています。
+- 正式な持続可能最大性能を確認する場合は、候補 RPS を `HOLD_DURATION=10m` などで10分程度維持してください。長時間安定性を見る場合は `SOAK_DURATION=30m` または `SOAK_DURATION=60m` を使い、GC、メモリ増加、DB 接続枯渇、ロック失敗を確認してください。
+- 仕入登録は `data.sql` に存在する在庫行のいずれかを更新します。テスト中は仕入伝票、明細、在庫増減履歴、在庫数量が蓄積・更新されるため、インメモリ H2 のデータとシーケンスを同じ初期状態へ戻すには測定ごとにアプリケーションを再起動してください。
+- `purchase_invoice.id` などで H2 の主キー重複が出た場合は、テーブルの最大 ID とシーケンス再開値がずれていないか確認してください。`data.sql` の `ALTER SEQUENCE ... RESTART WITH` は、初期データ投入後の未使用の次の値に合わせる必要があります。
+- 測定結果は、Spring Boot、選択した永続化実装、インメモリ H2 を組み合わせた性能として扱います。本番で別 DB を使う場合は、本番相当 DB で再測定してください。
+- k6 の結果で `vus_max` は利用可能な最大 VU 数、`vus` は実際に使われた VU 数です。レスポンスが十分速い場合は、`PRE_ALLOCATED_VUS=100` でも実際の最大 VU が 1 のままになることがあります。`dropped_iterations` が 0 なら、少なくとも k6 側の VU 不足は発生していません。
+- 結果比較では、アプリケーション JAR、Java オプション、profile、ホスト構成、初期データ、k6 イメージ、スクリプトパラメーター、ネットワーク配置を揃えてください。
 
 ## テスト方針
 

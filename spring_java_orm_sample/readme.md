@@ -147,6 +147,8 @@ erDiagram
 ```
 # パフォーマンス比較
 
+APIの負荷テストは、公式Dockerイメージで実行するk6シナリオを用意しています。実行方法、判定基準、JFRによる計測、各永続化方式の比較手順は[performance-tests/README.md](performance-tests/README.md)を参照してください。
+
 ## graalvm
 
 ```bash
