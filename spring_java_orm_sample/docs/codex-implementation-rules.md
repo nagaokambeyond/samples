@@ -81,6 +81,7 @@
 - 現在の全テーブルの主キーは、`generator-schema.sql` に定義したテーブル単位の `*_seq` シーケンスで採番する。IDENTITY や `max(id) + 1` による採番を追加しない。
 - シーケンスを追加・変更する場合は、`generator-schema.sql`、`data.sql` の `ALTER SEQUENCE ... RESTART WITH`、JPA Entity / Repository、`generatorConfig.xml` と MyBatis Mapper XML、Doma 生成 Entity / 手書き SQL、jOOQ DSL を揃える。
 - JPA は `@GeneratedValue(strategy = SEQUENCE)` と `@SequenceGenerator(allocationSize = 1)`、MyBatis は `selectKey order="BEFORE"`、Doma は `@GeneratedValue(strategy = SEQUENCE)` と `@SequenceGenerator(allocationSize = 1)`、jOOQ は `BookOperationDsl` / `PurchaseOperationDsl` のシーケンス取得処理を使う。
+- request DTO からシーケンス採番対象の Entity / row を作成する場合は、ModelMapper の暗黙マッピングで `supplierId` などの外部キーが主キーの `id` に誤設定される可能性があるため、登録項目を明示的に設定し、主キーは採番処理が実行されるまで未設定にする。
 - `data.sql` は外部キー依存順に既存データを削除してから初期データを投入し、最後に各シーケンスを未使用の次の値へ再設定する。初期データの最大 ID と再開値をずらさない。
 - MyBatis / Doma / jOOQ の生成コードを手作業で採番方式へ追従させず、生成元を更新して対応する生成タスクを実行し、差分を確認する。
 
@@ -179,6 +180,8 @@
 - 行ロック関連: `BookRowLock`
 
 主キーシーケンス、採番処理、`data.sql` のシーケンス再設定、仕入登録の flush / 在庫ロック順序を変更した場合は、4方式の `BooksOperationService*Test` と `PurchaseOperationService*Test` を確認する。
+
+request DTO からシーケンス採番対象の Entity / row への変換を変更した場合は、同じ外部キー値を持つデータを連続登録し、主キーが重複せず、それぞれの明細や関連データに正しい主キーが設定されることを確認する。
 
 API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
 
