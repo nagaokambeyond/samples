@@ -113,6 +113,25 @@ class PurchaseOperationServiceDomaTest {
     }
 
     @Test
+    void createGeneratesDifferentIdsForConsecutivePurchasesFromSameSupplier() {
+        final var request = new PurchaseInvoiceCreateRequest(
+            LocalDate.of(2026, 2, 1),
+            1L,
+            1L,
+            List.of(new PurchaseInvoiceDetailCreateRequest("0000000000001", 1000, 2))
+        );
+
+        final var firstResponse = purchaseOperationService.create(request);
+        final var secondResponse = purchaseOperationService.create(request);
+
+        assertThat(firstResponse.getId()).isNotEqualTo(secondResponse.getId());
+        assertThat(firstResponse.getDetail().getFirst().getPurchaseInvoiceId()).isEqualTo(firstResponse.getId());
+        assertThat(secondResponse.getDetail().getFirst().getPurchaseInvoiceId()).isEqualTo(secondResponse.getId());
+        assertThat(purchaseInvoiceDao.selectById(firstResponse.getId())).isNotNull();
+        assertThat(purchaseInvoiceDao.selectById(secondResponse.getId())).isNotNull();
+    }
+
+    @Test
     void createInsertsBookStockWhenStockDoesNotExist() {
         final var request = new PurchaseInvoiceCreateRequest(
             LocalDate.of(2026, 2, 2),

@@ -43,8 +43,11 @@ public class PurchaseOperationConverterDoma {
     }
 
     public PurchaseInvoice toPurchaseInvoice(PurchaseInvoiceCreateRequest request, long amount, LocalDateTime now) {
-        final var result = modelMapper.map(request, PurchaseInvoice.class);
+        final var result = new PurchaseInvoice();
         result.setPurchaseInvoiceType(PurchaseInvoiceType.PURCHASE);
+        result.setPurchaseInvoiceDate(request.getPurchaseInvoiceDate());
+        result.setSupplierId(request.getSupplierId());
+        result.setReceivingStoreId(request.getReceivingStoreId());
         result.setPurchaseInvoiceAmount(amount);
         result.setCreateAt(now);
         result.setUpdateAt(now);

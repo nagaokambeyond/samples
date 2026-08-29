@@ -44,8 +44,11 @@ public class PurchaseOperationConverterMybatis {
     }
 
     public PurchaseOrderEntity toPurchaseInvoice(PurchaseInvoiceCreateRequest request, long amount, LocalDateTime now) {
-        final var result = modelMapper.map(request, PurchaseOrderEntity.class);
+        final var result = new PurchaseOrderEntity();
         result.setPurchaseInvoiceType(PurchaseInvoiceType.PURCHASE);
+        result.setPurchaseInvoiceDate(request.getPurchaseInvoiceDate());
+        result.setSupplierId(request.getSupplierId());
+        result.setReceivingStoreId(request.getReceivingStoreId());
         result.setPurchaseInvoiceAmount(amount);
         result.setCreateAt(now);
         result.setUpdateAt(now);
