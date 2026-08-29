@@ -15,6 +15,7 @@
 - `book_sales_unit_price_history` は本の販売単価履歴を扱います。現在単価は `effective_from <= current_date` かつ `effective_to IS NULL OR current_date <= effective_to` の履歴から取得します。
 - 現在のスキーマには `publisher`、`book_genre`、`book`、`supplier`、`store`、`purchase_invoice`、`purchase_invoice_detail`、`book_stock`、`book_stock_movement`、`book_sales_unit_price_history` があります。
 - 全テーブルの主キーは、テーブル単位の `publisher_seq`、`book_genre_seq`、`book_seq`、`supplier_seq`、`store_seq`、`purchase_invoice_seq`、`purchase_invoice_detail_seq`、`book_sales_unit_price_history_seq`、`book_stock_seq`、`book_stock_movement_seq` で採番します。IDENTITY や `max(id) + 1` は使用しません。
+- request DTO からシーケンス採番対象の Entity / row を作成する場合は、外部キー項目が主キーの `id` に暗黙マッピングされないよう登録項目を明示的に設定し、主キーは各永続化方式の採番処理まで未設定にします。
 - `purchase_invoice.purchase_invoice_type` は `PurchaseInvoiceType` で扱います。JPA / MyBatis / Doma / jOOQ の型変換設定を揃えてください。
 - `book_stock_movement.movement_type` は `BookStockMovementType`、`book_stock_movement.source_type` は `BookStockMovementSourceType` で扱います。JPA / MyBatis / Doma / jOOQ の型変換または値変換の設定を揃えてください。
 - profile や Spring Data JPA repository の有効化設定を変更する場合は、`application.yaml`、`application-jpa.yaml`、`application-native.yaml` を確認してください。ネイティブ実行は `doma,native` profile で `generator-schema.sql` を初期化スキーマに使います。
@@ -69,6 +70,7 @@
 - Doma CodeGen の対象テーブルは `build.gradle` の `generatedTablePattern` 経由で管理しています。テーブル追加・削除時は MyBatis / jOOQ と合わせて更新してください。
 - Doma CodeGen の型解決は `src/main/resources/codegen/entityPropertyClassNames.properties` も参照します。`PurchaseInvoiceType`、`BookStockMovementType`、`BookStockMovementSourceType` などのドメイン型を追加・変更する場合はこのファイルも確認してください。
 - Doma 生成 Entity の ID は `@GeneratedValue(strategy = GenerationType.SEQUENCE)` と、各 `*_seq` を指定した `@SequenceGenerator(allocationSize = 1)` で採番します。生成元スキーマや CodeGen 設定を変更した場合は、全生成 Entity の sequence 名を確認してください。
+- Doma は INSERT 前に Entity の ID が設定済みの場合、`@SequenceGenerator` による採番を行いません。`PurchaseOperationConverterDoma` などの登録用 converter では request DTO から Entity 全体を ModelMapper で暗黙変換せず、ID を除く項目を明示的に設定してください。
 - 販売単価履歴の手書き採番は `BookSalesUnitPriceHistoryCustomDao.selectNextId` と `selectNextId.sql` で `book_sales_unit_price_history_seq` の次の値を取得します。
 - Doma 仕入登録では `BookStockMovementDao` で `book_stock_movement` に `PURCHASE` / `PURCHASE_INVOICE` の履歴を登録します。
 - Doma 仕入登録では伝票を INSERT する前に、全明細の対象在庫を `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で取得してロックします。ロック取得順序を変更する場合は並行実行時の競合を確認してください。
@@ -81,6 +83,7 @@
 - `src/main/resources/com/example/demo/mybatis/generator` 配下の XML も生成物として扱ってください。
 - 手書き SQL は `BookCustomMapper` / `BookStockCustomMapper` と対応する XML に追加してください。本登録と販売単価履歴の ID 採番付き登録は `BookCustomMapper` に置かれています。
 - MyBatis Generator の `generatedKey` は `generatorConfig.xml` で `SELECT NEXT VALUE FOR *_seq` を指定し、生成 Mapper XML の `selectKey order="BEFORE"` で INSERT 前に ID を設定します。手書きの `BookCustomMapper.insertWithGeneratedKey` も同じ方式を使います。
+- MyBatis の `selectKey order="BEFORE"` が INSERT 前に ID を設定する場合でも、登録用 converter で外部キーを主キーへ暗黙マッピングする実装に依存しないでください。`PurchaseOperationConverterMybatis` では伝票の登録項目を明示的に設定し、ID は Mapper の採番処理へ委ねます。
 - `BookCustomMapper.selectNextSalesUnitPriceHistoryId` は `book_sales_unit_price_history_seq` の次の値を取得します。`max(id) + 1` に戻さないでください。
 - `BookWithPublisherName` は MyBatis 用の表示向け Entity です。取得・検索レスポンス向けの列を変更する場合は resultMap、nested collection、`BookOperationConverterMybatis` も更新してください。
 - `BookWithPublisherName` は `publisherName`、`genreName`、`isbn`、`salesUnitPrice`、`bookStockList` を含みます。取得・検索 SQL では `publisher`、`book_genre`、`book_sales_unit_price_history`、`book_stock`、`store` の結合を維持してください。
@@ -201,6 +204,7 @@
 - 仕入・在庫・販売単価履歴系の外部キーを変更する場合は、`purchase_invoice.return_purchase_invoice_id`、`purchase_invoice.supplier_id`、`purchase_invoice.receiving_store_id`、`purchase_invoice_detail.purchase_invoice_id`、`purchase_invoice_detail.purchase_invoice_detail_book_id`、`book_stock.book_stock_store_id`、`book_stock.book_stock_book_id`、`book_stock_movement.store_id`、`book_stock_movement.book_id`、`book_sales_unit_price_history.book_id` の整合性を確認してください。
 - 検索条件を変更する場合は、JPA / MyBatis / Doma / jOOQ の一覧取得と件数取得が同じ条件になるよう確認してください。
 - 主キーシーケンス、採番 SQL、初期データの再開値、仕入登録の flush / 在庫ロック順序を変更した場合は、JPA / MyBatis / Doma / jOOQ の `BooksOperationService*Test` と `PurchaseOperationService*Test` を確認してください。
+- request DTO からシーケンス採番対象の Entity / row への変換を変更した場合は、同じ外部キー値で連続登録し、異なる主キーが採番されることと、明細や関連データに対応する主キーが設定されることを Service テストで確認してください。
 
 ## 生成コマンド
 
