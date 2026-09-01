@@ -1,0 +1,27 @@
+name: spring-java-orm-load-test
+
+services:
+  k6:
+    image: grafana/k6:2.2.0
+    working_dir: /work
+    volumes:
+      - ./scripts:/work/scripts:ro
+      - ./results:/results
+    environment:
+      BASE_URL: ${BASE_URL:-http://host.docker.internal:18080}
+      APP_USERNAME: ${APP_USERNAME:-admin}
+      APP_PASSWORD: ${APP_PASSWORD:-password}
+      START_RPS: ${START_RPS:-10}
+      TARGET_RPS: ${TARGET_RPS:-50}
+      TARGET_RPS_STAGES: ${TARGET_RPS_STAGES:-25,50,100}
+      PRE_ALLOCATED_VUS: ${PRE_ALLOCATED_VUS:-100}
+      MAX_VUS: ${MAX_VUS:-500}
+      WARMUP_DURATION: ${WARMUP_DURATION:-10s}
+      RAMP_DURATION: ${RAMP_DURATION:-10s}
+      STEP_DURATION: ${STEP_DURATION:-20s}
+      HOLD_DURATION: ${HOLD_DURATION:-80s}
+      SOAK_DURATION: ${SOAK_DURATION:-90s}
+      RAMP_DOWN_DURATION: ${RAMP_DOWN_DURATION:-10s}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command: run /work/scripts/smoke.js
