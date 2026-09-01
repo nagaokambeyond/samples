@@ -68,12 +68,12 @@ java -XX:StartFlightRecording=filename=build/load-test/doma.jfr,dumponexit=true,
   --server.port=18080
 ```
 
-負荷テストツールは `performance-tests/compose.yaml` で固定した公式 k6 Docker イメージを使います。リポジトリルートから実行してください。
+負荷テストツールは `docker/performance-tests/compose.yaml` で固定した公式 k6 Docker イメージを使います。リポジトリルートから実行してください。
 
 ```shell
-docker compose -f performance-tests/compose.yaml pull
+docker compose -f docker/performance-tests/compose.yaml pull
 BASE_URL=http://host.docker.internal:18080 \
-docker compose -f performance-tests/compose.yaml run --rm k6 \
+docker compose -f docker/performance-tests/compose.yaml run --rm k6 \
   run --summary-export=/results/capacity-ramp.json /work/scripts/capacity-ramp.js
 ```
 
@@ -145,7 +145,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - `src/test/java/com/example/demo/jooq/validator`: jOOQ データバリデーションのテスト
 - `src/test/java/com/example/demo/openbd/config`: OpenBD API クライアント設定のテスト
 - `src/test/java/com/example/demo/util`: 共通ユーティリティのテスト
-- `performance-tests`: k6 による API 負荷テスト。Docker Compose 設定、テストスクリプト、結果出力先を含みます。
+- `docker/performance-tests`: k6 による API 負荷テスト。Docker Compose 設定、テストスクリプト、結果出力先を含みます。
 - `docker/security-tests`: OWASP ZAP による API 脆弱性診断。Docker Compose 設定、Automation Framework YAML、実行スクリプト、結果出力先を含みます。
 
 ## 重要な設計方針
@@ -209,10 +209,10 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 
 ## 負荷テスト方針
 
-- 負荷テストは `performance-tests` 配下の k6 スクリプトで行います。k6 は `performance-tests/compose.yaml` で指定した `grafana/k6:2.2.0` の公式 Docker イメージを使用し、イメージはローカルに存在しない場合や `pull` した場合に取得されます。通常の `docker compose run` のたびに毎回再ダウンロードされるわけではありません。
+- 負荷テストは `docker/performance-tests` 配下の k6 スクリプトで行います。k6 は `docker/performance-tests/compose.yaml` で指定した `grafana/k6:2.2.0` の公式 Docker イメージを使用し、イメージはローカルに存在しない場合や `pull` した場合に取得されます。通常の `docker compose run` のたびに毎回再ダウンロードされるわけではありません。
 - 既定の混合ワークロードは、書籍検索 70%、書籍取得 25%、仕入登録 5% です。OpenBD API は外部サービスなので負荷対象に含めません。
 - JWT は k6 の `setup()` でテスト開始時に1回だけ取得し、仕入登録リクエストで再利用します。`/api/auth/login` を各リクエストで呼び出すと、日次ログイン回数制限と認証処理の負荷が測定に混入します。
-- `performance-tests/compose.yaml` の既定値は、ローカルで試しやすいように各負荷テストが約2分以内で終わる設定です。現在の段階負荷は `START_RPS=10`、`TARGET_RPS_STAGES=25,50,100`、`WARMUP_DURATION=10s`、`RAMP_DURATION=10s`、`STEP_DURATION=20s`、`RAMP_DOWN_DURATION=10s` を基本にします。
+- `docker/performance-tests/compose.yaml` の既定値は、ローカルで試しやすいように各負荷テストが約2分以内で終わる設定です。現在の段階負荷は `START_RPS=10`、`TARGET_RPS_STAGES=25,50,100`、`WARMUP_DURATION=10s`、`RAMP_DURATION=10s`、`STEP_DURATION=20s`、`RAMP_DOWN_DURATION=10s` を基本にします。
 - 暫定的な合格基準は、HTTP 失敗率 1% 未満、check 成功率 99% 超、p95 レスポンスタイム 500ms 未満、p99 レスポンスタイム 1秒未満、`dropped_iterations` 0件です。これらは k6 の threshold としてコード化されています。
 - 正式な持続可能最大性能を確認する場合は、候補 RPS を `HOLD_DURATION=10m` などで10分程度維持してください。長時間安定性を見る場合は `SOAK_DURATION=30m` または `SOAK_DURATION=60m` を使い、GC、メモリ増加、DB 接続枯渇、ロック失敗を確認してください。
 - 仕入登録は `data.sql` に存在する在庫行のいずれかを更新します。テスト中は仕入伝票、明細、在庫増減履歴、在庫数量が蓄積・更新されるため、インメモリ H2 のデータとシーケンスを同じ初期状態へ戻すには測定ごとにアプリケーションを再起動してください。
