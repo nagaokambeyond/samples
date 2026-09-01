@@ -1,190 +1,83 @@
 # Codex 実装時の追加規約
 
+この文書は実装・修正・レビュー全般の規約を扱います。API の現在仕様は `api-spec-notes.md`、テスト選択は `testing-guide.md`、永続化は `persistence/` 配下を参照してください。
+
 ## 基本方針
 
-- 変更は依頼内容に必要な範囲へ限定する。
-- 無関係なリファクタリング、命名変更、フォーマット変更は避ける。
+- 変更は依頼内容に必要な範囲へ限定し、無関係なリファクタリング、命名変更、フォーマット変更を避ける。
 - 既存の未コミット変更を勝手に戻さない。
-- 小さなサンプルプロジェクトなので、不要な抽象化や大きなリファクタリングは避ける。
+- 小さなサンプルプロジェクトなので、不要な抽象化や大きなリファクタリングを避ける。
 - DI は既存コードと同じく Lombok の `@RequiredArgsConstructor` を基本にする。
-- メソッド内の変数宣言には、`final var` を積極的に使う。
-- `LocalDateTime.now()` を頻繁に呼ばず、同じ処理内では必要に応じて値を使い回す。
+- メソッド内の変数宣言には `final var` を積極的に使う。
+- `LocalDateTime.now()` を同じ処理内で繰り返し呼ばず、必要に応じて値を使い回す。
 - request DTO や内部 row など不変にしたい class は Lombok の `@Value` を基本にする。
-- response DTO は ModelMapper や jOOQ converter から setter で組み立てるため、既存コードと同じく Lombok の `@Data` を基本にする。
+- response DTO は ModelMapper や converter から setter で組み立てるため、既存コードと同じく Lombok の `@Data` を基本にする。
 - API のリクエスト、レスポンス項目にある `List` には `@NotNull` を付ける。
-- 未使用なメソッドであれば削除する。
-- JPA / MyBatis / Doma / jOOQ で共通利用する値オブジェクトや列挙型は `src/main/java/com/example/demo/data/domain` 配下に置く。
-- 共有ドメイン型を DB に保存する場合は、JPA Converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の値変換の対応を揃える。
-- API 関連のクラスは `api`、`api/annotation`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の現在の役割分担に合わせて配置する。
-- OpenBD API クライアント関連の手書き設定は `openbd/config` に置き、OpenAPI Generator 生成コードは `openbd/generated` に置く。
-- JPA profile 固有の Spring 設定は `jpa/config` に置く。JPA auditing は `JpaAuditingConfig` で `jpa` profile に限定して有効化する。
-- 永続化方式ごとの変換処理は各方式の `converter` package に置く。共通 converter を新設する場合は、JPA / MyBatis / Doma / jOOQ で本当に共有できる責務か確認する。
-- ページ計算や例外ハンドリング補助などの共通ユーティリティは `util` package に置く。
-- BootUI は開発支援用のため、`build.gradle` の `developmentOnly` dependency として扱う。通常の `implementation` dependency へ変更しない。
-- SQL で副問合せでの記述が必要な場合、共通テーブル式を使用する。
+- 未使用のメソッドは削除する。
+- コメントは処理の意図が分かりにくい箇所にだけ追加する。
+- SQL で副問合せによる記述が必要な場合は共通テーブル式を使用する。
 
-## 依存関係とビルド設定
+## パッケージと責務
 
-- 現在の主な明示バージョンは、Spring Boot 4.1.1、GraalVM Native Build Tools 1.1.6、OpenAPI Generator 7.24.0、MyBatis Spring Boot Starter 4.1.0、Doma 3.14.0 / Doma Spring Boot Starter 3.0.0、springdoc-openapi 3.0.3、BootUI 1.13.1、H2 2.4.240、jackson-databind-nullable 0.2.11 とする。
-- Spring Boot BOM 管理下の依存は、原則として明示バージョンを追加せず BOM に従う。
-- 依存バージョンを更新する場合は、snapshot / milestone / RC ではなく stable release を基本にする。例外的に prerelease を使う場合は理由と検証範囲を明示する。
-- Spring Boot、jOOQ、OpenAPI Generator などの更新では、`compileJava` や `./gradlew test` により jOOQ / OpenBD の生成コードが更新される可能性がある。生成差分は直接編集せず、生成ツールのバージョン表記、未使用 import、テンプレート差分など妥当な機械的変更か確認する。
-- 依存更新後は基本的に `./gradlew test` を実行し、最後に `git status --short` と生成コード差分を確認する。
-
-## API 実装
-
-- API 仕様を変更する場合は、`AuthOperationApi` / `BooksOperationApi` / `OpenBdBooksApi` / `PurchaseOperationApi`、各 Controller、request / response DTO、API validator、`GlobalExceptionHandler`、`readme.md` の整合性を確認する。
-- OpenAPI 注釈は `AuthOperationApi` / `BooksOperationApi` / `OpenBdBooksApi` / `PurchaseOperationApi` に集約する。Controller 側へ重複して追加しない。
+- API 関連は `api`、`api/annotation`、`api/controller`、`api/log`、`api/request`、`api/response`、`api/validator` の役割分担に合わせる。
 - API の入出力には Entity ではなく request / response DTO を使う。
-- 認証 API は `/api/auth/login` とし、`LoginRequest` でユーザー名とパスワードを受け取り、`LoginResponse` で `Bearer` token、ユーザー名、有効期限秒数を返す。
-- ログイン回数制限のリセット API は `/api/auth/login-rate-limit/reset` とし、Bearer token 必須で 204 を返す。
-- Security / JWT / ログイン回数制限の設定を変更する場合は、`SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml` の `app.auth` / `app.auth.login-rate-limit`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` 設定を合わせて確認する。開発支援画面の `/bootui` と `/bootui/**` は Spring Security / JWT filter の対象外とする。
-- Actuator の Web 公開は `application.yaml` の `management.endpoints.web.exposure.include: health` で `health` のみに限定する。`env` など設定情報を返すエンドポイントを追加公開しない。
-- 書籍の取得・検索と OpenBD 書誌取得は未認証で許可し、登録・更新・削除と仕入登録は Bearer token 必須とする現在の認可方針を不用意に変更しない。
-- `BookCreateRequest`、`BookUpdateRequest`、`BookResponse` には `releaseDate`、`publisherId`、`genreId`、`isbn` が含まれる。スキーマや永続化層を変更する場合は DTO も確認する。
-- ISBN は `@Isbn` で 13 桁数字として検証する。`BookCreateRequest` / `BookUpdateRequest` / `PurchaseInvoiceDetailCreateRequest` の ISBN 制約を変更する場合は API テストと OpenAPI 例も確認する。
-- `BookCreateRequest` / `BookResponse` / `BookSalesUnitPriceCreateRequest` には `salesUnitPrice` が含まれる。販売単価は `book_sales_unit_price_history` で履歴管理し、`BookUpdateRequest` では直接変更しない。
-- `BookResponse` には `publisherName`、`genreName`、`isbn`、`salesUnitPrice`、`bookStockList` が含まれる。取得・検索系の SQL / query は `publisher`、`book_genre`、`book_sales_unit_price_history`、`book_stock`、`store` と結合し、永続化方式ごとの `BookOperationConverter*` に渡す値を揃える。
-- 現在販売単価は `book_sales_unit_price_history` の `effective_from <= current_date` かつ `effective_to IS NULL OR current_date <= effective_to` の履歴から取得する。取得 query、検索 query、検索 count の条件を揃える。
-- `bookStockList` の要素は `BookStockResponse` とし、`id`、`bookStockStoreId`、`storeName`、`bookStockQuantity` を返す。
-- 検索 API は任意の `keyword`、任意の `releaseDateFrom` / `releaseDateTo`、必須の `page` を扱う。`keyword` はタイトルまたは著者の前方一致条件として扱う。
-- `releaseDateFrom` / `releaseDateTo` は両方指定、または両方未指定を基本とし、片方だけの指定や From > To は相関バリデーションエラーとして扱う。
+- OpenAPI 注釈は `AuthOperationApi`、`BooksOperationApi`、`OpenBdBooksApi`、`PurchaseOperationApi` に集約し、Controller に重複させない。
+- 共有ドメイン型は `data/domain`、ページ計算や例外処理補助は `util` に置く。
+- 永続化方式固有の converter、validator、Service は各方式の package に置く。
+- OpenBD の手書き設定は `openbd/config`、生成コードは `openbd/generated` に置く。
+- JPA profile 固有の Spring 設定は `jpa/config` に置き、`@EnableJpaAuditing` は `JpaAuditingConfig` でのみ有効化する。
+- jOOQ の手書き SQL / DSL は `jooq/dsl` に集約する。
+
+## 依存関係とビルド
+
+現在の明示バージョンは `architecture-overview.md` と `build.gradle` を確認してください。
+
+- Spring Boot BOM 管理下の依存は、原則として明示バージョンを追加せず BOM に従う。
+- 依存更新は stable release を基本とし、prerelease を使う場合は理由と検証範囲を明示する。
+- BootUI は開発支援用なので `developmentOnly` のまま維持し、通常の `implementation` に変更しない。
+- Spring Boot、jOOQ、OpenAPI Generator などの更新では、通常ビルドでも jOOQ / OpenBD 生成コードが更新される可能性がある。
+- 生成差分を直接編集せず、バージョン表記、未使用 import、テンプレート差分など妥当な機械的変更か確認する。
+- 依存更新後は `./gradlew test` を実行し、最後に `git status --short` と生成コード差分を確認する。
+
+## API・Security
+
+- API 仕様変更時は API interface、Controller、request / response DTO、validator、`GlobalExceptionHandler`、`docs/api-spec-notes.md`、必要に応じて `README.md` を揃える。
 - 日付範囲の相関チェックは `BooksOperationApiControllerValidator` に集約する。
-- `page` は 0 始まりとする。ページサイズはリクエストパラメータではなく、`application.yaml` の `search.page-size` で定義し、`SearchProperties` で読み込む。
-- Spring profile や永続化実装の有効化設定を変更する場合は、`application.yaml`、`application-jpa.yaml`、`application-native.yaml` の役割を確認する。現在のデフォルト profile は `application.yaml` の `spring.profiles.default: doma`、JPA repository と JPA auditing の有効化は `jpa` profile、ネイティブ実行は `doma,native` profile で扱う。
-- 検索 API のレスポンスは `BookPageResponse` とする。検索仕様を変更する場合は `content`、`page`、`size`、`totalElements`、`totalPages` の意味を4つの Service 実装で揃える。
-- ページ数と offset の計算は `com.example.demo.util.PageCalculator` を使う。各 Service 実装で同じ計算ロジックを重複させない。
-- 販売単価履歴追加 API は `/api/books/{id}/sales-unit-prices` とし、`BookSalesUnitPriceCreateRequest` で `salesUnitPrice` と未来日の `effectiveFrom` を受け取り、成功時は空 body の 200 を返す。
-- 販売単価履歴追加では、同一 `book_id,effective_from` を `UniqueConstraintValidationException` として扱う。前履歴の `effective_to` を新履歴の前日に更新し、後続履歴がある場合は新履歴の `effective_to` を後続履歴の前日にする。
-- OpenBD 書誌取得 API は `/api/books/openbd` とし、必須の `isbn` query parameter で 13 桁 ISBN またはカンマ区切りの 13 桁 ISBN を受け取る。入力制約は `OpenBdBooksApi` の Bean Validation と OpenAPI 注釈に集約する。
-- `OpenBdBooksApiController` は OpenAPI Generator 生成の `BooksApi#getBooksByIsbn(isbn, null)` を呼び、結果を `OpenBdBookResponse` のリストへ変換する。OpenBD のレスポンスに `null` の書誌が含まれる場合は `OpenBdBookNotFoundException` として扱う。
-- OpenBD 由来の生成 DTO を API レスポンスとして直接返さず、`OpenBdBookResponse` に変換して返す。
-- 仕入登録 API は `/api/purchases/create` とし、`PurchaseInvoiceCreateRequest` で `purchaseInvoiceDate`、`supplierId`、`receivingStoreId`、明細リストを受け取る。
-- 仕入明細は `purchaseInvoiceDetailIsbn` で本を参照する。各 `PurchaseDataValidator*` は明細 ISBN から本 ID を解決し、converter / Service は解決済みの本 ID で明細と在庫更新を行う。
-- `PurchaseInvoiceCreateRequest.details` は `@Valid`、`@NotEmpty`、`@NotNull`、`@Size(max = 10)` を維持する。明細の単価は 1〜10000、数量は 1〜1000 の制約を維持する。
-- 仕入登録 API のレスポンスは `PurchaseInvoiceResponse` とし、伝票金額、更新日時、バージョン、`PurchaseInvoiceDetailResponse` の明細リストを返す。
-
-## ドメイン型と変換
-
-- `PurchaseInvoiceType` は仕入伝票種別を表す共有ドメイン型として扱う。
-- `PurchaseInvoiceType` の値を変更する場合は、DB の `check_purchase_invoice_type` 制約、初期データ、JPA `PurchaseInvoiceTypeConverter`、MyBatis `PurchaseInvoiceTypeHandler`、Doma `@Domain`、jOOQ 側の `getValue()` / `of()` を使った値変換の整合性を確認する。
-- `BookStockMovementType` と `BookStockMovementSourceType` は在庫増減履歴の共有ドメイン型として扱う。
-- `BookStockMovementType` / `BookStockMovementSourceType` の値を変更する場合は、DB の `check_book_stock_movement_type` / `check_book_stock_movement_source_type` 制約、初期データ、JPA converter、MyBatis TypeHandler、Doma `@Domain`、jOOQ 側の `getValue()` を使った値変換の整合性を確認する。
-- MyBatis TypeHandler を追加・変更する場合は、`src/main/resources/mybatis-config.xml` に登録する。
-- Doma CodeGen の型解決を変更する場合は、`src/main/resources/codegen/entityPropertyClassNames.properties` と `build.gradle` の `domaCodeGen` 設定を確認する。
-- MyBatis Generator の `purchase_invoice` / `purchase_invoice_detail` は、現在 `PurchaseOrderEntity` / `PurchaseOrderDetailEntity`、`PurchaseOrderMapper` / `PurchaseOrderDetailMapper` として生成される。`book_stock` は `BookStockEntity` / `BookStockMapper`、`book_stock_movement` は `BookStockMovementEntity` / `BookStockMovementMapper`、`book_sales_unit_price_history` は `BookSalesUnitPriceHistoryEntity` / `BookSalesUnitPriceHistoryMapper` として生成される。生成名を変更する場合は XML、テスト、補足ドキュメントを合わせて確認する。
-- `src/main/java/com/example/demo/openbd/generated` 配下は OpenAPI Generator 生成コードなので直接編集しない。OpenBD API 仕様や生成設定を変更する場合は `src/main/resources/openapi/openbd_api_spec.yaml`、`build.gradle` の `openApiGenerate` / `syncOpenBdGeneratedSources`、`OpenBdClientConfig`、`OpenBdProperties`、`OpenBdClientConfigTest` を確認する。
-- `compileJava` は `generateJooq` と `syncOpenBdGeneratedSources` に依存する。通常のビルドでも jOOQ 生成コードと OpenBD 生成コードが更新される可能性があるため、生成差分を確認する。
-
-## 主キー採番
-
-- 現在の全テーブルの主キーは、`generator-schema.sql` に定義したテーブル単位の `*_seq` シーケンスで採番する。IDENTITY や `max(id) + 1` による採番を追加しない。
-- シーケンスを追加・変更する場合は、`generator-schema.sql`、`data.sql` の `ALTER SEQUENCE ... RESTART WITH`、JPA Entity / Repository、`generatorConfig.xml` と MyBatis Mapper XML、Doma 生成 Entity / 手書き SQL、jOOQ DSL を揃える。
-- JPA は `@GeneratedValue(strategy = SEQUENCE)` と `@SequenceGenerator(allocationSize = 1)`、MyBatis は `selectKey order="BEFORE"`、Doma は `@GeneratedValue(strategy = SEQUENCE)` と `@SequenceGenerator(allocationSize = 1)`、jOOQ は `BookOperationDsl` / `PurchaseOperationDsl` のシーケンス取得処理を使う。
-- request DTO からシーケンス採番対象の Entity / row を作成する場合は、ModelMapper の暗黙マッピングで `supplierId` などの外部キーが主キーの `id` に誤設定される可能性があるため、登録項目を明示的に設定し、主キーは採番処理が実行されるまで未設定にする。
-- `data.sql` は外部キー依存順に既存データを削除してから初期データを投入し、最後に各シーケンスを未使用の次の値へ再設定する。初期データの最大 ID と再開値をずらさない。
-- MyBatis / Doma / jOOQ の生成コードを手作業で採番方式へ追従させず、生成元を更新して対応する生成タスクを実行し、差分を確認する。
+- ページ数と offset は `PageCalculator` を使い、4方式で計算を重複させない。
+- Security / JWT / ログイン回数制限の変更時は `SecurityConfig`、`JwtAuthenticationFilter`、`JwtTokenService`、`LoginRateLimitProperties`、`LoginRateLimitService`、`application.yaml`、`GlobalExceptionHandler`、OpenAPI の `bearerAuth` を確認する。
+- 認証設定は `application.yaml` の `app.auth` 配下で管理する。
+- `/bootui` と `/bootui/**` は Spring Security / JWT filter の対象外とする。
+- Actuator の Web 公開は `management.endpoints.web.exposure.include: health` に限定し、`env` などを不用意に公開しない。
+- 現在の公開／認証必須 API、DTO 制約、HTTP status は `api-spec-notes.md` を維持する。
+- Spring profile や永続化実装の有効化変更時は `application.yaml`、`application-jpa.yaml`、`application-native.yaml` の役割を確認する。
 
 ## OpenBD 連携
 
-- OpenBD API の接続先は `application.yaml` の `openbd.base-url` と `OpenBdProperties` で管理する。
-- `OpenBdClientConfig` は OpenAPI Generator 生成の `ApiClient`、`BooksApi`、`MetadataApi` を Bean として公開する。
-- OpenBD API クライアント設定を変更する場合は `OpenBdClientConfigTest` で、生成 API Bean と `ApiClient` の base URI が意図どおりになることを確認する。
-- OpenBD 書誌取得 API を変更する場合は `OpenBdBooksApiControllerTest` で、単一 ISBN、カンマ区切り ISBN、書誌なし 404、入力不正 400、OpenBD API 失敗 502 を確認する。
-- OpenBD 生成コードを更新する場合は `./gradlew syncOpenBdGeneratedSources` を使い、`src/main/java/com/example/demo/openbd/generated` の差分を確認する。
+- 接続先は `application.yaml` の `openbd.base-url` と `OpenBdProperties` で管理する。
+- `OpenBdClientConfig` は生成された `ApiClient`、`BooksApi`、`MetadataApi` を Bean として公開する。
+- 生成 DTO を API レスポンスとして直接返さず、`OpenBdBookResponse` に変換する。
+- OpenBD 入力制約は `OpenBdBooksApi` の Bean Validation と OpenAPI 注釈に集約する。
+- 生成コードを変更する場合は生成元の `src/main/resources/openapi/openbd_api_spec.yaml` または生成設定を修正し、`./gradlew syncOpenBdGeneratedSources` を使う。
+- クライアント設定変更時は `OpenBdClientConfigTest`、API 変更時は `OpenBdBooksApiControllerTest` を確認する。
 
-## AOT / ネイティブイメージ
+## Service・例外
 
-- 通常の Java コンパイル用 toolchain は Java 21 とする。`graalvmNative` のネイティブイメージ生成には、`build.gradle` で指定された Oracle GraalVM 25 を使用する。
-- `processAot` とネイティブ実行時は `doma,native` profile を使用する。profile を変更する場合は `graalvmNative.binaries.main.runtimeArgs` と `processAot` の引数を揃える。
-- `application-native.yaml` では MyBatis、JPA、jOOQ の自動構成を除外し、H2 Console を無効化し、`generator-schema.sql` をスキーマ初期化に使用する。ネイティブ実行で別の永続化方式を有効化する変更は、自動構成除外と runtime hints を含めて検証する。
-- `DemoApplication` の `@ImportRuntimeHints` で `NativeRuntimeHints` を登録する。ネイティブ実行時にリフレクションを使う request / response DTO、Doma Entity、OpenBD 生成 DTO などを追加・変更した場合は、`NativeRuntimeHints.REFLECTION_TYPES` の更新要否を確認する。
-- Doma SQL や実行時に読み込む classpath resource を追加・移動した場合は、`NativeRuntimeHints` の resource pattern を確認する。現在は `META-INF/com/example/demo/doma/**/*.sql` と `generator-schema.sql` を登録している。
-- AOT / ネイティブ対応を変更した場合は `./gradlew processAot` を実行する。必要に応じて `./gradlew nativeCompile` を実行し、生成された `demo` 実行ファイルで対象 API を確認する。`nativeCompile` は時間がかかるため、ネイティブ対応と無関係な変更では必須としない。
-
-## Service と例外
-
-- `BooksOperationService` は JPA / MyBatis / Doma / jOOQ 共通の Service インターフェースとして扱う。
-- Service インターフェースを変更する場合は、JPA / MyBatis / Doma / jOOQ の4実装をすべて確認する。
-- `PurchaseOperationService` は JPA / MyBatis / Doma / jOOQ 共通の仕入登録 Service インターフェースとして扱う。
-- 現在のデフォルト profile は `doma` であり、通常起動では `BooksOperationServiceDoma` と `PurchaseOperationServiceDoma` を使う。実装切り替えに関わる変更では `application.yaml` の `spring.profiles.default`、各実装の `@Profile`、Doma 実装の `@Primary` の扱いを確認する。
-- `@EnableJpaAuditing` は `DemoApplication` ではなく、`jpa` profile の `JpaAuditingConfig` に置く。JPA 以外の profile やネイティブ AOT 処理で JPA auditing を有効化しない。
-- jOOQ 実装は `src/main/java/com/example/demo/jooq` 配下に置く。手書きの SQL / DSL 組み立ては `jooq/dsl`、Service は `jooq/service`、変換は `jooq/converter`、参照存在チェックは `jooq/validator` の役割に合わせる。
-- jOOQ 生成コードは `src/main/java/com/example/demo/jooq/generated` 配下に出力する。生成コードを直接編集しない。
-- `BookOperationConverterJPA` / `BookOperationConverterMybatis` / `BookOperationConverterDoma` / `BookOperationConverterJooq` は永続化方式ごとの取得結果を `BookResponse` / `BookPageResponse` 用の DTO へ変換する責務に限定する。
-- `PurchaseOperationConverterJPA` / `PurchaseOperationConverterMybatis` / `PurchaseOperationConverterDoma` / `PurchaseOperationConverterJooq` は仕入登録用 Entity / row、明細金額、伝票金額、在庫 Entity / row、在庫増減履歴 Entity / row、response DTO への変換を扱う。
-- JPA の取得・検索は `BookRepository.BookWithStockRowProjection` の複数行を `BookOperationConverterJPA` で書籍単位に集約する。
-- MyBatis / Doma の取得・検索は、各表示向け Entity の `bookStockList` を各 `BookOperationConverter*` で `BookStockResponse` に変換する。
-- jOOQ の取得・検索は `BookWithStockRow` の複数行を `BookOperationConverterJooq` で書籍単位に集約する。
-- jOOQ の取得・検索・更新 SQL は `BookOperationDsl` / `PurchaseOperationDsl` に集約する。参照存在チェックは `BookDsl` / `BookGenreDsl` / `PublisherDsl` / `StoreDsl` / `SupplierDsl` を使う。Service や validator へ新しい jOOQ クエリを直接追加する場合は、既存の DSL component に置くべき責務か先に確認する。
+- 共通 Service interface の変更時は JPA / MyBatis / Doma / jOOQ の4実装をすべて更新する。
 - DB を読む・更新する Service メソッドには `@Transactional` を付ける。
-- `publisherId` は `publisher`、`genreId` は `book_genre` への外部キー。登録・更新時の参照存在チェックは各永続化方式の `BookDataValidator*` に集約する。
-- `isbn` は `book` の一意キー。登録・更新時の ISBN 一意性チェックは各永続化方式の `BookDataValidator*` に集約し、違反時は `UniqueConstraintValidationException` を使う。
-- 本の登録時は、登録した `book.id` と `BookCreateRequest.salesUnitPrice`、`BookCreateRequest.releaseDate` を使って販売単価の初期履歴を作成する。販売単価履歴の ID 採番や前後履歴更新は各永続化方式の既存方針に合わせる。
-- 販売単価履歴を更新する Service メソッドでは対象の本をロックし、`@RetryableOnLockFailure` と `@Transactional` の既存方針を維持する。
-- 仕入登録時の `supplierId`、`receivingStoreId`、明細 ISBN の参照存在チェックは各永続化方式の `PurchaseDataValidator*` に集約する。
-- `BookDataValidator*` を変更する場合は、出版社・ジャンルの参照存在チェック、未使用 ISBN の許可、同一 book の ISBN 維持、他 book の ISBN 利用時の一意制約違反をテストする。
-- `PurchaseDataValidator*` を変更する場合は、仕入先・受入店舗・明細 ISBN の参照存在チェックと、ISBN から解決した本 ID map を返すことをテストする。
-- 仕入登録では伝票、明細を登録し、JPA は `BookStockRepository.findByStoreIdAndBookIdWithWriteLock`、MyBatis は `BookStockCustomMapper.selectByStoreIdAndBookIdWithWriteLock`、Doma は `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock`、jOOQ は `PurchaseOperationDsl` の `forUpdate().noWait()` で在庫行をロックしてから新規作成または数量加算する。
-- JPA の仕入登録は、レスポンスを返す前に伝票、明細、在庫、在庫増減履歴の各 Repository を `flush()` し、DB 制約違反や書き込みエラーをトランザクション内で確定させる。
-- Doma の仕入登録は、伝票を登録する前に全明細の在庫行を `BookStockCustomDao.selectByStoreIdAndBookIdWithWriteLock` で取得してロックする現在の順序を維持する。
-- 仕入登録では在庫更新後に `book_stock_movement` へ在庫増減履歴を登録する。種別は仕入登録では `BookStockMovementType.PURCHASE`、発生元種別は `BookStockMovementSourceType.PURCHASE_INVOICE` を使い、伝票 ID / 明細 ID / ISBN から解決した本 ID / 受入店舗 ID / 数量を揃える。
-- 更新・削除処理では、既存のバージョンチェック、書き込みロック、ロック失敗リトライを不用意に変更しない。
-- 排他ロックを取得して更新・削除する Service メソッドには、必要に応じて `@RetryableOnLockFailure` を付ける。
-- 更新競合は `ObjectOptimisticLockingFailureException` / `PessimisticLockingFailureException` と `GlobalExceptionHandler` により HTTP 409 として扱う。
-- データなしは `RepositoryDataNotfoundException` と `GlobalExceptionHandler` により HTTP 404 として扱う。
-- OpenBD 書誌なしは `OpenBdBookNotFoundException` と `GlobalExceptionHandler` により HTTP 404 として扱う。
-- OpenBD API 呼び出しエラーは生成クライアントの `ApiException` と `GlobalExceptionHandler` により HTTP 502 として扱う。
-- 相関バリデーションエラーは `CorrelationValidationFailureException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
-- 外部キー参照先なしは `ForeignKeyReferenceNotFoundException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
-- 一意制約違反は `UniqueConstraintValidationException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
-- ログイン回数制限超過は `LoginRateLimitExceededException` と `GlobalExceptionHandler` により HTTP 429 として扱う。
-- Bean Validation のパラメータ違反は `ConstraintViolationException` と `GlobalExceptionHandler` により HTTP 400 として扱う。
-- validation error の `field` / `message` 形式は `ExceptionHandlerUtil` を使って組み立てる。
+- データ参照確認と ISBN 一意性確認は各方式の validator に集約する。
+- 更新・削除、販売単価履歴、仕入在庫のロックと `@RetryableOnLockFailure` の既存方針を維持する。
+- 永続化方式ごとの converter は取得結果または登録用データと response DTO の変換に責務を限定する。
+- 例外は既存の `GlobalExceptionHandler` と `api-spec-notes.md` の HTTP status に揃える。
+- validation error の `field` / `message` は `ExceptionHandlerUtil` で組み立てる。
 
-## テスト
+## AOT・ネイティブイメージ
 
-コード変更後は、基本的に以下を実行する。
-
-```shell
-./gradlew test
-```
-
-対象が限定されている場合でも、関連するテストを確認する。
-
-- API 相関バリデーション: `BooksOperationApiControllerValidatorTest`
-- API Controller: `BooksOperationApiControllerTest`
-- OpenBD API Controller: `OpenBdBooksApiControllerTest`
-- 認証 API / Security: `AuthOperationApiControllerTest`、`AuthOperationApiLoginRateLimitTest`
-- ログイン回数制限: `LoginRateLimitServiceTest`
-- 例外ハンドリング: `GlobalExceptionHandlerTest`
-- ページ計算: `PageCalculatorTest`
-- OpenBD API クライアント設定: `OpenBdClientConfigTest`
-- JPA 実装 / 販売単価履歴: `BooksOperationServiceJPATest`
-- JPA 本データバリデーション: `BookDataValidatorJPATest`
-- JPA 仕入データバリデーション: `PurchaseDataValidatorJPATest`
-- JPA 仕入実装: `PurchaseOperationServiceJPATest`
-- MyBatis 実装 / 販売単価履歴: `BooksOperationServiceMybatisTest`
-- MyBatis 本データバリデーション: `BookDataValidatorMybatisTest`
-- MyBatis 仕入データバリデーション: `PurchaseDataValidatorMybatisTest`
-- MyBatis 仕入実装: `PurchaseOperationServiceMybatisTest`
-- Doma 実装 / 販売単価履歴: `BooksOperationServiceDomaTest`
-- Doma 仕入実装: `PurchaseOperationServiceDomaTest`
-- Doma 仕入データバリデーション: `PurchaseDataValidatorDomaTest`
-- 仕入 API Controller: `PurchaseOperationApiControllerTest`
-- jOOQ 実装 / 販売単価履歴: `BooksOperationServiceJooqTest`
-- jOOQ 本データバリデーション: `BookDataValidatorJooqTest`
-- jOOQ 仕入データバリデーション: `PurchaseDataValidatorJooqTest`
-- jOOQ 仕入実装: `PurchaseOperationServiceJooqTest`
-- ロック失敗リトライ: `RetryableOnLockFailureTest`、`LockFailureRetryTest`
-- 行ロック関連: `BookRowLock`
-
-主キーシーケンス、採番処理、`data.sql` のシーケンス再設定、仕入登録の flush / 在庫ロック順序を変更した場合は、4方式の `BooksOperationService*Test` と `PurchaseOperationService*Test` を確認する。
-
-request DTO からシーケンス採番対象の Entity / row への変換を変更した場合は、同じ外部キー値を持つデータを連続登録し、主キーが重複せず、それぞれの明細や関連データに正しい主キーが設定されることを確認する。
-
-API、Security、DB 設定、JPA / MyBatis / Doma / jOOQ の実装切り替えを変更した場合は、必要に応じて `./gradlew bootRun` で起動確認し、curl または Swagger UI / Scalar で対象エンドポイントを確認する。
-
-BootUI の dependency や `SecurityConfig` の除外設定を変更した場合は、`./gradlew bootRun` で起動し、`http://localhost:8080/bootui` が未認証で表示できることを確認する。
-
-AOT / GraalVM、`NativeRuntimeHints`、`application-native.yaml`、ネイティブ実行時に使う DTO・Doma Entity・classpath resource を変更した場合は、`./gradlew processAot` を確認し、必要に応じて `./gradlew nativeCompile` と生成された実行ファイルで動作確認する。
+- 通常の Java toolchain は Java 21、ネイティブイメージは Oracle GraalVM 25 を使う。
+- `processAot` とネイティブ実行は `doma,native` profile を使う。
+- profile を変える場合は `graalvmNative.binaries.main.runtimeArgs` と `processAot` の引数を揃える。
+- `application-native.yaml` は MyBatis、JPA、jOOQ の自動構成と H2 Console を無効化し、`generator-schema.sql` を初期化スキーマとして使う。
+- `DemoApplication` の `@ImportRuntimeHints` で `NativeRuntimeHints` を登録する。
+- リフレクションを使う request / response DTO、Doma Entity、OpenBD 生成 DTO を追加・変更した場合は `NativeRuntimeHints.REFLECTION_TYPES` を確認する。
+- Doma SQL や実行時 classpath resource を追加・移動した場合は runtime hint の resource pattern を確認する。
+- 現在の登録対象は `META-INF/com/example/demo/doma/**/*.sql` と `generator-schema.sql` である。
+- 検証コマンドと通常テスト／AOTテストの分離方針は `testing-guide.md` に従う。

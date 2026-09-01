@@ -1,4 +1,6 @@
-# 概要→詳細は[AGENTS.md](https://github.com/nagaokambeyond/samples/blob/main/spring_java_orm_sample/AGENTS.md)で
+# 概要
+
+詳細は[アーキテクチャ概要](docs/architecture-overview.md)と[API仕様メモ](docs/api-spec-notes.md)を参照してください。
 
 - framework→spring boot 4.1
 - database→H2

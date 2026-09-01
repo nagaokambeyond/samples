@@ -2,6 +2,8 @@
 
 この負荷テストでは、書籍検索（70%）、書籍取得（25%）、仕入登録（5%）の混合ワークロードを生成します。外部サービスであるOpenBD APIは呼び出しません。スクリプトの`setup()`でJWTを1回取得し、認証が必要な仕入登録リクエストで再利用します。
 
+Docker Composeでは公式の`grafana/k6:2.2.0`イメージを固定して使用します。イメージはローカルに存在しない場合や明示的に`pull`した場合に取得され、通常の`docker compose run`ごとに再ダウンロードされるわけではありません。
+
 持続可能な負荷の暫定判定基準は次のとおりです。
 
 - HTTP失敗率が1%未満
@@ -70,6 +72,8 @@ docker compose -f docker/performance-tests/compose.yaml run --rm k6 \
 
 段階負荷の設定は、`START_RPS`、`TARGET_RPS_STAGES`、`WARMUP_DURATION`、`RAMP_DURATION`、`STEP_DURATION`、`RAMP_DOWN_DURATION`で変更できます。正式な最大性能確認では、`HOLD_DURATION=10m`のように維持時間を延ばしてから測定してください。k6からVU不足が報告された場合に限り、`PRE_ALLOCATED_VUS`と`MAX_VUS`を増やしてください。`dropped_iterations`が発生した測定結果は、最大性能の確認結果として採用しません。
 
+段階負荷の既定値は`START_RPS=10`、`TARGET_RPS_STAGES=25,50,100`、`WARMUP_DURATION=10s`、`RAMP_DURATION=10s`、`STEP_DURATION=20s`、`RAMP_DOWN_DURATION=10s`です。`vus_max`は利用可能な最大VU数、`vus`は実際に使われたVU数です。応答が十分速ければ実際の最大VUが1のままでも異常ではなく、`dropped_iterations`が0なら少なくともk6側のVU不足は発生していません。
+
 ## Soakテスト
 
 確認済みの持続可能なRPSで、短時間の継続負荷を実行します。デフォルトでは、ランプアップ10秒、維持90秒、ランプダウン10秒の合計110秒で実行します。
@@ -92,3 +96,4 @@ docker compose -f docker/performance-tests/compose.yaml run --rm k6 \
 - 日次ログイン回数の上限が10回であるため、ログインAPIは1回のテストにつき1回だけ呼び出します。`loadtest` profileでは、60分のSoakテストと前後のRamp期間を通して同じJWTを再利用できるよう、有効期限を2時間に設定します。
 - 測定結果が表すのは、Spring Boot、選択した永続化実装、インメモリH2を組み合わせた性能です。別のデータベースを使用する環境の性能値としては扱わないでください。
 - 測定結果を比較するときは、アプリケーションJAR、Javaオプション、ホスト構成、初期データ、k6イメージ、スクリプトパラメーター、ネットワーク配置を同一条件にしてください。
+- `purchase_invoice.id`などの主キー重複が発生した場合は、テーブルの最大IDと`data.sql`の`ALTER SEQUENCE ... RESTART WITH`が示す未使用の次の値を確認してください。

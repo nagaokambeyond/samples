@@ -2,7 +2,9 @@
 
 このディレクトリには、ローカルで起動した使い捨てのSpring Bootアプリケーションに対して、認証付きのOWASP ZAP APIスキャンを実行するための設定を置いています。
 
-スキャンでは、`/v3/api-docs`から現在のOpenAPI定義を取り込み、`/api/auth/login`で取得したBearer tokenを付与してActive Scanを実行します。結果はHTML、JSON、SARIF形式で`docker/security-tests/results`に出力されます。
+Docker Composeでは公式の`ghcr.io/zaproxy/zaproxy:2.17.0`イメージを固定して使用します。診断対象アプリケーションは、選択した永続化profileと`dast` profileを組み合わせて起動します。
+
+スキャンでは、`/v3/api-docs`から現在のOpenAPI定義を取り込み、`/api/auth/login`で取得したBearer tokenを`ZAP_AUTH_HEADER_VALUE`として対象ホストへ付与してActive Scanを実行します。結果はHTML、JSON、SARIF形式で`docker/security-tests/results`に出力されます。
 
 Active Scanは攻撃用のpayloadを送信するため、データの登録・更新・削除が発生する可能性があります。必ず`run-zap.sh`が起動するインメモリH2のローカルアプリだけを対象にしてください。共有環境、ステージング環境、本番環境には実行しないでください。
 
@@ -63,4 +65,3 @@ ZAPの診断対象は、ローカルターゲットの`/api/**`に限定して�
 ## 誤検知の扱い
 
 最初から広い抑制リストは追加しないでください。まずHTMLまたはJSONレポートで各alertを確認します。誤検知である根拠が明確な場合だけ、alert ID、URL pattern、理由を絞り込んだZAP alert filterを`zap-api.yaml`へ追加してください。
-
