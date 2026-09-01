@@ -1,0 +1,19 @@
+name: spring-java-orm-security-test
+
+services:
+  zap:
+    image: ghcr.io/zaproxy/zaproxy:2.17.0
+    working_dir: /zap/wrk
+    user: zap
+    volumes:
+      - ./:/zap/wrk:rw
+    environment:
+      ZAP_AUTH_HEADER: ${ZAP_AUTH_HEADER:-Authorization}
+      ZAP_AUTH_HEADER_VALUE: ${ZAP_AUTH_HEADER_VALUE:?Set ZAP_AUTH_HEADER_VALUE before running ZAP}
+      ZAP_AUTH_HEADER_SITE: ${ZAP_AUTH_HEADER_SITE:-host.docker.internal}
+      ZAP_TARGET_URL: ${ZAP_TARGET_URL:-http://host.docker.internal:18080}
+      ZAP_OPENAPI_URL: ${ZAP_OPENAPI_URL:-http://host.docker.internal:18080/v3/api-docs}
+      ZAP_MAX_SCAN_DURATION_MINS: ${ZAP_MAX_SCAN_DURATION_MINS:-30}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    command: zap.sh -cmd -autorun /zap/wrk/zap-api.yaml

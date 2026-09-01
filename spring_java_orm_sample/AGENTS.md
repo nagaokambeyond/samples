@@ -127,6 +127,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - `src/main/resources/application.yaml`: アプリケーション設定
 - `src/main/resources/application-jpa.yaml`: JPA profile 用の Spring Data JPA Repository 有効化設定
 - `src/main/resources/application-loadtest.yaml`: 負荷テスト用設定。ログ、H2 Console、DevTools 再起動、API ドキュメント用エンドポイントを抑制し、JWT 有効期限と監視用 MBean を調整します。
+- `src/main/resources/application-dast.yaml`: OWASP ZAP API 脆弱性診断用設定。OpenAPI 仕様取得を有効にし、H2 Console、Swagger UI、Scalar、詳細ログ、ログイン回数制限の影響を診断向けに調整します。
 - `src/main/resources/application-native.yaml`: ネイティブ実行用の自動構成除外、H2、SQL 初期化設定
 - `src/main/resources/mybatis-config.xml`: MyBatis TypeHandler 設定
 - `src/main/resources/codegen`: Doma CodeGen / jOOQ CodeGen 補助設定
@@ -145,6 +146,7 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - `src/test/java/com/example/demo/openbd/config`: OpenBD API クライアント設定のテスト
 - `src/test/java/com/example/demo/util`: 共通ユーティリティのテスト
 - `performance-tests`: k6 による API 負荷テスト。Docker Compose 設定、テストスクリプト、結果出力先を含みます。
+- `docker/security-tests`: OWASP ZAP による API 脆弱性診断。Docker Compose 設定、Automation Framework YAML、実行スクリプト、結果出力先を含みます。
 
 ## 重要な設計方針
 
@@ -218,6 +220,20 @@ Spring Boot や OpenAPI Generator などの依存バージョンを更新した�
 - 測定結果は、Spring Boot、選択した永続化実装、インメモリ H2 を組み合わせた性能として扱います。本番で別 DB を使う場合は、本番相当 DB で再測定してください。
 - k6 の結果で `vus_max` は利用可能な最大 VU 数、`vus` は実際に使われた VU 数です。レスポンスが十分速い場合は、`PRE_ALLOCATED_VUS=100` でも実際の最大 VU が 1 のままになることがあります。`dropped_iterations` が 0 なら、少なくとも k6 側の VU 不足は発生していません。
 - 結果比較では、アプリケーション JAR、Java オプション、profile、ホスト構成、初期データ、k6 イメージ、スクリプトパラメーター、ネットワーク配置を揃えてください。
+
+## 脆弱性診断方針
+
+- API 脆弱性診断は `docker/security-tests` 配下の OWASP ZAP 設定で行います。ZAP は `docker/security-tests/compose.yaml` で固定した `ghcr.io/zaproxy/zaproxy:2.17.0` の公式 Docker イメージを使用します。
+- ローカル実行では、対象 API は Docker 内ではなくホスト側の Spring Boot JAR として起動します。ZAP だけを Docker コンテナで起動し、コンテナから `http://host.docker.internal:${APP_PORT}` 経由でホスト側 API を診断します。
+- 実行はリポジトリルートから `docker/security-tests/run-zap.sh` を使います。スクリプトは `./gradlew bootJar`、診断用アプリ起動、`/v3/api-docs` の起動待ち、`/api/auth/login` による JWT 取得、認証必須 API の事前確認、ZAP 実行、レポート生成、起動したアプリプロセスの停止を行います。
+- 既定の永続化 profile は `doma` です。`PERSISTENCE_PROFILE=jpa|mybatis|jooq` で切り替えられます。診断時は指定した永続化 profile と `dast` profile を組み合わせて起動します。
+- 既定ポートは `APP_PORT=18080` です。指定ポートで既に別プロセスが待ち受けている場合、スクリプトは既存プロセスを診断せずに失敗します。既存プロセスを停止するか、`APP_PORT` で別ポートを指定してください。
+- ZAP は `/v3/api-docs` から OpenAPI 定義を取り込み、`ZAP_AUTH_HEADER_VALUE` に設定した Bearer token を対象ホストへ付与して認証付き Active Scan を実行します。ログインはスクリプトが実行前に1回だけ行います。
+- 診断対象はローカル API の `/api/**` に限定し、外部 OpenBD サービスを攻撃しないよう `/api/books/openbd` は `docker/security-tests/zap-api.yaml` で除外します。Swagger UI、Scalar、BootUI、H2 Console、Actuator 画面は OpenAPI ベースの API スキャン対象に含めません。
+- Active Scan は攻撃 payload を送信し、データの登録・更新・削除が発生する可能性があります。診断先はスクリプトが起動する使い捨てのインメモリ H2 環境だけとし、共有環境、ステージング環境、本番環境には実行しないでください。
+- レポートは `docker/security-tests/results` に HTML、JSON、SARIF として生成します。このディレクトリは `.gitignore` 対象です。
+- Medium または High の alert が出た場合は終了コード `1` で失敗します。ただし、ローカル診断では HTTP で起動するため、`HTTP Only Site` だけは `docker/security-tests/zap-api.yaml` の alert filter で Info 扱いに下げています。それ以外の Medium / High alert は失敗扱いのままです。
+- 初期導入では広い抑制リストを作らず、根拠のある誤検知だけを alert ID、対象 URL、理由を明確にして個別に alert filter へ追加してください。
 
 ## テスト方針
 

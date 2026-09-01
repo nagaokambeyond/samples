@@ -1,0 +1,31 @@
+spring:
+  devtools:
+    restart:
+      enabled: false
+  h2:
+    console:
+      enabled: false
+  jpa:
+    show-sql: false
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: false
+
+scalar:
+  enabled: false
+
+app:
+  auth:
+    expires-in-seconds: 7200
+    login-rate-limit:
+      daily-limit: 1000
+
+logging:
+  level:
+    com.example.demo.api.log: WARN
+    org.hibernate.SQL: WARN
+    org.jooq.tools.LoggerListener: WARN
+    org.seasar.doma.jdbc.LogKind.SQL: WARN

@@ -1,0 +1,119 @@
+env:
+  vars:
+    targetUrl: ${ZAP_TARGET_URL}
+    openApiUrl: ${ZAP_OPENAPI_URL}
+  contexts:
+    - name: spring-java-orm-api
+      urls:
+        - ${targetUrl}
+      includePaths:
+        - ${targetUrl}/api/.*
+      excludePaths:
+        - ${targetUrl}/api/books/openbd.*
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  - type: passiveScan-config
+    parameters:
+      scanOnlyInScope: true
+      maxAlertsPerRule: 20
+
+  - type: alertFilter
+    alertFilters:
+      - ruleId: 10106
+        ruleName: HTTP Only Site
+        newRisk: Info
+        context: spring-java-orm-api
+
+  - type: openapi
+    parameters:
+      context: spring-java-orm-api
+      apiUrl: ${openApiUrl}
+      targetUrl: ${targetUrl}
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: activeScan
+    parameters:
+      context: spring-java-orm-api
+      url: ${targetUrl}/api
+      defaultStrength: Medium
+      defaultThreshold: Low
+      maxScanDurationInMins: 30
+      scanHeadersAllRequests: true
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk/results
+      reportFile: zap-api
+      reportTitle: Spring Java ORM API OWASP ZAP Report
+      reportDescription: Authenticated active scan imported from /v3/api-docs.
+      displayReport: false
+    risks:
+      - high
+      - medium
+      - low
+      - info
+    confidences:
+      - high
+      - medium
+      - low
+      - falsepositive
+    alwaysRun: true
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk/results
+      reportFile: zap-api
+      reportTitle: Spring Java ORM API OWASP ZAP JSON Report
+      reportDescription: Authenticated active scan imported from /v3/api-docs.
+      displayReport: false
+    risks:
+      - high
+      - medium
+      - low
+      - info
+    confidences:
+      - high
+      - medium
+      - low
+      - falsepositive
+    alwaysRun: true
+
+  - type: report
+    parameters:
+      template: sarif-json
+      reportDir: /zap/wrk/results
+      reportFile: zap-api-sarif
+      reportTitle: Spring Java ORM API OWASP ZAP SARIF Report
+      reportDescription: Authenticated active scan imported from /v3/api-docs.
+      displayReport: false
+    risks:
+      - high
+      - medium
+      - low
+      - info
+    confidences:
+      - high
+      - medium
+      - low
+      - falsepositive
+    alwaysRun: true
+
+  - type: exitStatus
+    parameters:
+      errorLevel: Medium
+      okExitValue: 0
+      errorExitValue: 1
+    alwaysRun: true
