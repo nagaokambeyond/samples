@@ -1,0 +1,82 @@
+{
+  "realm": "sample-realm",
+  "enabled": true,
+  "displayName": "Spring Boot Multi-System Sample Realm",
+  "roles": {
+    "realm": [],
+    "client": {
+      "springboot-portal": [
+        { "name": "PORTAL_USER", "description": "Can use portal user functions" },
+        { "name": "PORTAL_ADMIN", "description": "Can use portal administration functions" }
+      ],
+      "springboot-reports": [
+        { "name": "REPORT_VIEWER", "description": "Can view reports" },
+        { "name": "REPORT_ADMIN", "description": "Can administer reports" }
+      ]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "springboot-portal",
+      "name": "Spring Boot Portal",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "portal-client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8081/login/oauth2/code/keycloak"],
+      "webOrigins": ["http://localhost:8081"],
+      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8081/"
+      }
+    },
+    {
+      "clientId": "springboot-reports",
+      "name": "Spring Boot Reports",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "reports-client-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8082/login/oauth2/code/keycloak"],
+      "webOrigins": ["http://localhost:8082"],
+      "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:8082/"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "alice",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Alice",
+      "lastName": "User",
+      "email": "alice@example.test",
+      "clientRoles": {
+        "springboot-portal": ["PORTAL_USER"],
+        "springboot-reports": ["REPORT_VIEWER"]
+      },
+      "credentials": [{ "type": "password", "value": "alice-password", "temporary": false }]
+    },
+    {
+      "username": "bob",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Bob",
+      "lastName": "Admin",
+      "email": "bob@example.test",
+      "clientRoles": {
+        "springboot-portal": ["PORTAL_USER", "PORTAL_ADMIN"],
+        "springboot-reports": ["REPORT_VIEWER", "REPORT_ADMIN"]
+      },
+      "credentials": [{ "type": "password", "value": "bob-password", "temporary": false }]
+    }
+  ]
+}

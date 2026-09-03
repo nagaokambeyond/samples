@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-keycloak}
+      MYSQL_USER: ${MYSQL_USER:-keycloak}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-keycloak-password}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root-password}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.3
+    command: start-dev --import-realm
+    ports:
+      - "${KEYCLOAK_PORT:-8080}:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin-password}
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-keycloak}
+      KC_DB_USERNAME: ${MYSQL_USER:-keycloak}
+      KC_DB_PASSWORD: ${MYSQL_PASSWORD:-keycloak-password}
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+volumes:
+  mysql-data:

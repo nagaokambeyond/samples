@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>レポート</title></head>
+<body>
+  <h1>レポートシステム</h1>
+  <p>このページは公開されています。Keycloak でログインするとレポートのプロフィールを表示できます。</p>
+  <p><a th:href="@{/oauth2/authorization/keycloak}">Keycloak でログイン</a></p>
+  <p><a th:href="@{/profile}">レポートのプロフィール</a></p>
+  <p><a href="http://localhost:8081/">ポータルシステムを開く（SSO を確認）</a></p>
+</body>
+</html>
