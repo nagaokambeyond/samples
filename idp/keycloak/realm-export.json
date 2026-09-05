@@ -28,6 +28,22 @@
       "redirectUris": ["http://localhost:8081/login/oauth2/code/keycloak"],
       "webOrigins": ["http://localhost:8081"],
       "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
+      "protocolMappers": [
+        {
+          "name": "portal client roles in tokens",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "resource_access.${client_id}.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:8081/"
@@ -45,6 +61,22 @@
       "redirectUris": ["http://localhost:8082/login/oauth2/code/keycloak"],
       "webOrigins": ["http://localhost:8082"],
       "defaultClientScopes": ["web-origins", "acr", "roles", "profile", "email"],
+      "protocolMappers": [
+        {
+          "name": "reports client roles in tokens",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "resource_access.${client_id}.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
         "post.logout.redirect.uris": "http://localhost:8082/"
@@ -77,6 +109,30 @@
         "springboot-reports": ["REPORT_VIEWER", "REPORT_ADMIN"]
       },
       "credentials": [{ "type": "password", "value": "bob-password", "temporary": false }]
+    },
+    {
+      "username": "portal-user",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Portal",
+      "lastName": "User",
+      "email": "portal-user@example.test",
+      "clientRoles": {
+        "springboot-portal": ["PORTAL_USER"]
+      },
+      "credentials": [{ "type": "password", "value": "portal-user-password", "temporary": false }]
+    },
+    {
+      "username": "reports-user",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Reports",
+      "lastName": "User",
+      "email": "reports-user@example.test",
+      "clientRoles": {
+        "springboot-reports": ["REPORT_VIEWER"]
+      },
+      "credentials": [{ "type": "password", "value": "reports-user-password", "temporary": false }]
     }
   ]
 }

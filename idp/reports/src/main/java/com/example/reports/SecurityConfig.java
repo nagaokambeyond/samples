@@ -2,6 +2,7 @@ package com.example.reports;
 
 import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -11,12 +12,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.SecurityFilterChain;
@@ -59,9 +61,10 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/", "/error").permitAll()
-                .requestMatchers("/profile").authenticated()
-                .anyRequest().permitAll())
-            .oauth2Login(Customizer.withDefaults())
+            .requestMatchers("/profile").hasAnyRole("REPORT_VIEWER", "REPORT_ADMIN")
+            .anyRequest().permitAll())
+            .oauth2Login(oauth2Login -> oauth2Login
+                .userInfoEndpoint(userInfo -> userInfo.userAuthoritiesMapper(oidcUserAuthoritiesMapper())))
             .logout(logout -> logout.logoutSuccessHandler(oidcLogoutSuccessHandler));
         return http.build();
     }
@@ -93,20 +96,37 @@ public class SecurityConfig {
 
     @Bean("realmRoleConverter")
     Converter<Jwt, Collection<GrantedAuthority>> realmRoleConverter() {
-        return jwt -> {
-            Map<String, Object> resourceAccess = jwt.getClaimAsMap("resource_access");
-            if (!clientId.equals(jwt.getClaimAsString("azp")) || resourceAccess == null
-                    || !(resourceAccess.get(clientId) instanceof Map<?, ?> clientAccess)
-                    || !(clientAccess.get("roles") instanceof Collection<?> roles)) {
-                return List.of();
-            }
-            return roles.stream()
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .map(GrantedAuthority.class::cast)
-                .toList();
+        return jwt -> clientRoles(jwt.getClaimAsString("azp"), jwt.getClaimAsMap("resource_access"));
+    }
+
+    @Bean
+    GrantedAuthoritiesMapper oidcUserAuthoritiesMapper() {
+        return authorities -> {
+            List<GrantedAuthority> mappedAuthorities = new ArrayList<>(authorities);
+            authorities.stream()
+                .filter(OidcUserAuthority.class::isInstance)
+                .map(OidcUserAuthority.class::cast)
+                .map(OidcUserAuthority::getIdToken)
+                .flatMap(idToken -> clientRoles(
+                    idToken.getClaimAsString("azp"),
+                    idToken.getClaimAsMap("resource_access")).stream())
+                .forEach(mappedAuthorities::add);
+            return mappedAuthorities;
         };
+    }
+
+    private Collection<GrantedAuthority> clientRoles(String authorizedParty, Map<String, Object> resourceAccess) {
+        if (!clientId.equals(authorizedParty) || resourceAccess == null
+                || !(resourceAccess.get(clientId) instanceof Map<?, ?> clientAccess)
+                || !(clientAccess.get("roles") instanceof Collection<?> roles)) {
+            return List.of();
+        }
+        return roles.stream()
+            .filter(String.class::isInstance)
+            .map(String.class::cast)
+            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+            .map(GrantedAuthority.class::cast)
+            .toList();
     }
 
     private JwtAuthenticationConverter jwtAuthenticationConverter(

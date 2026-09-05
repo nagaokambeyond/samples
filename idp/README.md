@@ -95,7 +95,7 @@ PORTAL_CLIENT_SECRET=changed-secret ./gradlew :portal:bootRun
 REPORTS_CLIENT_SECRET=changed-secret ./gradlew :reports:bootRun
 ```
 
-realm をすでに起動済みの場合、client、ロール、PKCE、post-logout redirect URI を含む realm 定義の変更を反映するには次を実行します。これは MySQL の保存済みデータを削除します。
+realm をすでに起動済みの場合、client、ロール、検証ユーザー、PKCE、post-logout redirect URI を含む realm 定義の変更を反映するには次を実行します。これは MySQL の保存済みデータを削除します。
 
 ```bash
 docker compose down -v
@@ -113,6 +113,10 @@ docker compose up -d
 | --- | --- | --- | --- |
 | `alice` | `alice-password` | `PORTAL_USER` | `REPORT_VIEWER` |
 | `bob` | `bob-password` | `PORTAL_USER`, `PORTAL_ADMIN` | `REPORT_VIEWER`, `REPORT_ADMIN` |
+| `portal-user` | `portal-user-password` | `PORTAL_USER` | なし |
+| `reports-user` | `reports-user-password` | なし | `REPORT_VIEWER` |
+
+`portal-user` は portal の `/profile` と portal API だけを利用できます。`reports-user` は reports の `/profile` と reports API だけを利用できます。どちらも相手システムのトップページは開けますが、Keycloak SSO 後に相手の `/profile` へ進むと `403 Forbidden` になります。
 
 ## JWT API の確認
 

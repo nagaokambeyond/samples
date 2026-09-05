@@ -23,7 +23,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -37,11 +40,20 @@ class ReportsSecurityIntegrationTest {
     @Qualifier("realmRoleConverter")
     private Converter<Jwt, Collection<GrantedAuthority>> realmRoleConverter;
 
+    @Autowired
+    private GrantedAuthoritiesMapper oidcUserAuthoritiesMapper;
+
     @Test
-    void publicHomeIsAvailableAndProfileUsesOidcLogin() throws Exception {
+    void publicHomeIsAvailableAndProfileRequiresReportsRole() throws Exception {
         mockMvc.perform(get("/")).andExpect(status().isOk());
         mockMvc.perform(get("/profile")).andExpect(status().is3xxRedirection());
-        mockMvc.perform(get("/profile").with(oidcLogin())).andExpect(status().isOk());
+        mockMvc.perform(get("/profile").with(oidcLogin()
+                .authorities(new SimpleGrantedAuthority("ROLE_REPORT_VIEWER"))))
+            .andExpect(status().isOk());
+        mockMvc.perform(get("/profile").with(oidcLogin()
+                .authorities(new SimpleGrantedAuthority("ROLE_PORTAL_USER"))))
+            .andExpect(status().isForbidden());
+        mockMvc.perform(get("/profile").with(oidcLogin())).andExpect(status().isForbidden());
     }
 
     @Test
@@ -95,6 +107,28 @@ class ReportsSecurityIntegrationTest {
         assertThat(realmRoleConverter.convert(jwt)).isEmpty();
     }
 
+    @Test
+    void oidcMapperAddsOnlyReportsRolesFromReportsIdToken() {
+        OidcIdToken idToken = oidcIdToken("springboot-reports", Map.of(
+            "springboot-portal", Map.of("roles", List.of("PORTAL_USER")),
+            "springboot-reports", Map.of("roles", List.of("REPORT_VIEWER"))));
+
+        assertThat(oidcUserAuthoritiesMapper.mapAuthorities(List.of(new OidcUserAuthority(idToken))))
+            .extracting(GrantedAuthority::getAuthority)
+            .contains("ROLE_REPORT_VIEWER")
+            .doesNotContain("ROLE_PORTAL_USER");
+    }
+
+    @Test
+    void oidcMapperRejectsIdTokenIssuedToPortalClient() {
+        OidcIdToken idToken = oidcIdToken("springboot-portal", Map.of(
+            "springboot-reports", Map.of("roles", List.of("REPORT_VIEWER"))));
+
+        assertThat(oidcUserAuthoritiesMapper.mapAuthorities(List.of(new OidcUserAuthority(idToken))))
+            .extracting(GrantedAuthority::getAuthority)
+            .doesNotContain("ROLE_REPORT_VIEWER");
+    }
+
     private Jwt jwtWithResourceAccess(Map<String, Object> resourceAccess) {
         return jwtWithResourceAccess("springboot-reports", resourceAccess);
     }
@@ -105,5 +139,11 @@ class ReportsSecurityIntegrationTest {
             .claim("azp", authorizedParty)
             .claim("resource_access", resourceAccess)
             .build();
+    }
+
+    private OidcIdToken oidcIdToken(String authorizedParty, Map<String, Object> resourceAccess) {
+        return new OidcIdToken("test-token", null, null, Map.of(
+            "azp", authorizedParty,
+            "resource_access", resourceAccess));
     }
 }
