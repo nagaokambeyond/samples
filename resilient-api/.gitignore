@@ -1,4 +1,5 @@
 docker/.env
+.gradle/
 target/
 build/
 .idea/
