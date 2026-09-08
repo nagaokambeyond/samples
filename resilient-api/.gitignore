@@ -1,0 +1,5 @@
+docker/.env
+target/
+build/
+.idea/
+.vscode/
