@@ -1,0 +1,39 @@
+create table if not exists tracks (
+    path text primary key,
+    title text,
+    artist text,
+    album text,
+    album_artist text,
+    year text,
+    genre text,
+    track_number text,
+    disc_number text,
+    comment text,
+    duration_seconds integer,
+    bit_rate_kbps integer,
+    sample_rate_hz integer,
+    channels text,
+    file_size_bytes integer not null,
+    last_modified_epoch_millis integer not null
+);
+
+create table if not exists schema_migrations (
+    version integer primary key
+);
+
+create virtual table if not exists tracks_fts using fts5(
+    path,
+    title,
+    artist,
+    album,
+    album_artist,
+    genre,
+    content = 'tracks',
+    content_rowid = 'rowid',
+    tokenize = 'unicode61'
+) ;
+
+insert or ignore into schema_migrations(version) values (1);
+insert into tracks_fts(tracks_fts)
+select 'rebuild'
+where changes() = 1;

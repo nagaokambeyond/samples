@@ -1,0 +1,1 @@
+insert into tracks_fts(tracks_fts) values ('rebuild');
