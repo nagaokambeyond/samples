@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:h2:file:./data/csv_export;MODE=MySQL;DATABASE_TO_LOWER=TRUE;AUTO_SERVER=TRUE
+    username: sa
+    password:
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+  thymeleaf:
+    cache: false
+
+doma:
+  dialect: H2
+
+app:
+  export:
+    storage-dir: ./data/exports
+    page-size: 1000
+    seed-size: 1000000
+    poll-delay-ms: 2000
+    retention-hours: 1
