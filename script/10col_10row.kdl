@@ -1,324 +1,35 @@
 layout {
+    // Reuse the command pane definition for every cell in the grid.
+    pane_template name="hello_world" {
+        command "python3"
+        args "hello_world.py"
+    }
+
+    // Each row contains ten equal-width command panes.
+    pane_template name="row" split_direction="horizontal" {
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+        hello_world
+    }
+
+    // Stack ten rows vertically to form a 10 by 10 grid.
     pane split_direction="vertical" {
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            } 
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
-        pane split_direction="horizontal" {
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-            pane command="python3" {
-                args "hello_world.py"
-            }
-        }
+        row
+        row
+        row
+        row
+        row
+        row
+        row
+        row
+        row
+        row
     }
 }
