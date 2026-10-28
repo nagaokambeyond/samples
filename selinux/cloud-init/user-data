@@ -1,0 +1,84 @@
+#cloud-config
+users:
+  - default
+  - name: selinux
+    groups: [wheel]
+    shell: /bin/bash
+    lock_passwd: false
+    plain_text_passwd: selinux
+    sudo: ALL=(ALL) NOPASSWD:ALL
+ssh_pwauth: true
+chpasswd:
+  expire: false
+write_files:
+  - path: /opt/selinux-lab/deny-demo.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      setenforce 1
+      echo 'Running in domain:'
+      /usr/local/bin/selinux-lab-reader || true
+      echo 'The failure above is intentional. Run inspect-denial.sh next.'
+  - path: /opt/selinux-lab/inspect-denial.sh
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      echo '== SELinux mode and labels =='
+      getenforce
+      ls -lZ /usr/local/bin/selinux-lab-reader /srv/selinux-lab/secret.txt
+      echo
+      echo '== Most recent AVC =='
+      ausearch -m AVC -ts recent | tail -n 20 || true
+      echo
+      echo '== Why SELinux denied it =='
+      ausearch -m AVC -ts recent | audit2why || true
+      echo
+      echo '== Existing allow rules (expected: none for secret file read) =='
+      sesearch -A -s selinux_lab_t -t selinux_lab_secret_t -c file -p read || true
+  - path: /opt/selinux-lab/selinux_lab.te
+    permissions: '0644'
+    content: |
+      policy_module(selinux_lab, 1.0)
+
+      type selinux_lab_t;
+      type selinux_lab_exec_t;
+      domain_type(selinux_lab_t)
+      domain_entry_file(selinux_lab_t, selinux_lab_exec_t)
+      domain_auto_trans(unconfined_t, selinux_lab_exec_t, selinux_lab_t)
+
+      type selinux_lab_secret_t;
+      files_type(selinux_lab_secret_t)
+
+      # Deliberately allow traversal only. Do NOT allow secret_t:file { open read }.
+      allow selinux_lab_t selinux_lab_secret_t:dir search;
+  - path: /opt/selinux-lab/reader.c
+    permissions: '0644'
+    content: |
+      #include <fcntl.h>
+      #include <stdio.h>
+      #include <unistd.h>
+
+      int main(void) {
+        char buffer[128];
+        int fd = open("/srv/selinux-lab/secret.txt", O_RDONLY);
+        if (fd < 0) { perror("open secret.txt"); return 1; }
+        ssize_t count = read(fd, buffer, sizeof(buffer) - 1);
+        if (count < 0) { perror("read secret.txt"); return 1; }
+        buffer[count] = '\0';
+        puts(buffer);
+        return 0;
+      }
+runcmd:
+  - dnf -y install policycoreutils policycoreutils-python-utils setools-console selinux-policy-devel gcc glibc-static make
+  - mkdir -p /srv/selinux-lab
+  - "printf 'classified: SELinux protects this file\\n' > /srv/selinux-lab/secret.txt"
+  - chmod 0600 /srv/selinux-lab/secret.txt
+  - cd /opt/selinux-lab && gcc -static -O2 -o /usr/local/bin/selinux-lab-reader reader.c
+  - cd /opt/selinux-lab && make -f /usr/share/selinux/devel/Makefile selinux_lab.pp
+  - semodule -i /opt/selinux-lab/selinux_lab.pp
+  - semanage fcontext -a -t selinux_lab_exec_t /usr/local/bin/selinux-lab-reader
+  - semanage fcontext -a -t selinux_lab_secret_t '/srv/selinux-lab(/.*)?'
+  - restorecon -Rv /usr/local/bin/selinux-lab-reader /srv/selinux-lab
+  - setenforce 1

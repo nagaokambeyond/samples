@@ -1,0 +1,4 @@
+/.DS_Store
+/lab/fedora.qcow2
+/lab/seed.iso
+/cloud-init/*.qcow2
